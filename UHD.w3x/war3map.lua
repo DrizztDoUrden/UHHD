@@ -392,179 +392,163 @@ do
 end
 
 do
-    BasicStats = Class(function(self)
-        self.names = {
-            "strength",
-            "agility",
-            "intellect",
-            "constintution",
-            "endurance",
-            "willpower",
-        }
+    local result, err = pcall(function()
+        local StatsBase = Class()
 
-        for _, stat in self:EnumerateNames() do self[stat] = 0 end
+        function StatsBase:EnumerateNames()
+            return pairs(self.names)
+        end
+
+        function StatsBase:Enumerate()
+            local ret = {}
+            for _, name in self:EnumerateNames() do
+                ret[name] = self[name]
+            end
+            return pairs(ret);
+        end
+
+        function StatsBase:__add(other)
+            if not other or not other.IsA or not other:IsA(self) then
+                error("Invalid stats operation (+): second operand is not same stats")
+            end
+            local ret = self()
+            for name, value in self:Enumerate() do
+                ret[name] = value + other[name]
+            end
+        end
+
+        function StatsBase:__sub(other)
+            if not other or not other.IsA or not other:IsA(self) then
+                error("Invalid stats operation (-): second operand is not same stats")
+            end
+            local ret = self()
+            for name, value in self:Enumerate() do
+                ret[name] = value - other[name]
+            end
+        end
+
+        BasicStats = Class(StatsBase)
+
+        function BasicStats:ctor()
+            self.names = {
+                "strength",
+                "agility",
+                "intellect",
+                "constintution",
+                "endurance",
+                "willpower",
+            }
+
+            for _, stat in self:EnumerateNames() do self[stat] = 0 end
+        end
+
+        SecondaryStats = Class(StatsBase)
+        
+        function SecondaryStats:ctor()
+            self.names = {
+                "health",
+                "mana",
+
+                "healthRegen",
+                "manaRegen",
+
+                "weaponDamage",
+                "attackSpeed",
+                "physicalDamage",
+                "spellDamage",
+
+                "armor",
+                "evasion",
+                "block",
+                "ccResist",
+                "spellResist",
+
+                "movementSpeed",
+            }
+
+            for _, stat in self:EnumerateNames() do self[stat] = 0 end
+        end
     end)
 
-    function BasicStats:EnumerateNames()
-        return pairs(self.names)
-    end
-
-    function BasicStats:Enumerate()
-        local ret = {}
-        for _, name in self:EnumerateNames() do
-            ret[name] = self[name]
-        end
-        return pairs(ret);
-    end
-
-    function BasicStats:__add(other)
-        if not other or not other.IsA or not other:IsA(BasicStats) then
-            error("Invalid BasicStats operation (+): second operand is not BasicStats")
-        end
-        local ret = BasicStats()
-        for name, value in self:Enumerate() do
-            ret[name] = value + other[name]
-        end
-    end
-
-    function BasicStats:__sub(other)
-        if not other or not other.IsA or not other:IsA(BasicStats) then
-            error("Invalid BasicStats operation (-): second operand is not BasicStats")
-        end
-        local ret = BasicStats()
-        for name, value in self:Enumerate() do
-            ret[name] = value - other[name]
-        end
+    if not result then
+        Log(err)
     end
 end
 
 do
-    SecondaryStats = Class(function(self)
-        self.names = {
-            "health",
-            "mana",
+    local result, err = pcall(function()
+        Hero = Class()
 
-            "healthRegen",
-            "manaRegen",
+        local heroes = {}
 
-            "weaponDamage",
-            "attackSpeed",
-            "physicalDamage",
-            "spellDamage",
-
-            "armor",
-            "evasion",
-            "block",
-            "ccResist",
-            "spellResist",
-
-            "movementSpeed",
-        }
-
-        for _, stat in self:EnumerateNames() do self[stat] = 0 end
-    end)
-
-    function SecondaryStats:EnumerateNames()
-        return pairs(self.names)
-    end
-
-    function SecondaryStats:Enumerate()
-        local ret = {}
-        for _, name in self:EnumerateNames() do
-            ret[name] = self[name]
-        end
-        return pairs(ret);
-    end
-
-    function SecondaryStats:__add(other)
-        if not other or not other.IsA or not other:IsA(SecondaryStats) then
-            error("Invalid SecondaryStats operation (+): second operand is not SecondaryStats")
-        end
-        local ret = SecondaryStats()
-        for name, value in self:Enumerate() do
-            ret[name] = value + other[name]
-        end
-    end
-
-    function SecondaryStats:__sub(other)
-        if not other or not other.IsA or not other:IsA(SecondaryStats) then
-            error("Invalid SecondaryStats operation (-): second operand is not SecondaryStats")
-        end
-        local ret = SecondaryStats()
-        for name, value in self:Enumerate() do
-            ret[name] = value - other[name]
-        end
-    end
-end
-
-do
-    Hero = Class()
-
-    local heroes = {}
-
-    function Hero.Get(unit)
-        local existing = heroes[unit]
-        if existing then
+        function Hero.Get(unit)
+            local existing = heroes[unit]
+            if existing then
+                return existing
+            end
+            existing = Hero(unit)
+            heroes[unit] = existing
             return existing
         end
-        existing = Hero(unit)
-        heroes[unit] = existing
-        return existing
-    end
 
-    function Hero:ctor(unit)
-        self.unit = unit
-        self.basicStats = BasicStats()
-        self.baseSecondaryStats = SecondaryStats()
-        self.bonusSecondaryStats = SecondaryStats()
-        self.secondaryStats = SecondaryStats()
-    end
+        function Hero:ctor(unit)
+            self.unit = unit
+            self.basicStats = BasicStats()
+            self.baseSecondaryStats = SecondaryStats()
+            self.bonusSecondaryStats = SecondaryStats()
+            self.secondaryStats = SecondaryStats()
+        end
 
-    local function BonusBeforePow(base, pow, stat, bonus)
-        return (base + bonus) * pow^stat
-    end
+        local function BonusBeforePow(base, pow, stat, bonus)
+            return (base + bonus) * pow^stat
+        end
 
-    local function BonusMul(base, pow, stat, bonus)
-        return base * pow^stat * (1 + bonus)
-    end
+        local function BonusMul(base, pow, stat, bonus)
+            return base * pow^stat * (1 + bonus)
+        end
 
-    local function ProbabilityBased(base, pow, stat, bonus)
-        return base + bonus + (1 - base - bonus) * (1 - pow^stat)
-    end
+        local function ProbabilityBased(base, pow, stat, bonus)
+            return base + bonus + (1 - base - bonus) * (1 - pow^stat)
+        end
 
-    function Hero:UpdateSecondaryStats()
-        self.secondaryStats.physicalDamage = BonusMul(self.baseSecondaryStats.physicalDamage, 1.05, self.basicStats.strength, self.bonusSecondaryStats.physicalDamage)
-        self.secondaryStats.weaponDamage = (self.baseSecondaryStats.weaponDamage + self.bonusSecondaryStats.weaponDamage) * self.secondaryStats.physicalDamage
+        function Hero:UpdateSecondaryStats()
+            self.secondaryStats.physicalDamage = BonusMul(self.baseSecondaryStats.physicalDamage, 1.05, self.basicStats.strength, self.bonusSecondaryStats.physicalDamage)
+            self.secondaryStats.weaponDamage = (self.baseSecondaryStats.weaponDamage + self.bonusSecondaryStats.weaponDamage) * self.secondaryStats.physicalDamage
 
-        self.secondaryStats.evasion = ProbabilityBased(self.baseSecondaryStats.evasion, 0.95, self.basicStats.agility, self.bonusSecondaryStats.evasion)
-        self.secondaryStats.attackSpeed = BonusMul(self.baseSecondaryStats.attackSpeed, 1.05, self.basicStats.agility, self.bonusSecondaryStats.attackSpeed)
+            self.secondaryStats.evasion = ProbabilityBased(self.baseSecondaryStats.evasion, 0.95, self.basicStats.agility, self.bonusSecondaryStats.evasion)
+            self.secondaryStats.attackSpeed = BonusMul(self.baseSecondaryStats.attackSpeed, 1.05, self.basicStats.agility, self.bonusSecondaryStats.attackSpeed)
 
-        self.secondaryStats.spellDamage = BonusMul(self.baseSecondaryStats.spellDamage, 1.05, self.basicStats.intellect, self.bonusSecondaryStats.spellDamage)
+            self.secondaryStats.spellDamage = BonusMul(self.baseSecondaryStats.spellDamage, 1.05, self.basicStats.intellect, self.bonusSecondaryStats.spellDamage)
 
-        self.secondaryStats.health = BonusBeforePow(self.baseSecondaryStats.health, 1.05, self.basicStats.constitution, self.bonusSecondaryStats.health)
-        self.secondaryStats.healthRegen = BonusBeforePow(self.baseSecondaryStats.healthRegen, 1.05, self.basicStats.constitution, self.bonusSecondaryStats.healthRegen)
+            self.secondaryStats.health = BonusBeforePow(self.baseSecondaryStats.health, 1.05, self.basicStats.constitution, self.bonusSecondaryStats.health)
+            self.secondaryStats.healthRegen = BonusBeforePow(self.baseSecondaryStats.healthRegen, 1.05, self.basicStats.constitution, self.bonusSecondaryStats.healthRegen)
 
-        self.secondaryStats.mana = BonusBeforePow(self.baseSecondaryStats.mana, 1.05, self.basicStats.endurance, self.bonusSecondaryStats.health)
-        self.secondaryStats.manaRegen = BonusBeforePow(self.baseSecondaryStats.manaRegen, 1.05, self.basicStats.endurance, self.bonusSecondaryStats.manaRegen)
+            self.secondaryStats.mana = BonusBeforePow(self.baseSecondaryStats.mana, 1.05, self.basicStats.endurance, self.bonusSecondaryStats.health)
+            self.secondaryStats.manaRegen = BonusBeforePow(self.baseSecondaryStats.manaRegen, 1.05, self.basicStats.endurance, self.bonusSecondaryStats.manaRegen)
 
-        self.secondaryStats.ccResist = ProbabilityBased(self.baseSecondaryStats.ccResist, 0.99, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
-        self.secondaryStats.spellResist = ProbabilityBased(self.baseSecondaryStats.ccResist, 0.99, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
-    end
+            self.secondaryStats.ccResist = ProbabilityBased(self.baseSecondaryStats.ccResist, 0.99, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
+            self.secondaryStats.spellResist = ProbabilityBased(self.baseSecondaryStats.ccResist, 0.99, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
+        end
 
-    function Hero:SetBasicStats(value)
-        self.basicStats = value
-        self:UpdateSecondaryStats()
-        self:ApplyStats()
-    end
+        function Hero:SetBasicStats(value)
+            self.basicStats = value
+            self:UpdateSecondaryStats()
+            self:ApplyStats()
+        end
 
-    function Hero:ApplyStats()
-        self.unit:SetStr(self.basicStats.strength, true)
-        self.unit:SetAgi(self.basicStats.agility, true)
-        self.unit:SetInt(self.basicStats.intellect, true)
-        self.unit:SetMaxHealth(self.secondaryStats.health)
-        self.unit:SetMaxMana(self.secondaryStats.mana)
-        self.unit:SetBaseDamage(self.secondaryStats.weaponDamage)
-        self.unit:SetAttackCooldown(1 / self.secondaryStats.attackSpeed)
+        function Hero:ApplyStats()
+            self.unit:SetStr(self.basicStats.strength, true)
+            self.unit:SetAgi(self.basicStats.agility, true)
+            self.unit:SetInt(self.basicStats.intellect, true)
+            self.unit:SetMaxHealth(self.secondaryStats.health)
+            self.unit:SetMaxMana(self.secondaryStats.mana)
+            self.unit:SetBaseDamage(self.secondaryStats.weaponDamage)
+            self.unit:SetAttackCooldown(1 / self.secondaryStats.attackSpeed)
+        end
+    end)
+
+    if not result then
+        Log(err)
     end
 end
 
