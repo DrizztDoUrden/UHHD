@@ -1,5 +1,5 @@
 Module("Tests.Main", function()
-    local DuskKnight = Require("DuskKnight")
+    local DuskKnight = Require("Heroes.DuskKnight")
 
     local testHeroPreset = DuskKnight()
     local testHero = testHeroPreset:Spawn(Player(0), 0, 0, 0)

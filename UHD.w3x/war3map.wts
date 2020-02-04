@@ -1,0 +1,48 @@
+﻿STRING 1
+{
+Map
+}
+
+STRING 2
+{
+Any
+}
+
+STRING 3
+{
+Nondescript
+}
+
+STRING 4
+{
+Unknown
+}
+
+STRING 5
+{
+Player 1
+}
+
+STRING 6
+{
+Force 1
+}
+
+STRING 7
+// Units: H_DK (Dusk Knight), Name (Name)
+{
+Dusk Knight
+}
+
+STRING 8
+// Abilities: Z_DK (Drain Light), Name (Name)
+{
+Drain Light
+}
+
+STRING 9
+// Abilities: Z_DK (Drain Light), Hotkey (Hotkey - Normal)
+{
+Q
+}
+

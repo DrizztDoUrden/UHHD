@@ -13,35 +13,47 @@ do
         while #modules > 0 do
             local anyFound = false
             for moduleId, module in pairs(modules) do
-                if not module.hasErrors and #module.requirements == #module.resolvedRequirements then
-                    local ret = table.pack(coroutine.resume(module.definition, table.unpack(module.resolvedRequirements)))
-                    local correct = table.remove(ret, 1)
+                if not module.hasErrors and #module.requirements == module.resolvedRequirements.n then
+                    local ret
+                    local coocked = false
 
-                    if not correct then
-                        module.hasErrors = true
-                        Log(">   has errors:", table.unpack(ret))
-                    end
+                    repeat
+                        ret = table.pack(coroutine.resume(module.definition, module.resolvedRequirements))
+                        local correct = table.remove(ret, 1)
 
-                    module.resolvedRequirements = {}
-                    if #ret > 0 and ret[1] == resume then
+                        if not correct then
+                            module.hasErrors = true
+                            Log(module.id .. " has errors:", table.unpack(ret))
+                        end
+
+                        module.resolvedRequirements = { n = 0, }
+                        if #ret == 0 or ret[1] ~= resume then
+                            coocked = true
+                            break
+                        end
+
+                        table.remove(ret, 1)
                         module.requirements = ret
                         for reqId, id in pairs(module.requirements) do
                             local ready = readyModules[id]
                             if ready then
                                 module.resolvedRequirements[reqId] = ready
-                                module.resolvedRequirements.n = (module.resolvedRequirements.n or 0) + 1
+                                module.resolvedRequirements.n = module.resolvedRequirements.n + 1
                             end
                         end
-                    else
+                    until module.resolvedRequirements.n ~= #module.requirements
+                    
+                    if coocked then
+                        Log("Successfully loaded " .. module.id)
                         if #ret == 1 then ret = ret[1] end
                         anyFound = true
                         readyModules[module.id] = ret
                         table.remove(modules, moduleId)
                         for _, other in pairs(modules) do
-                            for reqId, id in pairs(other.requirements) do
+                            for reqId, id in ipairs(other.requirements) do
                                 if id == module.id and not other.resolvedRequirements[reqId] then
                                     other.resolvedRequirements[reqId] = ret
-                                    other.resolvedRequirements.n = (other.resolvedRequirements.n or 0) + 1
+                                    other.resolvedRequirements.n = other.resolvedRequirements.n + 1
                                     break
                                 end
                             end
@@ -70,11 +82,22 @@ do
     end)
 
     function Module(id, definition)
+        if type(id) ~= "string" then
+            Log("Module id must be string")
+            return
+        end
+        if type(definition) == "table" then
+            local t = definition
+            definition = function() return t end
+        elseif type(definition) ~= "function" then
+            Log("Module definition must be function or table")
+            return
+        end
         table.insert(modules, {
             id = id,
             requirements = {},
             definition = coroutine.create(definition),
-            resolvedRequirements = {},
+            resolvedRequirements = { n = 0, },
         })
     end
 end

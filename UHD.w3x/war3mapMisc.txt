@@ -1,0 +1,13 @@
+[Misc]
+AgiAttackSpeedBonus=0.0
+AgiDefenseBase=0.0
+AgiDefenseBonus=0.0
+HeroExpRange=10000.0
+HeroFactorXP=100
+IntManaBonus=0.0
+IntRegenBonus=0.0
+MaxHeroLevel=50
+StrAttackBonus=0.0
+StrHitPointBonus=0.0
+StrRegenBonus=0.0
+

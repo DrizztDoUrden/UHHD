@@ -1,4 +1,4 @@
-if TestBuild then
+if false and TestBuild then
     Module("Tests.Initialization", function()
         local globalInit = "false";
         local customTriggerInit = "false";
@@ -18,13 +18,11 @@ if TestBuild then
             blizz = "true"
         end)
         GameStart:Add(function()
-            for pid = 0, 23 do
-                DisplayTextToPlayer(Player(pid), 0, 0, "GameStart: true")
-                DisplayTextToPlayer(Player(pid), 0, 0, "InitGlobals: " .. globalInit)
-                DisplayTextToPlayer(Player(pid), 0, 0, "InitCustomTriggers: " .. customTriggerInit)
-                DisplayTextToPlayer(Player(pid), 0, 0, "RunInitializationTriggers: " .. initializtion)
-                DisplayTextToPlayer(Player(pid), 0, 0, "InitBlizzard: " .. blizz)
-            end
+            print("GameStart: true")
+            print("InitGlobals: " .. globalInit)
+            print("InitCustomTriggers: " .. customTriggerInit)
+            print("RunInitializationTriggers: " .. initializtion)
+            print("InitBlizzard: " .. blizz)
         end)
     end)
 end
