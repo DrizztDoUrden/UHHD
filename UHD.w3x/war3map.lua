@@ -4,8 +4,10 @@ end
 do
 
 TestBuild = true
+ExtensiveLog = false
 
 end
+
 do
     function Log(...)
         local text = table.concat({...}, "\n")
@@ -210,6 +212,10 @@ do
         end
     end
 
+    function Unit:SetAbilityLevel(abilityId, level)
+        return SetUnitAbilityLevel(self.handle, abilityId, level)
+    end
+
     function Unit:GetName() return GetUnitName(self.handle) end
     function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end
     function Unit:GetX() return GetUnitX(self.handle) end
@@ -354,7 +360,9 @@ do
                     until module.resolvedRequirements.n ~= #module.requirements
                     
                     if coocked then
-                        Log("Successfully loaded " .. module.id)
+                        if ExtensiveLog then
+                            Log("Successfully loaded " .. module.id)
+                        end
                         if #ret == 1 then ret = ret[1] end
                         anyFound = true
                         readyModules[module.id] = ret
@@ -615,7 +623,10 @@ Module("HeroPreset", function()
 
         for _, ability in pairs(self.abilities) do
             if ability.availableFromStart then
+                Log("1")
                 unit:AddAbility(ability.id)
+                unit:SetAbilityLevel(ability.id, 0)
+                Log("2")
             end
         end
 
@@ -704,7 +715,7 @@ Module("Heroes.DuskKnight", function()
     return DuskKnight
 end)
 
-if false and TestBuild then
+if TestBuild and ExtensiveLog then
     Module("Tests.Initialization", function()
         local globalInit = "false";
         local customTriggerInit = "false";

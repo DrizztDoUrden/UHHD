@@ -44,7 +44,9 @@ do
                     until module.resolvedRequirements.n ~= #module.requirements
                     
                     if coocked then
-                        Log("Successfully loaded " .. module.id)
+                        if ExtensiveLog then
+                            Log("Successfully loaded " .. module.id)
+                        end
                         if #ret == 1 then ret = ret[1] end
                         anyFound = true
                         readyModules[module.id] = ret

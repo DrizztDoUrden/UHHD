@@ -1,4 +1,5 @@
 TestBuild = true
+ExtensiveLog = false
 
 ---@class timer
 ---@class player
@@ -79,6 +80,11 @@ function IsUnitInRange(whichUnit, otherUnit, distance) end
 ---@param abilityId integer
 ---@return boolean
 function UnitAddAbility(whichUnit, abilityId) end
+---@param whichUnit unit
+---@param abilcode integer
+---@param level integer
+---@return integer
+function SetUnitAbilityLevel(whichUnit, abilcode, level) end
 
 ---@param whichHero unit
 ---@param value integer

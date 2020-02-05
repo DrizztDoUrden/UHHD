@@ -108,6 +108,10 @@ do
         end
     end
 
+    function Unit:SetAbilityLevel(abilityId, level)
+        return SetUnitAbilityLevel(self.handle, abilityId, level)
+    end
+
     function Unit:GetName() return GetUnitName(self.handle) end
     function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end
     function Unit:GetX() return GetUnitX(self.handle) end
