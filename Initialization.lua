@@ -29,10 +29,13 @@ do
             handlers[table] = nil
         end
 
-        local gst = CreateTimer()
-        TimerStart(gst, 0.00, false, function()
-            DestroyTimer(gst)
-            RunHandlers("gameStart")
+        local gst = Timer()
+        gst:Start(0.00, false, function()
+            gst:Destroy()
+            local result, err = pcall(function()
+                RunHandlers("gameStart")
+            end)
+            if not result then Log(err) end
         end)
 
         local oldInitBliz = InitBlizzard
@@ -41,8 +44,11 @@ do
         local oldInit = RunInitializationTriggers
 
         function InitBlizzard()
-            oldInitBliz()
-            RunHandlers("initBlizzard")
+            local result, err = pcall(function()
+                oldInitBliz()
+                RunHandlers("initBlizzard")
+            end)
+            if not result then Log(err) end
             if not oldInitGlobals then
                 InitGlobals()
             end
@@ -55,18 +61,27 @@ do
         end
 
         function InitGlobals()
-            if oldInitGlobals then oldInitGlobals() end
-            RunHandlers("initGlobals")
+            local result, err = pcall(function()
+                if oldInitGlobals then oldInitGlobals() end
+                RunHandlers("initGlobals")
+            end)
+            if not result then Log(err) end
         end
 
         function InitCustomTriggers()
-            if oldInitTrigs then oldInitTrigs() end
-            RunHandlers("initCustomTriggers")
+            local result, err = pcall(function()
+                if oldInitTrigs then oldInitTrigs() end
+                RunHandlers("initCustomTriggers")
+            end)
+            if not result then Log(err) end
         end
 
         function RunInitializationTriggers()
-            if oldInit then oldInit() end
-            RunHandlers("initialization")
+            local result, err = pcall(function()
+                if oldInit then oldInit() end
+                RunHandlers("initialization")
+            end)
+            if not result then Log(err) end
         end
     end)
 
