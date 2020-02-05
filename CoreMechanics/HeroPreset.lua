@@ -32,7 +32,6 @@ Module("HeroPreset", function()
 
     function HeroPreset:Spawn(owner, x, y, facing)
         local unit = Unit(owner, self.unitid, x, y, facing);
-        local hero = Hero.Get(unit)
 
         hero.baseSecondaryStats = self.secondaryStats
         hero:SetBasicStats(self.basicStats)

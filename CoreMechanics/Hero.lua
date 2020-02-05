@@ -1,27 +1,14 @@
 Module("Hero", function()
     local Stats = Require("Stats")
+    local UHDUnit = Require("UHDUnit")
 
-    local Hero = Class()
+    local Hero = Class(UHDUnit)
 
-    local heroes = {}
-
-    function Hero.Get(unit)
-        local existing = heroes[unit]
-        if existing then
-            return existing
-        end
-        existing = Hero(unit)
-        heroes[unit] = existing
-        return existing
-    end
-
-    function Hero:ctor(unit)
-        self.unit = unit
+    function Hero:ctor(...)
+        UHDUnit.ctor(self, ...)
         self.basicStats = Stats.Basic()
         self.baseSecondaryStats = Stats.Secondary()
         self.bonusSecondaryStats = Stats.Secondary()
-        self.secondaryStats = Stats.Secondary()
-        self.unit:SetArmor(0)
     end
 
     local function BonusBeforePow(base, pow, stat, bonus)
@@ -62,13 +49,10 @@ Module("Hero", function()
     end
 
     function Hero:ApplyStats()
-        self.unit:SetStr(self.basicStats.strength, true)
-        self.unit:SetAgi(self.basicStats.agility, true)
-        self.unit:SetInt(self.basicStats.intellect, true)
-        self.unit:SetMaxHealth(self.secondaryStats.health)
-        self.unit:SetMaxMana(self.secondaryStats.mana)
-        self.unit:SetBaseDamage(self.secondaryStats.weaponDamage)
-        self.unit:SetAttackCooldown(1 / self.secondaryStats.attackSpeed)
+        self:SetStr(self.basicStats.strength, true)
+        self:SetAgi(self.basicStats.agility, true)
+        self:SetInt(self.basicStats.intellect, true)
+        UHDUnit.ApplyStats(self)
     end
 
     return Hero

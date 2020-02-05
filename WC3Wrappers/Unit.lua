@@ -9,7 +9,6 @@ do
             return existing
         end
         existing = Unit(handle)
-        units[handle] = existing
         return existing
     end
 
@@ -21,6 +20,14 @@ do
             local player, unitid, x, y, facing = ...
             self.handle = CreateUnit(player, unitid, x, y, facing)
         end
+        self:Register()
+    end
+
+    function Unit:Register()
+        if units[self.handle] then
+            error("Attempt to reregister a unit")
+        end
+        units[self.handle] = self
     end
 
     function Unit:SetMaxHealth(value)

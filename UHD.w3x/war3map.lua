@@ -102,125 +102,65 @@ do
     end
 end
 
-do
-    Unit = Class()
+Module("Hero", function()
+    local Stats = Require("Stats")
+    local UHDUnit = Require("UHDUnit")
 
-    local units = {}
+    local Hero = Class(UHDUnit)
 
-    function Unit.Get(handle)
-        local existing = units[handle]
-        if existing then
-            return existing
-        end
-        existing = Unit(handle)
-        units[handle] = existing
-        return existing
+    function Hero:ctor(...)
+        UHDUnit.ctor(self, ...)
+        self.basicStats = Stats.Basic()
+        self.baseSecondaryStats = Stats.Secondary()
+        self.bonusSecondaryStats = Stats.Secondary()
     end
 
-    function Unit:ctor(...)
-        local params = { ... }
-        if #params == 1 then
-            self.handle = params[0]
-        else
-            local player, unitid, x, y, facing = ...
-            self.handle = CreateUnit(player, unitid, x, y, facing)
-        end
+    local function BonusBeforePow(base, pow, stat, bonus)
+        return (base + bonus) * pow^stat
     end
 
-    function Unit:SetMaxHealth(value)
-        if math.type(value) then
-            BlzSetUnitMaxHP(self.handle, math.floor(value))
-        else
-            Log("Unit max health should be a number (" .. type(value) .. ")")
-        end
+    local function BonusMul(base, pow, stat, bonus)
+        return base * pow^stat * (1 + bonus)
     end
 
-    function Unit:SetMaxMana(value)
-        if math.type(value) then
-            BlzSetUnitMaxMana(self.handle, math.floor(value))
-        else
-            Log("Unit max mana should be a number (" .. type(value) .. ")")
-        end
+    local function ProbabilityBased(base, pow, stat, bonus)
+        return base + bonus + (1 - base - bonus) * (1 - pow^stat)
     end
 
-    function Unit:SetArmor(value)
-        if math.type(value) then
-            BlzSetUnitArmor(self.handle, value)
-        else
-            Log("Unit armor should be a number (" .. type(value) .. ")")
-        end
+    function Hero:UpdateSecondaryStats()
+        self.secondaryStats.physicalDamage = BonusMul(self.baseSecondaryStats.physicalDamage, 1.05, self.basicStats.strength, self.bonusSecondaryStats.physicalDamage)
+        self.secondaryStats.weaponDamage = (self.baseSecondaryStats.weaponDamage + self.bonusSecondaryStats.weaponDamage) * self.secondaryStats.physicalDamage
+
+        self.secondaryStats.evasion = ProbabilityBased(self.baseSecondaryStats.evasion, 0.95, self.basicStats.agility, self.bonusSecondaryStats.evasion)
+        self.secondaryStats.attackSpeed = BonusMul(self.baseSecondaryStats.attackSpeed, 1.05, self.basicStats.agility, self.bonusSecondaryStats.attackSpeed)
+
+        self.secondaryStats.spellDamage = BonusMul(self.baseSecondaryStats.spellDamage, 1.05, self.basicStats.intellect, self.bonusSecondaryStats.spellDamage)
+
+        self.secondaryStats.health = BonusBeforePow(self.baseSecondaryStats.health, 1.05, self.basicStats.constitution, self.bonusSecondaryStats.health)
+        self.secondaryStats.healthRegen = BonusBeforePow(self.baseSecondaryStats.healthRegen, 1.05, self.basicStats.constitution, self.bonusSecondaryStats.healthRegen)
+
+        self.secondaryStats.mana = BonusBeforePow(self.baseSecondaryStats.mana, 1.05, self.basicStats.endurance, self.bonusSecondaryStats.health)
+        self.secondaryStats.manaRegen = BonusBeforePow(self.baseSecondaryStats.manaRegen, 1.05, self.basicStats.endurance, self.bonusSecondaryStats.manaRegen)
+
+        self.secondaryStats.ccResist = ProbabilityBased(self.baseSecondaryStats.ccResist, 0.99, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
+        self.secondaryStats.spellResist = ProbabilityBased(self.baseSecondaryStats.ccResist, 0.99, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
     end
 
-    function Unit:SetBaseDamage(value, weaponId)
-        weaponId = weaponId or 0
-        if math.type(weaponId) ~= "integer" then
-            Log("Unit weapon id should be an integer (" .. type(weaponId) .. ")")
-            return
-        end
-        if type(value) == "integer" then
-            BlzSetUnitBaseDamage(self.handle, value, weaponId)
-        elseif type(value) == "number" then
-            BlzSetUnitBaseDamage(self.handle, math.floor(value), math.tointeger(weaponId))
-        else
-            Log("Unit base damage should be a number (" .. type(value) .. ")")
-        end
+    function Hero:SetBasicStats(value)
+        self.basicStats = value
+        self:UpdateSecondaryStats()
+        self:ApplyStats()
     end
 
-    function Unit:SetAttackCooldown(value, weaponId)
-        weaponId = weaponId or 0
-        if math.type(weaponId) ~= "integer" then
-            Log("Unit weapon id should be an integer (" .. type(weaponId) .. ")")
-            return
-        end
-        if type(value) == "integer" or type(value) == "number" then
-            BlzSetUnitAttackCooldown(self.handle, value, math.tointeger(weaponId))
-        else
-            Log("Unit attack cooldown should be a number (" .. type(value) .. ")")
-        end
+    function Hero:ApplyStats()
+        self:SetStr(self.basicStats.strength, true)
+        self:SetAgi(self.basicStats.agility, true)
+        self:SetInt(self.basicStats.intellect, true)
+        UHDUnit.ApplyStats(self)
     end
 
-    function Unit:SetStr(value, permanent)
-        if math.type(value) then
-            SetHeroStr(self.handle, math.floor(value), permanent)
-        else
-            Log("Unit strength should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:SetAgi(value, permanent)
-        if math.type(value) then
-            SetHeroAgi(self.handle, math.floor(value), permanent)
-        else
-            Log("Unit agility should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:SetInt(value, permanent)
-        if math.type(value) then
-            SetHeroInt(self.handle, math.floor(value), permanent)
-        else
-            Log("Unit intellect should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:AddAbility(id)
-        if math.type(id) then
-            return UnitAddAbility(self.handle, math.tointeger(id))
-        else
-            Log("Abilityid should be an integer (" .. type(id) .. ")")
-            return false
-        end
-    end
-
-    function Unit:SetAbilityLevel(abilityId, level)
-        return SetUnitAbilityLevel(self.handle, abilityId, level)
-    end
-
-    function Unit:GetName() return GetUnitName(self.handle) end
-    function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end
-    function Unit:GetX() return GetUnitX(self.handle) end
-    function Unit:GetY() return GetUnitY(self.handle) end
-end
+    return Hero
+end)
 
 do
     local result, err = pcall(function()
@@ -410,6 +350,27 @@ do
     end
 end
 
+Module("UHDUnit", function()
+    local Stats = Require("Stats")
+
+    local UHDUnit = Class(Unit)
+
+    function UHDUnit:ctor(...)
+        Unit.ctor(self, ...)
+        self.secondaryStats = Stats.Secondary()
+    end
+
+    function UHDUnit:ApplyStats()
+        self:SetMaxHealth(self.secondaryStats.health)
+        self:SetMaxMana(self.secondaryStats.mana)
+        self:SetBaseDamage(self.secondaryStats.weaponDamage)
+        self:SetAttackCooldown(1 / self.secondaryStats.attackSpeed)
+        self:SetArmor(0)
+    end
+
+    return UHDUnit
+end)
+
 Module("Stats", function()
     local StatsBase = Class()
 
@@ -494,28 +455,15 @@ end)
 
 Module("Hero", function()
     local Stats = Require("Stats")
+    local UHDUnit = Require("UHDUnit")
 
-    local Hero = Class()
+    local Hero = Class(UHDUnit)
 
-    local heroes = {}
-
-    function Hero.Get(unit)
-        local existing = heroes[unit]
-        if existing then
-            return existing
-        end
-        existing = Hero(unit)
-        heroes[unit] = existing
-        return existing
-    end
-
-    function Hero:ctor(unit)
-        self.unit = unit
+    function Hero:ctor(...)
+        UHDUnit.ctor(self, ...)
         self.basicStats = Stats.Basic()
         self.baseSecondaryStats = Stats.Secondary()
         self.bonusSecondaryStats = Stats.Secondary()
-        self.secondaryStats = Stats.Secondary()
-        self.unit:SetArmor(0)
     end
 
     local function BonusBeforePow(base, pow, stat, bonus)
@@ -556,13 +504,10 @@ Module("Hero", function()
     end
 
     function Hero:ApplyStats()
-        self.unit:SetStr(self.basicStats.strength, true)
-        self.unit:SetAgi(self.basicStats.agility, true)
-        self.unit:SetInt(self.basicStats.intellect, true)
-        self.unit:SetMaxHealth(self.secondaryStats.health)
-        self.unit:SetMaxMana(self.secondaryStats.mana)
-        self.unit:SetBaseDamage(self.secondaryStats.weaponDamage)
-        self.unit:SetAttackCooldown(1 / self.secondaryStats.attackSpeed)
+        self:SetStr(self.basicStats.strength, true)
+        self:SetAgi(self.basicStats.agility, true)
+        self:SetInt(self.basicStats.intellect, true)
+        UHDUnit.ApplyStats(self)
     end
 
     return Hero
@@ -601,8 +546,7 @@ Module("HeroPreset", function()
     end
 
     function HeroPreset:Spawn(owner, x, y, facing)
-        local unit = Unit(owner, self.unitid, x, y, facing);
-        local hero = Hero.Get(unit)
+        local hero = Hero(owner, self.unitid, x, y, facing);
 
         hero.baseSecondaryStats = self.secondaryStats
         hero:SetBasicStats(self.basicStats)
@@ -613,10 +557,8 @@ Module("HeroPreset", function()
 
         for _, ability in pairs(self.abilities) do
             if ability.availableFromStart then
-                Log("1")
-                unit:AddAbility(ability.id)
-                unit:SetAbilityLevel(ability.id, 0)
-                Log("2")
+                hero:AddAbility(ability.id)
+                hero:SetAbilityLevel(ability.id, 1)
             end
         end
 
