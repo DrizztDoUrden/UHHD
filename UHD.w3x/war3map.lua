@@ -249,17 +249,19 @@ do
         GameStart = FunctionRegistar(handlers.gameStart)
 
         local function RunHandlers(table)
-            for handler in pairs(handlers[table]) do handler() end
+            for handler in pairs(handlers[table]) do
+                local result, err = pcall(function()
+                    handler()
+                end)
+                if not result then Log(err) end
+            end
             handlers[table] = nil
         end
 
         local gst = Timer()
         gst:Start(0.00, false, function()
             gst:Destroy()
-            local result, err = pcall(function()
-                RunHandlers("gameStart")
-            end)
-            if not result then Log(err) end
+            RunHandlers("gameStart")
         end)
 
         local oldInitBliz = InitBlizzard
@@ -268,11 +270,8 @@ do
         local oldInit = RunInitializationTriggers
 
         function InitBlizzard()
-            local result, err = pcall(function()
-                oldInitBliz()
-                RunHandlers("initBlizzard")
-            end)
-            if not result then Log(err) end
+            oldInitBliz()
+            RunHandlers("initBlizzard")
             if not oldInitGlobals then
                 InitGlobals()
             end
@@ -285,27 +284,18 @@ do
         end
 
         function InitGlobals()
-            local result, err = pcall(function()
-                if oldInitGlobals then oldInitGlobals() end
-                RunHandlers("initGlobals")
-            end)
-            if not result then Log(err) end
+            if oldInitGlobals then oldInitGlobals() end
+            RunHandlers("initGlobals")
         end
 
         function InitCustomTriggers()
-            local result, err = pcall(function()
-                if oldInitTrigs then oldInitTrigs() end
-                RunHandlers("initCustomTriggers")
-            end)
-            if not result then Log(err) end
+            if oldInitTrigs then oldInitTrigs() end
+            RunHandlers("initCustomTriggers")
         end
 
         function RunInitializationTriggers()
-            local result, err = pcall(function()
-                if oldInit then oldInit() end
-                RunHandlers("initialization")
-            end)
-            if not result then Log(err) end
+            if oldInit then oldInit() end
+            RunHandlers("initialization")
         end
     end)
 
