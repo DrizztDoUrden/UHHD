@@ -1,7 +1,12 @@
 Module("HeroPreset", function()
-    local HeroPreset = Class(function(self)
-        self.basicStats = BasicStats()
-        self.secondaryStats = SecondaryStats()
+    local Stats = Require("Stats")
+    local Hero = Require("Hero")
+
+    local HeroPreset = Class()
+
+    function HeroPreset:ctor()
+        self.basicStats = Stats.Basic()
+        self.secondaryStats = Stats.Secondary()
         self.unitid = FourCC('0000')
 
         self.abilities = {}
@@ -23,7 +28,7 @@ Module("HeroPreset", function()
         self.secondaryStats.spellResist = 0
 
         self.secondaryStats.movementSpeed = 1
-    end)
+    end
 
     function HeroPreset:Spawn(owner, x, y, facing)
         local unit = Unit(owner, self.unitid, x, y, facing);
