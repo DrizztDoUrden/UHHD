@@ -102,65 +102,132 @@ do
     end
 end
 
-Module("Hero", function()
-    local Stats = Require("Stats")
-    local UHDUnit = Require("UHDUnit")
+do
+    Unit = Class()
 
-    local Hero = Class(UHDUnit)
+    local units = {}
 
-    function Hero:ctor(...)
-        UHDUnit.ctor(self, ...)
-        self.basicStats = Stats.Basic()
-        self.baseSecondaryStats = Stats.Secondary()
-        self.bonusSecondaryStats = Stats.Secondary()
+    function Unit.Get(handle)
+        local existing = units[handle]
+        if existing then
+            return existing
+        end
+        existing = Unit(handle)
+        return existing
     end
 
-    local function BonusBeforePow(base, pow, stat, bonus)
-        return (base + bonus) * pow^stat
+    function Unit:ctor(...)
+        local params = { ... }
+        if #params == 1 then
+            self.handle = params[0]
+        else
+            local player, unitid, x, y, facing = ...
+            self.handle = CreateUnit(player, unitid, x, y, facing)
+        end
+        self:Register()
     end
 
-    local function BonusMul(base, pow, stat, bonus)
-        return base * pow^stat * (1 + bonus)
+    function Unit:Register()
+        if units[self.handle] then
+            error("Attempt to reregister a unit")
+        end
+        units[self.handle] = self
     end
 
-    local function ProbabilityBased(base, pow, stat, bonus)
-        return base + bonus + (1 - base - bonus) * (1 - pow^stat)
+    function Unit:SetMaxHealth(value)
+        if math.type(value) then
+            BlzSetUnitMaxHP(self.handle, math.floor(value))
+        else
+            Log("Unit max health should be a number (" .. type(value) .. ")")
+        end
     end
 
-    function Hero:UpdateSecondaryStats()
-        self.secondaryStats.physicalDamage = BonusMul(self.baseSecondaryStats.physicalDamage, 1.05, self.basicStats.strength, self.bonusSecondaryStats.physicalDamage)
-        self.secondaryStats.weaponDamage = (self.baseSecondaryStats.weaponDamage + self.bonusSecondaryStats.weaponDamage) * self.secondaryStats.physicalDamage
-
-        self.secondaryStats.evasion = ProbabilityBased(self.baseSecondaryStats.evasion, 0.95, self.basicStats.agility, self.bonusSecondaryStats.evasion)
-        self.secondaryStats.attackSpeed = BonusMul(self.baseSecondaryStats.attackSpeed, 1.05, self.basicStats.agility, self.bonusSecondaryStats.attackSpeed)
-
-        self.secondaryStats.spellDamage = BonusMul(self.baseSecondaryStats.spellDamage, 1.05, self.basicStats.intellect, self.bonusSecondaryStats.spellDamage)
-
-        self.secondaryStats.health = BonusBeforePow(self.baseSecondaryStats.health, 1.05, self.basicStats.constitution, self.bonusSecondaryStats.health)
-        self.secondaryStats.healthRegen = BonusBeforePow(self.baseSecondaryStats.healthRegen, 1.05, self.basicStats.constitution, self.bonusSecondaryStats.healthRegen)
-
-        self.secondaryStats.mana = BonusBeforePow(self.baseSecondaryStats.mana, 1.05, self.basicStats.endurance, self.bonusSecondaryStats.health)
-        self.secondaryStats.manaRegen = BonusBeforePow(self.baseSecondaryStats.manaRegen, 1.05, self.basicStats.endurance, self.bonusSecondaryStats.manaRegen)
-
-        self.secondaryStats.ccResist = ProbabilityBased(self.baseSecondaryStats.ccResist, 0.99, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
-        self.secondaryStats.spellResist = ProbabilityBased(self.baseSecondaryStats.ccResist, 0.99, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
+    function Unit:SetMaxMana(value)
+        if math.type(value) then
+            BlzSetUnitMaxMana(self.handle, math.floor(value))
+        else
+            Log("Unit max mana should be a number (" .. type(value) .. ")")
+        end
     end
 
-    function Hero:SetBasicStats(value)
-        self.basicStats = value
-        self:UpdateSecondaryStats()
-        self:ApplyStats()
+    function Unit:SetArmor(value)
+        if math.type(value) then
+            BlzSetUnitArmor(self.handle, value)
+        else
+            Log("Unit armor should be a number (" .. type(value) .. ")")
+        end
     end
 
-    function Hero:ApplyStats()
-        self:SetStr(self.basicStats.strength, true)
-        self:SetAgi(self.basicStats.agility, true)
-        self:SetInt(self.basicStats.intellect, true)
-        UHDUnit.ApplyStats(self)
+    function Unit:SetBaseDamage(value, weaponId)
+        weaponId = weaponId or 0
+        if math.type(weaponId) ~= "integer" then
+            Log("Unit weapon id should be an integer (" .. type(weaponId) .. ")")
+            return
+        end
+        if type(value) == "integer" then
+            BlzSetUnitBaseDamage(self.handle, value, weaponId)
+        elseif type(value) == "number" then
+            BlzSetUnitBaseDamage(self.handle, math.floor(value), math.tointeger(weaponId))
+        else
+            Log("Unit base damage should be a number (" .. type(value) .. ")")
+        end
     end
 
-    return Hero
-end)
+    function Unit:SetAttackCooldown(value, weaponId)
+        weaponId = weaponId or 0
+        if math.type(weaponId) ~= "integer" then
+            Log("Unit weapon id should be an integer (" .. type(weaponId) .. ")")
+            return
+        end
+        if type(value) == "integer" or type(value) == "number" then
+            BlzSetUnitAttackCooldown(self.handle, value, math.tointeger(weaponId))
+        else
+            Log("Unit attack cooldown should be a number (" .. type(value) .. ")")
+        end
+    end
+
+    function Unit:SetStr(value, permanent)
+        if math.type(value) then
+            SetHeroStr(self.handle, math.floor(value), permanent)
+        else
+            Log("Unit strength should be a number (" .. type(value) .. ")")
+        end
+    end
+
+    function Unit:SetAgi(value, permanent)
+        if math.type(value) then
+            SetHeroAgi(self.handle, math.floor(value), permanent)
+        else
+            Log("Unit agility should be a number (" .. type(value) .. ")")
+        end
+    end
+
+    function Unit:SetInt(value, permanent)
+        if math.type(value) then
+            SetHeroInt(self.handle, math.floor(value), permanent)
+        else
+            Log("Unit intellect should be a number (" .. type(value) .. ")")
+        end
+    end
+
+    function Unit:AddAbility(id)
+        if math.type(id) then
+            return UnitAddAbility(self.handle, math.tointeger(id))
+        else
+            Log("Abilityid should be an integer (" .. type(id) .. ")")
+            return false
+        end
+    end
+
+    function Unit:SetAbilityLevel(abilityId, level)
+        return SetUnitAbilityLevel(self.handle, abilityId, level)
+    end
+
+    function Unit:GetName() return GetUnitName(self.handle) end
+    function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end
+    function Unit:GetX() return GetUnitX(self.handle) end
+    function Unit:GetY() return GetUnitY(self.handle) end
+end
 
 do
     local result, err = pcall(function()

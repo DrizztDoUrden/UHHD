@@ -31,7 +31,7 @@ Module("HeroPreset", function()
     end
 
     function HeroPreset:Spawn(owner, x, y, facing)
-        local unit = Unit(owner, self.unitid, x, y, facing);
+        local hero = Hero(owner, self.unitid, x, y, facing);
 
         hero.baseSecondaryStats = self.secondaryStats
         hero:SetBasicStats(self.basicStats)
@@ -42,7 +42,8 @@ Module("HeroPreset", function()
 
         for _, ability in pairs(self.abilities) do
             if ability.availableFromStart then
-                unit:AddAbility(ability.id)
+                hero:AddAbility(ability.id)
+                hero:SetAbilityLevel(ability.id, 1)
             end
         end
 
