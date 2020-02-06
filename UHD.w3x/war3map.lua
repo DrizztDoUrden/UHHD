@@ -319,19 +319,19 @@ do
         local resume = {}
 
         local oldRequire = Require
-        function Require(...)
-            return table.unpack(coroutine.yield(resume, ...))
+        function Require(id)
+            return table.unpack(coroutine.yield(resume, id))
         end
 
         while #modules > 0 do
             local anyFound = false
             for moduleId, module in pairs(modules) do
-                if not module.hasErrors and #module.requirements == module.resolvedRequirements.n then
+                if not module.hasErrors and not module.requirement or module.resolvedRequirement then
                     local ret
                     local coocked = false
 
                     repeat
-                        ret = table.pack(coroutine.resume(module.definition, module.resolvedRequirements))
+                        ret = table.pack(coroutine.resume(module.definition, module.resolvedRequirement))
                         local correct = table.remove(ret, 1)
 
                         if not correct then
@@ -339,38 +339,30 @@ do
                             Log(module.id .. " has errors:", table.unpack(ret))
                         end
 
-                        module.resolvedRequirements = { n = 0, }
+                        module.resolvedRequirement = nil
                         if #ret == 0 or ret[1] ~= resume then
                             coocked = true
                             break
                         end
 
-                        table.remove(ret, 1)
-                        module.requirements = ret
-                        for reqId, id in pairs(module.requirements) do
-                            local ready = readyModules[id]
-                            if ready then
-                                module.resolvedRequirements[reqId] = ready
-                                module.resolvedRequirements.n = module.resolvedRequirements.n + 1
-                            end
+                        module.requirement = ret[2]
+                        local ready = readyModules[module.requirement]
+                        if ready then
+                            module.resolvedRequirement = ready
                         end
-                    until module.resolvedRequirements.n ~= #module.requirements
+                    until not module.resolvedRequirement
                     
                     if coocked then
                         if ExtensiveLog then
                             Log("Successfully loaded " .. module.id)
                         end
-                        if #ret == 1 then ret = ret[1] end
                         anyFound = true
                         readyModules[module.id] = ret
                         table.remove(modules, moduleId)
                         for _, other in pairs(modules) do
-                            for reqId, id in ipairs(other.requirements) do
-                                if id == module.id and not other.resolvedRequirements[reqId] then
-                                    other.resolvedRequirements[reqId] = ret
-                                    other.resolvedRequirements.n = other.resolvedRequirements.n + 1
-                                    break
-                                end
+                            if other.requirement == module.id and not other.resolvedRequirement then
+                                other.resolvedRequirement = ret
+                                break
                             end
                         end
                         break
@@ -380,10 +372,7 @@ do
             if not anyFound then
                 Log("Some modules not resolved:")
                 for _, module in pairs(modules) do
-                    Log(module.id)
-                    for _, id in pairs(module.requirements) do
-                        Log(">   has unresolved " .. id)
-                    end
+                    Log(module.id .. " has unresolved requirement: " .. module.requirement)
                 end
                 break
             end
@@ -410,9 +399,7 @@ do
         end
         table.insert(modules, {
             id = id,
-            requirements = {},
             definition = coroutine.create(definition),
-            resolvedRequirements = { n = 0, },
         })
     end
 end
