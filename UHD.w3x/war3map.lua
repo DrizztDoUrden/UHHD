@@ -784,6 +784,8 @@ Module("Heroes.DuskKnight", function()
 
     local DrainLight = Class()
     local HeavySlash = Class()
+    local ShadowLeap = Class()
+    local DarkMend = Class()
 
     function DuskKnight:ctor()
         HeroPreset.ctor(self)
@@ -809,6 +811,23 @@ Module("Heroes.DuskKnight", function()
                 radius = function(_) return 75 end,
                 distance = function(_) return 75 end,
                 baseDamage = function(_) return 30 end,
+            },
+            shadowLeap = {
+                id = FourCC('DK_2'),
+                handler = ShadowLeap,
+                availableFromStart = true,
+                -- radius = function(_) return 75 end,
+                -- distance = function(_) return 75 end,
+                -- baseDamage = function(_) return 30 end,
+            },
+            darkMend = {
+                id = FourCC('DK_3'),
+                handler = DarkMend,
+                availableFromStart = true,
+                baseHeal = function(_) return 20 end,
+                duration = function(_) return 4 end,
+                percentHeal = function(_) return 0.1 end,
+                period = function(_) return 0.1 end,
             },
         }
 
@@ -924,8 +943,33 @@ Module("Heroes.DuskKnight", function()
 
         Unit.EnumInRange(x, y, self.radius, function(unit)
             if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
-                Log(self.caster:GetName() .. " deals " .. self.baseDamage .. " to " .. unit:GetName())
                 self.caster:DamageTarget(unit, self.baseDamage, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_METAL_MEDIUM_SLICE)
+            end
+        end)
+    end
+
+    function ShadowLeap:ctor(definition, caster)
+    end
+
+    function DarkMend:ctor(definition, caster)
+        self.caster = caster
+        self.baseHeal = definition:baseHeal(caster)
+        self.duration = definition:duration(caster)
+        self.percentHeal = definition:percentHeal(caster)
+        self.period = definition:period(caster)
+        self.spellDamage = caster.secondaryStats.spellDamage
+        self:Cast()
+    end
+
+    function DarkMend:Cast()
+        local timer = Timer()
+        local timeLeft = self.duration
+        timer:Start(self.period, true, function()
+            timeLeft = timeLeft - self.period
+            local part = self.period / self.duration
+            self.caster:SetHP(self.caster:GetHP() + (self.caster:GetHP() * self.percentHeal + self.baseHeal) * self.spellDamage * part)
+            if timeLeft <= 0 then
+                timer:Destroy()
             end
         end)
     end

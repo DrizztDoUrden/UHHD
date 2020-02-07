@@ -59,63 +59,45 @@ Drain Light
 }
 
 STRING 15
-// Abilities: DK_2 (Shadow leap), Hotkey (Hotkey - Normal)
+// Abilities: DK_2 (Shadow Leap), Hotkey (Hotkey - Normal)
 {
 Q
 }
 
 STRING 16
-// Abilities: DK_1 (Heavy slash), EditorSuffix (Editor Suffix)
+// Abilities: DK_1 (Heavy Slash), EditorSuffix (Editor Suffix)
 {
 (Dusk Knight)
 }
 
 STRING 18
-// Abilities: DK_3 (Dark mend), Hotkey (Hotkey - Normal)
+// Abilities: DK_3 (Dark Mend), Hotkey (Hotkey - Normal)
 {
 Q
 }
 
 STRING 19
-// Abilities: DK_2 (Shadow leap), EditorSuffix (Editor Suffix)
+// Abilities: DK_2 (Shadow Leap), EditorSuffix (Editor Suffix)
 {
 (Dusk Knight)
 }
 
 STRING 22
-// Abilities: DK_3 (Dark mend), EditorSuffix (Editor Suffix)
+// Abilities: DK_3 (Dark Mend), EditorSuffix (Editor Suffix)
 {
 (Dusk Knight)
 }
 
 STRING 24
-// Abilities: DK_1 (Heavy slash), Name (Name)
+// Abilities: DK_1 (Heavy Slash), Tip (Tooltip - Normal)
 {
 Heavy slash
-}
-
-STRING 25
-// Abilities: DK_2 (Shadow leap), Name (Name)
-{
-Shadow leap
-}
-
-STRING 26
-// Abilities: DK_3 (Dark mend), Name (Name)
-{
-Dark mend
 }
 
 STRING 27
-// Abilities: DK_1 (Heavy slash), Hotkey (Hotkey - Normal)
+// Abilities: DK_1 (Heavy Slash), Hotkey (Hotkey - Normal)
 {
 W
-}
-
-STRING 28
-// Abilities: DK_1 (Heavy slash), Tip (Tooltip - Normal)
-{
-Heavy slash
 }
 
 STRING 29
@@ -125,8 +107,38 @@ Steals |cffff606010|r |cff808080armor|r from enemies in 300 range in 2 seconds f
 }
 
 STRING 30
-// Abilities: DK_1 (Heavy slash), Ubertip (Tooltip - Normal - Extended)
+// Abilities: DK_1 (Heavy Slash), Ubertip (Tooltip - Normal - Extended)
 {
 Deals |cffff606030|r damage to enemies in front of you slowing them by |cffd4a63030%|r.|nCooldown: 7 seconds.
+}
+
+STRING 31
+// Abilities: DK_1 (Heavy Slash), Name (Name)
+{
+Heavy Slash
+}
+
+STRING 32
+// Abilities: DK_2 (Shadow Leap), Name (Name)
+{
+Shadow Leap
+}
+
+STRING 33
+// Abilities: DK_3 (Dark Mend), Name (Name)
+{
+Dark Mend
+}
+
+STRING 34
+// Abilities: DK_3 (Dark Mend), Tip (Tooltip - Normal)
+{
+Dark Mend
+}
+
+STRING 35
+// Abilities: DK_3 (Dark Mend), Ubertip (Tooltip - Normal - Extended)
+{
+Heals the caster by |cff3cff3c20 + 10%|r of current HP over 4 seconds.|nCooldown: 15 seconds
 }
 

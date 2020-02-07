@@ -48,6 +48,7 @@ Module("Heroes.DuskKnight", function()
                 baseHeal = function(_) return 20 end,
                 duration = function(_) return 4 end,
                 percentHeal = function(_) return 0.1 end,
+                period = function(_) return 0.1 end,
             },
         }
 
@@ -173,6 +174,25 @@ Module("Heroes.DuskKnight", function()
 
     function DarkMend:ctor(definition, caster)
         self.caster = caster
+        self.baseHeal = definition:baseHeal(caster)
+        self.duration = definition:duration(caster)
+        self.percentHeal = definition:percentHeal(caster)
+        self.period = definition:period(caster)
+        self.spellDamage = caster.secondaryStats.spellDamage
+        self:Cast()
+    end
+
+    function DarkMend:Cast()
+        local timer = Timer()
+        local timeLeft = self.duration
+        timer:Start(self.period, true, function()
+            timeLeft = timeLeft - self.period
+            local part = self.period / self.duration
+            self.caster:SetHP(self.caster:GetHP() + (self.caster:GetHP() * self.percentHeal + self.baseHeal) * self.spellDamage * part)
+            if timeLeft <= 0 then
+                timer:Destroy()
+            end
+        end)
     end
 
     return DuskKnight
