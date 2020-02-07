@@ -67,6 +67,48 @@ do
 end
 
 do
+    AbilityInstance = Class()
+
+    function AbilityInstance:ctor(handle)
+        self.handle = handle
+    end
+
+    function AbilityInstance:SetHpRegen(level, value)
+        return BlzSetAbilityRealLevelField(self.handle, ABILITY_ILF_HIT_POINTS_REGENERATED_PER_SECOND, level, value)
+    end
+
+    function AbilityInstance:SetMpRegen(level, value)
+        return BlzSetAbilityRealLevelField(self.handle, ABILITY_ILF_HIT_POINTS_REGENERATED_PER_SECOND, level, value)
+    end
+end
+
+do
+    WCPlayer = Class()
+    local players = {}
+
+    function WCPlayer.Get(player)
+        if math.type(player) == "integer" then
+            player = Player(player)
+        end
+        if not players[player] then
+            players[player] = WCPlayer(player)
+        end
+        return players[player]
+    end
+
+    function WCPlayer:ctor(player)
+        self.handle = player
+    end
+
+    function WCPlayer:IsEnemy(other)
+        if not other:IsA(WCPlayer) then
+            error("Expected player as an argument")
+        end
+        return IsPlayerEnemy(self.handle, other.handle)
+    end
+end
+
+do
     Timer = Class()
     
     function Timer:ctor(handle)
@@ -78,7 +120,12 @@ do
     end
 
     function Timer:Start(period, periodic, onEnd)
-        TimerStart(self.handle, period, periodic, onEnd)
+        TimerStart(self.handle, period, periodic, function()
+            local result, err = pcall(onEnd)
+            if not result then
+                Log("Error running timer handler: " .. err)
+            end
+        end)
     end
 end
 
@@ -94,11 +141,30 @@ do
     end
 
     function Trigger:RegisterPlayerUnitEvent(player, event, filter)
-        return TriggerRegisterPlayerUnitEvent(self.handle, player, event, filter)
+        if filter then
+            filter = function()
+                local result, errOrRet = pcall(filter, Unit.Get(GetFilterUnit()))
+                if not result then
+                    Log("Error filtering player units for and event: " .. errOrRet)
+                    return false
+                end
+                return errOrRet
+            end
+        end
+        return TriggerRegisterPlayerUnitEvent(self.handle, player.handle, event, Filter(filter))
+    end
+
+    function Trigger:RegisterUnitEvent(unit, event)
+        return TriggerRegisterUnitEvent(self.handle, unit.handle, event)
     end
 
     function Trigger:AddAction(action)
-        return TriggerAddAction(self.handle, action)
+        return TriggerAddAction(self.handle, function()
+            local result, err = pcall(action)
+            if not result then
+                Log("Error running trigger action: " .. err)
+            end
+        end)
     end
 end
 
@@ -116,13 +182,24 @@ do
         return existing
     end
 
+    function Unit.EnumInRange(x, y, radius, handler)
+        local group = CreateGroup()
+        GroupEnumUnitsInRange(group, x, y, radius, Filter(function()
+            local result, err = pcall(handler, Unit.Get(GetFilterUnit()))
+            if not result then
+                Log("Error enumerating units in range: " .. err)
+            end
+        end))
+        DestroyGroup(group)
+    end
+
     function Unit:ctor(...)
         local params = { ... }
         if #params == 1 then
             self.handle = params[0]
         else
             local player, unitid, x, y, facing = ...
-            self.handle = CreateUnit(player, unitid, x, y, facing)
+            self.handle = CreateUnit(player.handle, unitid, x, y, facing)
         end
         self:Register()
     end
@@ -223,10 +300,32 @@ do
         return SetUnitAbilityLevel(self.handle, abilityId, level)
     end
 
+    function Unit:DamageTarget(target, damage, isAttack, isRanged, attackType, damageType, weaponType)
+        return UnitDamageTarget(self.handle, target.handle, damage, isAttack, isRanged, attackType, damageType, weaponType)
+    end
+
+    function Unit:SetHpRegen(value)
+        return BlzSetUnitRealField(self.handle, UNIT_RF_HIT_POINTS_REGENERATION_RATE, value)
+    end
+
+    function Unit:SetManaRegen(value)
+        return BlzSetUnitRealField(self.handle, UNIT_RF_MANA_REGENERATION, value)
+    end
+
     function Unit:GetName() return GetUnitName(self.handle) end
     function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end
     function Unit:GetX() return GetUnitX(self.handle) end
     function Unit:GetY() return GetUnitY(self.handle) end
+    function Unit:GetHP() return GetWidgetLife(self.handle) end
+    function Unit:SetHP(value) return SetWidgetLife(self.handle, value) end
+    function Unit:GetMana() return GetUnitState(self.handle, UNIT_STATE_MANA) end
+    function Unit:SetMana(value) return SetUnitState(self.handle, UNIT_STATE_MANA, value) end
+    function Unit:GetMaxHP() return BlzGetUnitMaxHP(self.handle) end
+    function Unit:GetMaxMana() return BlzGetUnitMaxMana(self.handle) end
+    function Unit:GetOwner() return WCPlayer.Get(GetOwningPlayer(self.handle)) end
+    function Unit:GetArmor() return BlzGetUnitArmor(self.handle) end
+    function Unit:GetFacing() return GetUnitFacing(self.handle) end
+    function Unit:GetAbility(id) return BlzGetUnitAbility(self.handle, id) end
 end
 
 do
@@ -409,17 +508,59 @@ Module("UHDUnit", function()
 
     local UHDUnit = Class(Unit)
 
+    local hpRegenAbility = FourCC('_HPR')
+    local mpRegenAbility = FourCC('_MPR')
+
     function UHDUnit:ctor(...)
         Unit.ctor(self, ...)
         self.secondaryStats = Stats.Secondary()
+
+        self.secondaryStats.health = 100
+        self.secondaryStats.mana = 100
+        self.secondaryStats.healthRegen = .5
+        self.secondaryStats.manaRegen = 1
+
+        self.secondaryStats.weaponDamage = 10
+        self.secondaryStats.attackSpeed = .5
+        self.secondaryStats.physicalDamage = 1
+        self.secondaryStats.spellDamage = 1
+
+        self.secondaryStats.armor = 0
+        self.secondaryStats.evasion = 0.05
+        self.secondaryStats.block = 0
+        self.secondaryStats.ccResist = 0
+        self.secondaryStats.spellResist = 0
+
+        self.secondaryStats.movementSpeed = 1
+
+        self:AddAbility(hpRegenAbility)
+        self:AddAbility(mpRegenAbility)
     end
 
     function UHDUnit:ApplyStats()
+        local oldMaxHp = self:GetMaxHP()
+        local oldMaxMana = self:GetMaxMana()
+        local oldHp = self:GetHP()
+        local oldMana = self:GetMana()
+
         self:SetMaxHealth(self.secondaryStats.health)
         self:SetMaxMana(self.secondaryStats.mana)
         self:SetBaseDamage(self.secondaryStats.weaponDamage)
         self:SetAttackCooldown(1 / self.secondaryStats.attackSpeed)
-        self:SetArmor(0)
+        self:SetArmor(self.secondaryStats.armor)
+        self:SetHpRegen(self.secondaryStats.healthRegen)
+        self:SetManaRegen(self.secondaryStats.manaRegen)
+
+        if oldMaxHp > 0 then
+            self:SetHP(oldHp * self.secondaryStats.health / oldMaxHp)
+        else
+            self:SetHP(self.secondaryStats.health)
+        end
+        if oldMaxMana > 0 then
+            self:SetMana(oldMana * self.secondaryStats.mana / oldMaxMana)
+        else
+            self:SetMana(self.secondaryStats.mana)
+        end
     end
 
     return UHDUnit
@@ -533,22 +674,25 @@ Module("Hero", function()
     end
 
     function Hero:UpdateSecondaryStats()
-        self.secondaryStats.physicalDamage = BonusMul(self.baseSecondaryStats.physicalDamage, 1.05, self.basicStats.strength, self.bonusSecondaryStats.physicalDamage)
+        local gtoBase = 1.02
+        local ltoBase = 0.98
+
+        self.secondaryStats.physicalDamage = BonusMul(self.baseSecondaryStats.physicalDamage, gtoBase, self.basicStats.strength, self.bonusSecondaryStats.physicalDamage)
         self.secondaryStats.weaponDamage = (self.baseSecondaryStats.weaponDamage + self.bonusSecondaryStats.weaponDamage) * self.secondaryStats.physicalDamage
 
-        self.secondaryStats.evasion = ProbabilityBased(self.baseSecondaryStats.evasion, 0.95, self.basicStats.agility, self.bonusSecondaryStats.evasion)
-        self.secondaryStats.attackSpeed = BonusMul(self.baseSecondaryStats.attackSpeed, 1.05, self.basicStats.agility, self.bonusSecondaryStats.attackSpeed)
+        self.secondaryStats.evasion = ProbabilityBased(self.baseSecondaryStats.evasion, ltoBase, self.basicStats.agility, self.bonusSecondaryStats.evasion)
+        self.secondaryStats.attackSpeed = BonusMul(self.baseSecondaryStats.attackSpeed, gtoBase, self.basicStats.agility, self.bonusSecondaryStats.attackSpeed)
 
-        self.secondaryStats.spellDamage = BonusMul(self.baseSecondaryStats.spellDamage, 1.05, self.basicStats.intellect, self.bonusSecondaryStats.spellDamage)
+        self.secondaryStats.spellDamage = BonusMul(self.baseSecondaryStats.spellDamage, gtoBase, self.basicStats.intellect, self.bonusSecondaryStats.spellDamage)
 
-        self.secondaryStats.health = BonusBeforePow(self.baseSecondaryStats.health, 1.05, self.basicStats.constitution, self.bonusSecondaryStats.health)
-        self.secondaryStats.healthRegen = BonusBeforePow(self.baseSecondaryStats.healthRegen, 1.05, self.basicStats.constitution, self.bonusSecondaryStats.healthRegen)
+        self.secondaryStats.health = BonusBeforePow(self.baseSecondaryStats.health, gtoBase, self.basicStats.constitution, self.bonusSecondaryStats.health)
+        self.secondaryStats.healthRegen = BonusBeforePow(self.baseSecondaryStats.healthRegen, gtoBase, self.basicStats.constitution, self.bonusSecondaryStats.healthRegen)
 
-        self.secondaryStats.mana = BonusBeforePow(self.baseSecondaryStats.mana, 1.05, self.basicStats.endurance, self.bonusSecondaryStats.health)
-        self.secondaryStats.manaRegen = BonusBeforePow(self.baseSecondaryStats.manaRegen, 1.05, self.basicStats.endurance, self.bonusSecondaryStats.manaRegen)
+        self.secondaryStats.mana = BonusBeforePow(self.baseSecondaryStats.mana, gtoBase, self.basicStats.endurance, self.bonusSecondaryStats.health)
+        self.secondaryStats.manaRegen = BonusBeforePow(self.baseSecondaryStats.manaRegen, gtoBase, self.basicStats.endurance, self.bonusSecondaryStats.manaRegen)
 
-        self.secondaryStats.ccResist = ProbabilityBased(self.baseSecondaryStats.ccResist, 0.99, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
-        self.secondaryStats.spellResist = ProbabilityBased(self.baseSecondaryStats.ccResist, 0.99, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
+        self.secondaryStats.ccResist = ProbabilityBased(self.baseSecondaryStats.ccResist, ltoBase, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
+        self.secondaryStats.spellResist = ProbabilityBased(self.baseSecondaryStats.ccResist, ltoBase, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
     end
 
     function Hero:SetBasicStats(value)
@@ -638,6 +782,9 @@ Module("Heroes.DuskKnight", function()
 
     local DuskKnight = Class(HeroPreset)
 
+    local DrainLight = Class()
+    local HeavySlash = Class()
+
     function DuskKnight:ctor()
         HeroPreset.ctor(self)
 
@@ -645,12 +792,24 @@ Module("Heroes.DuskKnight", function()
 
         self.abilities = {
             drainLight = {
-                id = FourCC('Z_DK'),
-                handler = function(hero) self:CastDrainLight(hero) end,
+                id = FourCC('DK_0'),
+                handler = DrainLight,
                 availableFromStart = true,
-                duration = function() return 3 end,
-                period = function() return 0.1 end,
-            }
+                radius = function(_) return 300 end,
+                duration = function(_) return 2 end,
+                period = function(_) return 0.1 end,
+                effectDuration = function(_) return 10 end,
+                armorRemoved = function(_) return 10 end,
+                stealPercentage = function(_) return 0.25 end,
+            },
+            heavySlash = {
+                id = FourCC('DK_1'),
+                handler = HeavySlash,
+                availableFromStart = true,
+                radius = function(_) return 75 end,
+                distance = function(_) return 75 end,
+                baseDamage = function(_) return 30 end,
+            },
         }
 
         self.basicStats.strength = 12
@@ -661,47 +820,120 @@ Module("Heroes.DuskKnight", function()
         self.basicStats.willpower = 11
     end
 
-    function DuskKnight:CastDrainLight(hero)
+    function DrainLight:ctor(definition, caster)
+        self.caster = caster
+        self.affected = {}
+        self.bonus = 0
+        self.bonusLimit = 30
+        self.duration = definition:effectDuration(caster)
+        self.toSteal = definition:armorRemoved(caster)
+        self.radius = definition:radius(caster)
+        self.stealTimeLeft = definition:duration(caster)
+        self.period = definition:period(caster)
+        self.toBonus = definition:stealPercentage(caster)
+
+        self:Cast()
+    end
+
+    function DrainLight:Cast()
         local timer = Timer()
-        local affected = {}
 
-        local group = CreateGroup()
-        GroupEnumUnitsInRange(group, hero.unit.GetX(), hero.unit.GetY(), hero.unit.GetY(), function()
-            local unit = Unit.Get(GetFilterUnit())
-            if unit == hero.unit then return end
-            table.insert(affected, unit)
+        Unit.EnumInRange(self.caster:GetX(), self.caster:GetY(), self.radius, function(unit)
+            if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+                table.insert(self.affected, {
+                    unit = unit,
+                    stolen = 0,
+                    toSteal = self.toSteal,
+                    toReturn = self.toSteal,
+                    toBonus = 0.25,
+                })
+            end
         end)
-        DestroyGroup(group)
 
-        local timeLeft = self.abilities.drainLight:duration()
-        local period = self.abilities.drainLight:period();
-        timer.Start(period, true, function()
-            timeLeft = timeLeft - period
-            if timeLeft <= 0 then
+        timer:Start(self.period, true, function()
+            if self.caster:GetHP() <= 0 then
                 timer:Destroy()
+                self:End()
+                return
             end
 
-            local i = 1
-            while i <= #affected do
-                if affected[i].IsInRange(hero.unit) then
-                    self:ApplyDrainLight(hero, affected[i], period)
-                    i = i + 1
-                else
-                    table.remove(affected, i)
-                end
+            self.stealTimeLeft = self.stealTimeLeft - self.period
+
+            for _, target in pairs(self.affected) do
+                self:Drain(target)
+            end
+
+            if self.stealTimeLeft <= 0 then
+                timer:Destroy()
+                self:Effect()
             end
         end)
     end
 
-    function DuskKnight:ApplyDrainLight(hero, target, period)
-        Log("Draining light from " .. hero.unit.GetName() .. " to " .. target:GetName() .. " for " .. period)
-        -- apply effect
+    function DrainLight:Effect()
+        local timer = Timer()
+        local trigger = Trigger()
+
+        trigger:RegisterUnitEvent(self.caster, EVENT_UNIT_DEATH)
+
+        trigger:AddAction(function()
+            timer:Destroy()
+            trigger:Destroy()
+            self:End()
+        end)
+
+        timer:Start(self.duration, false, function()
+            timer:Destroy()
+            trigger:Destroy()
+            self:End()
+        end)
+    end
+
+    function DrainLight:End()
+        for _, target in pairs(self.affected) do
+            target.unit:SetArmor(target.unit:GetArmor() + target.toReturn)
+        end
+        self.caster:SetArmor(self.caster:GetArmor() - self.bonus)
+    end
+
+    function DrainLight:Drain(target)
+        local toStealNow = (target.toSteal - target.stolen) * self.period / self.stealTimeLeft
+        target.unit:SetArmor(target.unit:GetArmor() + target.stolen)
+        target.stolen = target.stolen + toStealNow
+        target.unit:SetArmor(target.unit:GetArmor() - target.stolen)
+        if self.bonus < self.bonusLimit then
+            local toBonus = math.min(self.bonusLimit - self.bonus, toStealNow * target.toBonus)
+            self.caster:SetArmor(self.caster:GetArmor() - self.bonus)
+            self.bonus = self.bonus + toBonus
+            self.caster:SetArmor(self.caster:GetArmor() + self.bonus)
+        end
+    end
+
+    function HeavySlash:ctor(definition, caster)
+        self.caster = caster
+        self.radius = definition:radius(caster)
+        self.distance = definition:distance(caster)
+        self.baseDamage = definition:baseDamage(caster)
+        self:Cast()
+    end
+
+    function HeavySlash:Cast()
+        local facing = self.caster:GetFacing() * math.pi / 180
+        local x = self.caster:GetX() + math.cos(facing) * self.distance
+        local y = self.caster:GetY() + math.sin(facing) * self.distance
+
+        Unit.EnumInRange(x, y, self.radius, function(unit)
+            if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+                Log(self.caster:GetName() .. " deals " .. self.baseDamage .. " to " .. unit:GetName())
+                self.caster:DamageTarget(unit, self.baseDamage, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_METAL_MEDIUM_SLICE)
+            end
+        end)
     end
 
     return DuskKnight
 end)
 
-if TestBuild and ExtensiveLog then
+if ExtensiveLog and TestBuild then
     Module("Tests.Initialization", function()
         local globalInit = "false";
         local customTriggerInit = "false";
@@ -721,24 +953,53 @@ if TestBuild and ExtensiveLog then
             blizz = "true"
         end)
         GameStart:Add(function()
-            for pid = 0, 23 do
-                DisplayTextToPlayer(Player(pid), 0, 0, "GameStart: true")
-                DisplayTextToPlayer(Player(pid), 0, 0, "InitGlobals: " .. globalInit)
-                DisplayTextToPlayer(Player(pid), 0, 0, "InitCustomTriggers: " .. customTriggerInit)
-                DisplayTextToPlayer(Player(pid), 0, 0, "RunInitializationTriggers: " .. initializtion)
-                DisplayTextToPlayer(Player(pid), 0, 0, "InitBlizzard: " .. blizz)
-            end
+            Log("GameStart: true")
+            Log("InitGlobals: " .. globalInit)
+            Log("InitCustomTriggers: " .. customTriggerInit)
+            Log("RunInitializationTriggers: " .. initializtion)
+            Log("InitBlizzard: " .. blizz)
         end)
     end)
 end
 
 Module("Tests.Main", function()
     local DuskKnight = Require("Heroes.DuskKnight")
+    local UHDUnit = Require("UHDUnit")
 
     local testHeroPreset = DuskKnight()
-    local testHero = testHeroPreset:Spawn(Player(0), 0, 0, 0)
+    local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 0, 0)
+
+    local dummy = UHDUnit(WCPlayer.Get(1), FourCC('hfoo'), 500, 0, 0)
+
+    dummy.secondaryStats.health = 150
+    dummy.secondaryStats.weaponDamage = 15
+    dummy.secondaryStats.armor = 5
+
+    dummy:ApplyStats()
+
     Log("Game initialized successfully")
 end)
+
+function CreateUnitsForPlayer0()
+    local p = Player(0)
+    local u
+    local unitID
+    local t
+    local life
+    u = BlzCreateUnitWithSkin(p, FourCC("ushd"), 98.3, 49.5, 77.006, FourCC("ushd"))
+end
+
+function CreatePlayerBuildings()
+end
+
+function CreatePlayerUnits()
+    CreateUnitsForPlayer0()
+end
+
+function CreateAllUnits()
+    CreatePlayerBuildings()
+    CreatePlayerUnits()
+end
 
 function InitCustomPlayerSlots()
     SetPlayerStartLocation(Player(0), 0)
@@ -759,6 +1020,7 @@ function main()
     SetAmbientDaySound("LordaeronSummerDay")
     SetAmbientNightSound("LordaeronSummerNight")
     SetMapMusic("Music", true, 0)
+    CreateAllUnits()
     InitBlizzard()
     InitGlobals()
 end

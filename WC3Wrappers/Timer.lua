@@ -10,6 +10,11 @@ do
     end
 
     function Timer:Start(period, periodic, onEnd)
-        TimerStart(self.handle, period, periodic, onEnd)
+        TimerStart(self.handle, period, periodic, function()
+            local result, err = pcall(onEnd)
+            if not result then
+                Log("Error running timer handler: " .. err)
+            end
+        end)
     end
 end

@@ -35,20 +35,98 @@ Dusk Knight
 }
 
 STRING 8
-// Abilities: Z_DK (Drain Light), Name (Name)
+// Abilities: DK_0 (Drain Light), Name (Name)
 {
 Drain Light
 }
 
 STRING 9
-// Abilities: Z_DK (Drain Light), Hotkey (Hotkey - Normal)
+// Abilities: DK_0 (Drain Light), Hotkey (Hotkey - Normal)
 {
 Q
 }
 
 STRING 10
-// Abilities: Z_DK (Drain Light), EditorSuffix (Editor Suffix)
+// Abilities: DK_0 (Drain Light), EditorSuffix (Editor Suffix)
 {
 (Dusk Knight)
+}
+
+STRING 14
+// Abilities: DK_0 (Drain Light), Tip (Tooltip - Normal)
+{
+Drain Light
+}
+
+STRING 15
+// Abilities: DK_2 (Shadow leap), Hotkey (Hotkey - Normal)
+{
+Q
+}
+
+STRING 16
+// Abilities: DK_1 (Heavy slash), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
+}
+
+STRING 18
+// Abilities: DK_3 (Dark mend), Hotkey (Hotkey - Normal)
+{
+Q
+}
+
+STRING 19
+// Abilities: DK_2 (Shadow leap), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
+}
+
+STRING 22
+// Abilities: DK_3 (Dark mend), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
+}
+
+STRING 24
+// Abilities: DK_1 (Heavy slash), Name (Name)
+{
+Heavy slash
+}
+
+STRING 25
+// Abilities: DK_2 (Shadow leap), Name (Name)
+{
+Shadow leap
+}
+
+STRING 26
+// Abilities: DK_3 (Dark mend), Name (Name)
+{
+Dark mend
+}
+
+STRING 27
+// Abilities: DK_1 (Heavy slash), Hotkey (Hotkey - Normal)
+{
+W
+}
+
+STRING 28
+// Abilities: DK_1 (Heavy slash), Tip (Tooltip - Normal)
+{
+Heavy slash
+}
+
+STRING 29
+// Abilities: DK_0 (Drain Light), Ubertip (Tooltip - Normal - Extended)
+{
+Steals |cffff606010|r |cff808080armor|r from enemies in 300 range in 2 seconds for 10 seconds.|nHero |cff8080ff25%|r of stolen amount (up to |cff8080ff30|r) as |cff808080armor|r for 10 seconds. Bosses get |cffff6060200%|r effect and provide |cff8080ff100%|r of it as |cff808080armor|r for hero.|nCooldown: 20 seconds.
+}
+
+STRING 30
+// Abilities: DK_1 (Heavy slash), Ubertip (Tooltip - Normal - Extended)
+{
+Deals |cffff606030|r damage to enemies in front of you slowing them by |cffd4a63030%|r.|nCooldown: 7 seconds.
 }
 

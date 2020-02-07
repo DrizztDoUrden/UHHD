@@ -1,4 +1,4 @@
-if false and TestBuild then
+if ExtensiveLog and TestBuild then
     Module("Tests.Initialization", function()
         local globalInit = "false";
         local customTriggerInit = "false";
@@ -18,11 +18,11 @@ if false and TestBuild then
             blizz = "true"
         end)
         GameStart:Add(function()
-            print("GameStart: true")
-            print("InitGlobals: " .. globalInit)
-            print("InitCustomTriggers: " .. customTriggerInit)
-            print("RunInitializationTriggers: " .. initializtion)
-            print("InitBlizzard: " .. blizz)
+            Log("GameStart: true")
+            Log("InitGlobals: " .. globalInit)
+            Log("InitCustomTriggers: " .. customTriggerInit)
+            Log("RunInitializationTriggers: " .. initializtion)
+            Log("InitBlizzard: " .. blizz)
         end)
     end)
 end
