@@ -13,7 +13,7 @@ do
         while #modules > 0 do
             local anyFound = false
             for moduleId, module in pairs(modules) do
-                if not module.hasErrors and not module.requirement or module.resolvedRequirement then
+                if not module.hasErrors and (not module.requirement or module.resolvedRequirement) then
                     local ret
                     local coocked = false
 

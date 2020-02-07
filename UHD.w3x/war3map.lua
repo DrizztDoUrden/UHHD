@@ -503,6 +503,53 @@ do
     end
 end
 
+if ExtensiveLog and TestBuild then
+    Module("Tests.Initialization", function()
+        local globalInit = "false";
+        local customTriggerInit = "false";
+        local initializtion = "false";
+        local blizz = "false";
+
+        GlobalInit:Add(function ()
+            globalInit = "true"
+        end)
+        CustomTriggerInit:Add(function ()
+            customTriggerInit = "true"
+        end)
+        Initializtion:Add(function ()
+            initializtion = "true"
+        end)
+        BlizzardInit:Add(function ()
+            blizz = "true"
+        end)
+        GameStart:Add(function()
+            Log("GameStart: true")
+            Log("InitGlobals: " .. globalInit)
+            Log("InitCustomTriggers: " .. customTriggerInit)
+            Log("RunInitializationTriggers: " .. initializtion)
+            Log("InitBlizzard: " .. blizz)
+        end)
+    end)
+end
+
+Module("Tests.Main", function()
+    local DuskKnight = Require("Heroes.DuskKnight")
+    local UHDUnit = Require("UHDUnit")
+
+    local testHeroPreset = DuskKnight()
+    local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 0, 0)
+
+    local dummy = UHDUnit(WCPlayer.Get(1), FourCC('hfoo'), 500, 0, 0)
+
+    dummy.secondaryStats.health = 150
+    dummy.secondaryStats.weaponDamage = 15
+    dummy.secondaryStats.armor = 5
+
+    dummy:ApplyStats()
+
+    Log("Game initialized successfully")
+end)
+
 Module("UHDUnit", function()
     local Stats = Require("Stats")
 
@@ -975,53 +1022,6 @@ Module("Heroes.DuskKnight", function()
     end
 
     return DuskKnight
-end)
-
-if ExtensiveLog and TestBuild then
-    Module("Tests.Initialization", function()
-        local globalInit = "false";
-        local customTriggerInit = "false";
-        local initializtion = "false";
-        local blizz = "false";
-
-        GlobalInit:Add(function ()
-            globalInit = "true"
-        end)
-        CustomTriggerInit:Add(function ()
-            customTriggerInit = "true"
-        end)
-        Initializtion:Add(function ()
-            initializtion = "true"
-        end)
-        BlizzardInit:Add(function ()
-            blizz = "true"
-        end)
-        GameStart:Add(function()
-            Log("GameStart: true")
-            Log("InitGlobals: " .. globalInit)
-            Log("InitCustomTriggers: " .. customTriggerInit)
-            Log("RunInitializationTriggers: " .. initializtion)
-            Log("InitBlizzard: " .. blizz)
-        end)
-    end)
-end
-
-Module("Tests.Main", function()
-    local DuskKnight = Require("Heroes.DuskKnight")
-    local UHDUnit = Require("UHDUnit")
-
-    local testHeroPreset = DuskKnight()
-    local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 0, 0)
-
-    local dummy = UHDUnit(WCPlayer.Get(1), FourCC('hfoo'), 500, 0, 0)
-
-    dummy.secondaryStats.health = 150
-    dummy.secondaryStats.weaponDamage = 15
-    dummy.secondaryStats.armor = 5
-
-    dummy:ApplyStats()
-
-    Log("Game initialized successfully")
 end)
 
 function CreateUnitsForPlayer0()
