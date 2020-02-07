@@ -12,13 +12,24 @@ do
         return existing
     end
 
+    function Unit.EnumInRange(x, y, radius, handler)
+        local group = CreateGroup()
+        GroupEnumUnitsInRange(group, x, y, radius, Filter(function()
+            local result, err = pcall(handler, Unit.Get(GetFilterUnit()))
+            if not result then
+                Log("Error enumerating units in range: " .. err)
+            end
+        end))
+        DestroyGroup(group)
+    end
+
     function Unit:ctor(...)
         local params = { ... }
         if #params == 1 then
             self.handle = params[0]
         else
             local player, unitid, x, y, facing = ...
-            self.handle = CreateUnit(player, unitid, x, y, facing)
+            self.handle = CreateUnit(player.handle, unitid, x, y, facing)
         end
         self:Register()
     end
@@ -119,8 +130,30 @@ do
         return SetUnitAbilityLevel(self.handle, abilityId, level)
     end
 
+    function Unit:DamageTarget(target, damage, isAttack, isRanged, attackType, damageType, weaponType)
+        return UnitDamageTarget(self.handle, target.handle, damage, isAttack, isRanged, attackType, damageType, weaponType)
+    end
+
+    function Unit:SetHpRegen(value)
+        return BlzSetUnitRealField(self.handle, UNIT_RF_HIT_POINTS_REGENERATION_RATE, value)
+    end
+
+    function Unit:SetManaRegen(value)
+        return BlzSetUnitRealField(self.handle, UNIT_RF_MANA_REGENERATION, value)
+    end
+
     function Unit:GetName() return GetUnitName(self.handle) end
     function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end
     function Unit:GetX() return GetUnitX(self.handle) end
     function Unit:GetY() return GetUnitY(self.handle) end
+    function Unit:GetHP() return GetWidgetLife(self.handle) end
+    function Unit:SetHP(value) return SetWidgetLife(self.handle, value) end
+    function Unit:GetMana() return GetUnitState(self.handle, UNIT_STATE_MANA) end
+    function Unit:SetMana(value) return SetUnitState(self.handle, UNIT_STATE_MANA, value) end
+    function Unit:GetMaxHP() return BlzGetUnitMaxHP(self.handle) end
+    function Unit:GetMaxMana() return BlzGetUnitMaxMana(self.handle) end
+    function Unit:GetOwner() return WCPlayer.Get(GetOwningPlayer(self.handle)) end
+    function Unit:GetArmor() return BlzGetUnitArmor(self.handle) end
+    function Unit:GetFacing() return GetUnitFacing(self.handle) end
+    function Unit:GetAbility(id) return BlzGetUnitAbility(self.handle, id) end
 end
