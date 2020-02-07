@@ -1,19 +1,6 @@
 function InitGlobals()
 end
 
-Module("Mobs.MagicDragon", function()
-    local MobsPreset = Require("MobsPreset")
-
-    local MagicDragon = Class(MobsPreset)
-
-    function MagicDragon:ctor()
-        MobsPreset.ctor(self)
-
-        self.unitid = FourCC('efdr')   
-    end
-
-    return MagicDragon
-end)
 do
 
 TestBuild = true
@@ -516,136 +503,6 @@ do
     end
 end
 
-Module("Mobs", function()
-
-    local Stats = Require("Stats")
-    local UHDUnit = Require("UHDUnit")
-
-    local Mobs = Class(UHDUnit)
-
-    function Mobs:ctor(level, ...)
-        local args = {...}
-        local levelwave = level
-        UHDUnit.ctor(self, ...)
-        self.basicStats = Stats.Basic()
-        self.baseSecondaryStats = Stats.Secondary()
-        self.bonusSecondaryStats = Stats.Secondary()
-    end
-
-    
-
-    return Mobs
-end)
-Module("MobsPreset", function()
-    local Stats = Require("Stats")
-
-    local MobsPreset = Class()
-
-    function  MobsPreset:ctor()
-        self.basicStats = Stats.Basic()
-        self.secondaryStats = Stats.Secondary()
-        self.unitid = FourCC('0000')
-
-        self.abilities = {}
-
-        self.secondaryStats.health = 100
-        self.secondaryStats.mana = 100
-        self.secondaryStats.healthRegen = .5
-        self.secondaryStats.manaRegen = 1
-
-        self.secondaryStats.weaponDamage = 10
-        self.secondaryStats.attackSpeed = .5
-        self.secondaryStats.physicalDamage = 1
-        self.secondaryStats.spellDamage = 1
-
-        self.secondaryStats.armor = 0
-        self.secondaryStats.evasion = 0.05
-        self.secondaryStats.block = 0
-        self.secondaryStats.ccResist = 0
-        self.secondaryStats.spellResist = 0
-
-        self.secondaryStats.movementSpeed = 1
-    end
-
-    function MobsPreset:Spawn(owner, x, y, facing)
-
-        local unit Unit(owner, self.unitid, x, y, facing);
-
-        mob.baseSecondaryStats = self.secondaryStats
-        mob:SetBasicStats(self.basicStats)
-
-        mob.abilities = Trigger()
-        mob.abilities:RegisterPlayerUnitEvent(owner, nil)    
-        return mob
-    end
-
-
-    return MobsPreset
-
-end)
-Module("UHDUnit", function()
-    local Stats = Require("Stats")
-
-    local UHDUnit = Class(Unit)
-
-    local hpRegenAbility = FourCC('_HPR')
-    local mpRegenAbility = FourCC('_MPR')
-
-    function UHDUnit:ctor(...)
-        Unit.ctor(self, ...)
-        self.secondaryStats = Stats.Secondary()
-
-        self.secondaryStats.health = 100
-        self.secondaryStats.mana = 100
-        self.secondaryStats.healthRegen = .5
-        self.secondaryStats.manaRegen = 1
-
-        self.secondaryStats.weaponDamage = 10
-        self.secondaryStats.attackSpeed = .5
-        self.secondaryStats.physicalDamage = 1
-        self.secondaryStats.spellDamage = 1
-
-        self.secondaryStats.armor = 0
-        self.secondaryStats.evasion = 0.05
-        self.secondaryStats.block = 0
-        self.secondaryStats.ccResist = 0
-        self.secondaryStats.spellResist = 0
-
-        self.secondaryStats.movementSpeed = 1
-
-        self:AddAbility(hpRegenAbility)
-        self:AddAbility(mpRegenAbility)
-    end
-
-    function UHDUnit:ApplyStats()
-        local oldMaxHp = self:GetMaxHP()
-        local oldMaxMana = self:GetMaxMana()
-        local oldHp = self:GetHP()
-        local oldMana = self:GetMana()
-
-        self:SetMaxHealth(self.secondaryStats.health)
-        self:SetMaxMana(self.secondaryStats.mana)
-        self:SetBaseDamage(self.secondaryStats.weaponDamage)
-        self:SetAttackCooldown(1 / self.secondaryStats.attackSpeed)
-        self:SetArmor(self.secondaryStats.armor)
-        self:SetHpRegen(self.secondaryStats.healthRegen)
-        self:SetManaRegen(self.secondaryStats.manaRegen)
-
-        if oldMaxHp > 0 then
-            self:SetHP(oldHp * self.secondaryStats.health / oldMaxHp)
-        else
-            self:SetHP(self.secondaryStats.health)
-        end
-        if oldMaxMana > 0 then
-            self:SetMana(oldMana * self.secondaryStats.mana / oldMaxMana)
-        else
-            self:SetMana(self.secondaryStats.mana)
-        end
-    end
-
-    return UHDUnit
-end)
-
 Module("Stats", function()
     local StatsBase = Class()
 
@@ -726,6 +583,132 @@ Module("Stats", function()
     end
 
     return Stats
+end)
+
+Module("MobsPreset", function()
+    local Stats = Require("Stats")
+    local Mobs = Require("Mobs")
+
+    local MobsPreset = Class()
+
+    function  MobsPreset:ctor()
+        self.basicStats = Stats.Basic()
+        self.secondaryStats = Stats.Secondary()
+        self.unitid = FourCC('0000')
+
+        self.abilities = {}
+
+        self.secondaryStats.health = 100
+        self.secondaryStats.mana = 100
+        self.secondaryStats.healthRegen = .5
+        self.secondaryStats.manaRegen = 1
+
+        self.secondaryStats.weaponDamage = 10
+        self.secondaryStats.attackSpeed = .5
+        self.secondaryStats.physicalDamage = 1
+        self.secondaryStats.spellDamage = 1
+
+        self.secondaryStats.armor = 0
+        self.secondaryStats.evasion = 0.05
+        self.secondaryStats.block = 0
+        self.secondaryStats.ccResist = 0
+        self.secondaryStats.spellResist = 0
+
+        self.secondaryStats.movementSpeed = 1
+    end
+
+    function MobsPreset:Spawn(level, owner, x, y, facing)
+
+        local mobs = Mobs(level, owner, self.unitid, x, y, facing);
+
+        mobs.baseSecondaryStats = self.secondaryStats
+
+        return mobs
+    end
+
+    Log("MobsPreset load succsesfull")
+    return MobsPreset
+
+end)
+Module("Mobs", function()
+
+    local Stats = Require("Stats")
+    local UHDUnit = Require("UHDUnit")
+
+    local Mobs = Class(UHDUnit)
+
+    function Mobs:ctor(level, ...)
+        UHDUnit.ctor(self, ...)
+        self.levelwave = level
+        self.basicStats = Stats.Basic()
+        self.baseSecondaryStats = Stats.Secondary()
+        self.bonusSecondaryStats = Stats.Secondary()
+    end
+    
+    Log("Mobs load succsesfull")
+    return Mobs
+end)
+Module("UHDUnit", function()
+    local Stats = Require("Stats")
+
+    local UHDUnit = Class(Unit)
+
+    local hpRegenAbility = FourCC('_HPR')
+    local mpRegenAbility = FourCC('_MPR')
+
+    function UHDUnit:ctor(...)
+        Unit.ctor(self, ...)
+        self.secondaryStats = Stats.Secondary()
+
+        self.secondaryStats.health = 100
+        self.secondaryStats.mana = 100
+        self.secondaryStats.healthRegen = .5
+        self.secondaryStats.manaRegen = 1
+
+        self.secondaryStats.weaponDamage = 10
+        self.secondaryStats.attackSpeed = .5
+        self.secondaryStats.physicalDamage = 1
+        self.secondaryStats.spellDamage = 1
+
+        self.secondaryStats.armor = 0
+        self.secondaryStats.evasion = 0.05
+        self.secondaryStats.block = 0
+        self.secondaryStats.ccResist = 0
+        self.secondaryStats.spellResist = 0
+
+        self.secondaryStats.movementSpeed = 1
+
+        self:AddAbility(hpRegenAbility)
+        self:AddAbility(mpRegenAbility)
+    end
+
+    function UHDUnit:ApplyStats()
+        local oldMaxHp = self:GetMaxHP()
+        local oldMaxMana = self:GetMaxMana()
+        local oldHp = self:GetHP()
+        local oldMana = self:GetMana()
+
+        self:SetMaxHealth(self.secondaryStats.health)
+        self:SetMaxMana(self.secondaryStats.mana)
+        self:SetBaseDamage(self.secondaryStats.weaponDamage)
+        self:SetAttackCooldown(1 / self.secondaryStats.attackSpeed)
+        self:SetArmor(self.secondaryStats.armor)
+        self:SetHpRegen(self.secondaryStats.healthRegen)
+        self:SetManaRegen(self.secondaryStats.manaRegen)
+
+        if oldMaxHp > 0 then
+            self:SetHP(oldHp * self.secondaryStats.health / oldMaxHp)
+        else
+            self:SetHP(self.secondaryStats.health)
+        end
+        if oldMaxMana > 0 then
+            self:SetMana(oldMana * self.secondaryStats.mana / oldMaxMana)
+        else
+            self:SetMana(self.secondaryStats.mana)
+        end
+    end
+
+    return UHDUnit
 end)
 
 Module("Hero", function()
@@ -1057,6 +1040,19 @@ Module("Heroes.DuskKnight", function()
     return DuskKnight
 end)
 
+Module("Mobs.MagicDragon", function()
+    local MobsPreset = Require("MobsPreset")
+
+    local MagicDragon = Class(MobsPreset)
+
+    function MagicDragon:ctor()
+        MobsPreset.ctor(self)
+
+        self.unitid = FourCC('efdr')   
+    end
+
+    return MagicDragon
+end)
 if ExtensiveLog and TestBuild then
     Module("Tests.Initialization", function()
         local globalInit = "false";
@@ -1089,8 +1085,8 @@ end
 Module("Tests.Main", function()
     local DuskKnight = Require("Heroes.DuskKnight")
     local UHDUnit = Require("UHDUnit")
-
     local MagicDragon = Require("Mobs.MagicDragon")
+    local testMobsPreset = MagicDragon():Spawn(1, WCPlayer.Get(1), 0, 0, 0)
     local testHeroPreset = DuskKnight()
     local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 0, 0)
 
@@ -1104,7 +1100,6 @@ Module("Tests.Main", function()
 
     Log("Game initialized successfully")
 end)
-
 function CreateUnitsForPlayer0()
     local p = Player(0)
     local u

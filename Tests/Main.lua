@@ -1,7 +1,9 @@
+
 Module("Tests.Main", function()
     local DuskKnight = Require("Heroes.DuskKnight")
     local UHDUnit = Require("UHDUnit")
-
+    local MagicDragon = Require("Mobs.MagicDragon")
+    local testMobsPreset = MagicDragon():Spawn(1, WCPlayer.Get(1), 0, 0, 0)
     local testHeroPreset = DuskKnight()
     local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 0, 0)
 

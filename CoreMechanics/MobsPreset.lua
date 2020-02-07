@@ -1,6 +1,6 @@
 Module("MobsPreset", function()
     local Stats = Require("Stats")
-    mob = Require("Mobs")
+    local Mobs = Require("Mobs")
 
     local MobsPreset = Class()
 
@@ -30,19 +30,16 @@ Module("MobsPreset", function()
         self.secondaryStats.movementSpeed = 1
     end
 
-    function MobsPreset:Spawn(owner, x, y, facing)
+    function MobsPreset:Spawn(level, owner, x, y, facing)
 
-        local unit Unit(owner, self.unitid, x, y, facing);
+        local mobs = Mobs(level, owner, self.unitid, x, y, facing);
 
-        mob.baseSecondaryStats = self.secondaryStats
-        mob:SetBasicStats(self.basicStats)
+        mobs.baseSecondaryStats = self.secondaryStats
 
-        mob.abilities = Trigger()
-        mob.abilities:RegisterPlayerUnitEvent(owner, nil)    
-        return mob
+        return mobs
     end
 
-
+    Log("MobsPreset load succsesfull")
     return MobsPreset
 
 end)

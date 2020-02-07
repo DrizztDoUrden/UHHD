@@ -8,6 +8,6 @@ Module("Mobs.MagicDragon", function()
 
         self.unitid = FourCC('efdr')   
     end
-
+    Log("MagicDragon load succsesfull")
     return MagicDragon
 end)
