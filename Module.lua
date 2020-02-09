@@ -40,7 +40,7 @@ do
                     until not module.resolvedRequirement
                     
                     if coocked then
-                        if ExtensiveLog then
+                        if ExtensiveLog or true then
                             Log("Successfully loaded " .. module.id)
                         end
                         anyFound = true

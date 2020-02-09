@@ -1,9 +1,10 @@
 Module("CreapsSpawner", function()
-    local Stats = Require("Stats")
-    local Creaps = Require("Creap")
+
     local levelCreapsComopsion, nComposion, aComposition, maxlevel = Require("WaveSpecification")
+    local creapsClasses = {{"Creaps.MagicDragon", Require("Creaps.MagicDragon")}}
 
     local CreapsSpawner = Class()
+
 
     function  CreapsSpawner:ctor()
         Log("Construct CreapSpawner")
@@ -36,9 +37,16 @@ Module("CreapsSpawner", function()
         return false
     end
 
+    function CreapsSpawner:loadCreaps(nameofCreaps)
+        for i, value in pairs(creapsClasses) do
+            if nameofCreaps == value[1] then
+                return value[2]
+            end
+        end
+    end
+
     function CreapsSpawner:SpawnNewWave(owner, x, y, facing)
         Log("Spawn new wave")
-        Log("   owner ", owner)
         Log("   posx", x)
         Log("   poxy", y)
         Log("   facing", facing)
@@ -47,14 +55,14 @@ Module("CreapsSpawner", function()
             Log(creapName)
             for j =1, nComposion[i], 1
              do
-                Log("intilize new creap")
-                Creap = Require(creapName)
-                creap = Creap()
+                Log("Read Class Preset")
+                local CreapPreset = self:loadCreaps(creapName)
+                Log("initilize CreapPreset")
+                local creapPreset = CreapPreset()
                 Log("Spawn new unit")
-                creap:Spawn(owner, x, y, facing)
+                local creap = creapPreset:Spawn(owner, x, y, facing)
             end
         end
-
         Log("Wave was Spawn")
     end
 

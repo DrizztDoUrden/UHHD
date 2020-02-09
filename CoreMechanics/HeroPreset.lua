@@ -60,6 +60,7 @@ Module("HeroPreset", function()
             end
         end
     end
+    
 
     return HeroPreset
 end)

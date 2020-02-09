@@ -452,7 +452,7 @@ do
                     until not module.resolvedRequirement
                     
                     if coocked then
-                        if ExtensiveLog then
+                        if ExtensiveLog or true then
                             Log("Successfully loaded " .. module.id)
                         end
                         anyFound = true
@@ -503,6 +503,23 @@ do
     end
 end
 
+Module("Creaps.MagicDragon", function()
+    local CreapPreset = Require("CreapPreset")
+
+    local MagicDragon = Class(CreapPreset)
+
+    function MagicDragon:ctor()
+        Log("Construct Magic Dragon")
+        CreapPreset.ctor(self)
+        self.secondaryStats.health = 50
+        self.secondaryStats.mana = 15
+
+        self.unitid = FourCC('efdr')
+        
+    end
+    Log("MagicDragon load succsesfull")
+    return MagicDragon
+end)
 Module("WaveSpecification", function ()
     
     local levelCreapCompositon = {{"Creaps.MagicDragon"}}
@@ -599,11 +616,12 @@ Module("Stats", function()
 end)
 
 Module("CreapsSpawner", function()
-    local Stats = Require("Stats")
-    local Creaps = Require("Creap")
+
     local levelCreapsComopsion, nComposion, aComposition, maxlevel = Require("WaveSpecification")
+    local creapsClasses = {{"Creaps.MagicDragon", Require("Creaps.MagicDragon")}}
 
     local CreapsSpawner = Class()
+
 
     function  CreapsSpawner:ctor()
         Log("Construct CreapSpawner")
@@ -636,9 +654,16 @@ Module("CreapsSpawner", function()
         return false
     end
 
+    function CreapsSpawner:loadCreaps(nameofCreaps)
+        for i, value in pairs(creapsClasses) do 
+            if nameofCreaps == value[1] then
+                return value[2]
+            end
+        end
+    end
+
     function CreapsSpawner:SpawnNewWave(owner, x, y, facing)
         Log("Spawn new wave")
-        Log("   owner ", owner)
         Log("   posx", x)
         Log("   poxy", y)
         Log("   facing", facing)
@@ -647,11 +672,12 @@ Module("CreapsSpawner", function()
             Log(creapName)
             for j =1, nComposion[i], 1
              do
-                Log("intilize new creap")
-                Creap = Require(creapName)
-                creap = Creap()
+                Log("Read Class Preset")
+                local CreapPreset = self:loadCreaps(creapName)
+                Log("initilize CreapPreset")
+                local creapPreset = CreapPreset()
                 Log("Spawn new unit")
-                creap:Spawn(owner, x, y, facing)
+                local creap = creapPreset:Spawn(owner, x, y, facing)
             end
         end
 
@@ -662,15 +688,16 @@ Module("CreapsSpawner", function()
     return CreapsSpawner
 
 end)
-Module("Creap", function()
+Module("CreapPeset", function()
 
     local Stats = Require("Stats")
     local UHDUnit = Require("UHDUnit")
 
     local Creap = Class(UHDUnit)
+    local CreapPreset = Class()
 
-    function Creap:ctor(...)
-        UHDUnit.ctor(self, ...)
+    function CreapPreset:ctor()
+        self.secondaryStats = Stats.Secondary()
 
         self.secondaryStats.health = 50
         self.secondaryStats.mana = 2
@@ -691,15 +718,16 @@ Module("Creap", function()
         self.secondaryStats.movementSpeed = 1
     end
 
-    function Creap:Spawn(owner, x, y, facing)
-	Log(" Creap:Spawn")
-        Log("id=", self.unitid)
-        local Creap = Creap(owner, self.unitid, x, y, facing);
-        return Creap
+    function CreapPreset:Spawn(owner, x, y, facing)
+        Log(" CreapPreset:Spawn")
+        Log(" id=", self.unitid)
+        local creap = Creap(owner, self.unitid, x, y, facing);
+        creap.ApplyStats(self)
+        return creap
     end
 
     Log("Creap load succsesfull")
-    return Creap
+    return CreapPreset
 end)
 Module("UHDUnit", function()
     local Stats = Require("Stats")
@@ -1093,23 +1121,6 @@ Module("Heroes.DuskKnight", function()
     return DuskKnight
 end)
 
-Module("Creaps.MagicDragon", function()
-    local Creap = Require("Creap")
-
-    local MagicDragon = Class(Creap)
-
-    function MagicDragon:ctor()
-        Log("Construct Magic Dragon")
-        Creap.ctor(self)
-        self.secondaryStats.health = 50
-        self.secondaryStats.mana = 15
-
-        self.unitid = FourCC('efdr')
-        self:ApplyStats()
-    end
-    Log("MagicDragon load succsesfull")
-    return MagicDragon
-end)
 if ExtensiveLog and TestBuild then
     Module("Tests.Initialization", function()
         local globalInit = "false";
