@@ -1,6 +1,6 @@
 Module("WaveSpecification", function ()
     
-    local levelCreapCompositon = {{"Creaps.MagicDragon"}}
+    local levelCreepCompositon = {{"Creeps.MagicDragon"}}
     local nComposition = {
         {1}
     }
@@ -9,5 +9,5 @@ Module("WaveSpecification", function ()
     }
     Log("WaveSpecification is load")
 
-    return levelCreapCompositon, nComposition, aComposition, 1
+    return levelCreepCompositon, nComposition, aComposition, 1
 end)

@@ -1,12 +1,12 @@
-Module("CreapPeset", function()
+Module("CreepPreset", function()
 
     local Stats = Require("Stats")
     local UHDUnit = Require("UHDUnit")
 
-    local Creap = Class(UHDUnit)
-    local CreapPreset = Class()
+    local Creep = Class(UHDUnit)
+    local CreepPreset = Class()
 
-    function CreapPreset:ctor()
+    function CreepPreset:ctor()
         self.secondaryStats = Stats.Secondary()
 
         self.secondaryStats.health = 50
@@ -28,14 +28,15 @@ Module("CreapPeset", function()
         self.secondaryStats.movementSpeed = 1
     end
 
-    function CreapPreset:Spawn(owner, x, y, facing)
-        Log(" CreapPreset:Spawn")
+    function CreepPreset:Spawn(owner, x, y, facing)
+        Log(" CreepPreset:Spawn")
         Log(" id=", self.unitid)
-        local creap = Creap(owner, self.unitid, x, y, facing);
-        creap.ApplyStats(self)
-        return creap
+        local Creep = Creep(owner, self.unitid, x, y, facing);
+        Creep.secondaryStats = self.secondaryStats
+        Creep:ApplyStats()
+        return Creep
     end
 
-    Log("Creap load succsesfull")
-    return CreapPreset
+    Log("Creep load succsesfull")
+    return CreepPreset
 end)

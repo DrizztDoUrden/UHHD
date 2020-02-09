@@ -1,17 +1,17 @@
-Module("Creaps.MagicDragon", function()
-    local CreapPreset = Require("CreapPreset")
+Module("Creeps.MagicDragon", function()
+    local CreepPreset = Require("CreepPreset")
 
-    local MagicDragon = Class(CreapPreset)
+    local MagicDragon = Class(CreepPreset)
 
     function MagicDragon:ctor()
         Log("Construct Magic Dragon")
-        CreapPreset.ctor(self)
+        CreepPreset.ctor(self)
         self.secondaryStats.health = 50
         self.secondaryStats.mana = 15
 
-        self.unitid = FourCC('efdr')
+        self.unitid = FourCC('C_MD')
         
     end
-    Log("MagicDragon load succsesfull")
+    Log("MagicDragon load successfull")
     return MagicDragon
 end)

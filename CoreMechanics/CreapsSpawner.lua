@@ -1,72 +1,72 @@
-Module("CreapsSpawner", function()
+Module("CreepsSpawner", function()
 
-    local levelCreapsComopsion, nComposion, aComposition, maxlevel = Require("WaveSpecification")
-    local creapsClasses = {{"Creaps.MagicDragon", Require("Creaps.MagicDragon")}}
+    local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("WaveSpecification")
+    local CreepClasses = {{"Creeps.MagicDragon", Require("Creeps.MagicDragon")}}
 
-    local CreapsSpawner = Class()
+    local CreepSpawner = Class()
 
 
-    function  CreapsSpawner:ctor()
-        Log("Construct CreapSpawner")
+    function  CreepSpawner:ctor()
+        Log("Construct CreepSpawner")
         self.level = 0
-        self.levelCreapsComopsion = levelCreapsComopsion
-        Log("in zero wave first creater is ",self.levelCreapsComopsion[1][1])
+        self.levelCreepsComopsion = levelCreepsComopsion
+        Log("in zero wave first creater is ",self.levelCreepsComopsion[1][1])
         self.nComposion = nComposion
         self.maxlevel = maxlevel
         self.aComposition = aComposition
     end
 
-    function CreapsSpawner:GetNextWaveSpecification()        
+    function CreepSpawner:GetNextWaveSpecification()        
         local nextlevel = self.level + 1
 
-        Log(" get next wave specification", nextlevel)
-        local result_CreapsComposition = self.levelCreapsComopsion[nextlevel]
-        Log(" first wave creap is ", result_CreapsComposition[1])
+        Log(" get next wave specification"..nextlevel)
+        local result_CreepsComposition = self.levelCreepsComopsion[nextlevel]
+        Log(" first wave Creep is "..result_CreepsComposition[1])
         local result_nComposion = self.nComposion[nextlevel]
-        Log(" number first wave creap is ", result_nComposion[1])
+        Log(" count first wave Creep is "..result_nComposion[1])
         local result_aComposion = self.aComposition[nextlevel]
  
         self.level = nextlevel
-        return result_CreapsComposition, result_nComposion, result_aComposion
+        return result_CreepsComposition, result_nComposion, result_aComposion
     end
 
-    function CreapsSpawner:isNextLevel()
+    function CreepSpawner:isNextLevel()
         if self.level > self.maxlevel then
             return true
         end
         return false
     end
 
-    function CreapsSpawner:loadCreaps(nameofCreaps)
-        for i, value in pairs(creapsClasses) do
-            if nameofCreaps == value[1] then
+    function CreepSpawner:loadCreeps(nameofCreeps)
+        for i, value in pairs(CreepsClasses) do
+            if nameofCreeps == value[1] then
                 return value[2]
             end
         end
     end
 
-    function CreapsSpawner:SpawnNewWave(owner, x, y, facing)
+    function CreepSpawner:SpawnNewWave(owner, x, y, facing)
         Log("Spawn new wave")
-        Log("   posx", x)
-        Log("   poxy", y)
-        Log("   facing", facing)
-        local CreapsComposition, nComposion, aComposition = self:GetNextWaveSpecification()
-        for i, creapName in pairs(CreapsComposition) do
-            Log(creapName)
+        Log("   posx"..x)
+        Log("   poxy"..y)
+        Log("   facing"..facing)
+        local CreepsComposition, nComposion, aComposition = self:GetNextWaveSpecification()
+        for i, CreepName in pairs(CreepsComposition) do
+            Log(CreepName)
             for j =1, nComposion[i], 1
              do
                 Log("Read Class Preset")
-                local CreapPreset = self:loadCreaps(creapName)
-                Log("initilize CreapPreset")
-                local creapPreset = CreapPreset()
+                local CreepPreset = self:loadCreeps(CreepName)
+                Log("initialize CreepPreset")
+                local CreepPreset = CreepPreset()
                 Log("Spawn new unit")
-                local creap = creapPreset:Spawn(owner, x, y, facing)
+                local Creep = CreepPreset:Spawn(owner, x, y, facing)
             end
         end
         Log("Wave was Spawn")
     end
 
-    Log("CreapsSpawner load succsesfull")
-    return CreapsSpawner
+    Log("CreepsSpawner load succsesfull")
+    return CreepSpawner
 
 end)
