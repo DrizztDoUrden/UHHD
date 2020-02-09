@@ -158,6 +158,20 @@ do
         return TriggerRegisterUnitEvent(self.handle, unit.handle, event)
     end
 
+    function Trigger:TriggerRegisterEnterRegion(region, event, action, filter)
+        if filter then
+            filter = function ()
+                local result, errOrRet
+                if not result then
+                    Log("Error filtering Region for and event: "..errOrRet)
+                    return false
+                end
+                return errOrRet
+            end
+        end
+        return TriggerRegisterEnterRegion(self.handle, region.handle, event, filter(filter))
+    end
+
     function Trigger:AddAction(action)
         return TriggerAddAction(self.handle, function()
             local result, err = pcall(action)
@@ -167,7 +181,6 @@ do
         end)
     end
 end
-
 do
     Unit = Class()
 
@@ -181,6 +194,25 @@ do
         existing = Unit(handle)
         return existing
     end
+
+    function Unit:IssuePointOrderById(order, x, y)
+        if math.type(x) and math.type(y) then
+            if math.type(order) == "integer" then
+                local result = IssuePointOrderById(self.handle, order, x, y)
+                return result
+            else
+                error("order should be integer", 2)
+            end
+        else
+            error("coorditane should be a number", 2)
+        end
+    end
+
+    function Unit:IssueAttackPoint(x, y)
+        return self:IssuePointOrderById(851983, x, y)
+    end
+
+
 
     function Unit.EnumInRange(x, y, radius, handler)
         local group = CreateGroup()
@@ -312,6 +344,8 @@ do
         return BlzSetUnitRealField(self.handle, UNIT_RF_MANA_REGENERATION, value)
     end
 
+    
+
     function Unit:GetName() return GetUnitName(self.handle) end
     function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end
     function Unit:GetX() return GetUnitX(self.handle) end
@@ -327,7 +361,6 @@ do
     function Unit:GetFacing() return GetUnitFacing(self.handle) end
     function Unit:GetAbility(id) return BlzGetUnitAbility(self.handle, id) end
 end
-
 do
     local result, err = pcall(function()
         local handlers = {
@@ -517,14 +550,14 @@ Module("Creeps.MagicDragon", function()
         self.unitid = FourCC('C_MD')
         
     end
-    Log("MagicDragon load succsesfull")
+    Log("MagicDragon load successfull")
     return MagicDragon
 end)
 Module("WaveSpecification", function ()
     
-    local levelCreepCompositon = {{"Creeps.MagicDragon"}}
+    local levelCreepCompositon = {{"MagicDragon"}}
     local nComposition = {
-        {3}
+        {1}
     }
     local aComposition = {
         {nil}
@@ -618,14 +651,16 @@ end)
 Module("CreepsSpawner", function()
 
     local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("WaveSpecification")
-    local CreepsClasses = {{"Creeps.MagicDragon", Require("Creeps.MagicDragon")}}
+    local CreepClasses = {MagicDragon = Require("Creeps.MagicDragon")}
 
-    local CreepsSpawner = Class()
+    local CreepSpawner = Class()
 
 
-    function  CreepsSpawner:ctor()
+    function  CreepSpawner:ctor()
         Log("Construct CreepSpawner")
         self.level = 0
+        self.x = 0
+        self.y = 0
         self.levelCreepsComopsion = levelCreepsComopsion
         Log("in zero wave first creater is ",self.levelCreepsComopsion[1][1])
         self.nComposion = nComposion
@@ -633,59 +668,61 @@ Module("CreepsSpawner", function()
         self.aComposition = aComposition
     end
 
-    function CreepsSpawner:GetNextWaveSpecification()        
+    function CreepSpawner:GetNextWaveSpecification()        
         local nextlevel = self.level + 1
 
-        Log(" get next wave specification", nextlevel)
+        Log("   get next wave specification"..nextlevel)
         local result_CreepsComposition = self.levelCreepsComopsion[nextlevel]
-        Log(" first wave Creep is ", result_CreepsComposition[1])
+        Log("   first wave Creep is "..result_CreepsComposition[1])
         local result_nComposion = self.nComposion[nextlevel]
-        Log(" number first wave Creep is ", result_nComposion[1])
+        Log("   count first wave Creep is "..result_nComposion[1])
         local result_aComposion = self.aComposition[nextlevel]
  
         self.level = nextlevel
         return result_CreepsComposition, result_nComposion, result_aComposion
     end
 
-    function CreepsSpawner:isNextLevel()
+    function CreepSpawner:isNextLevel()
         if self.level > self.maxlevel then
             return true
         end
         return false
     end
 
-    function CreepsSpawner:loadCreeps(nameofCreeps)
-        for i, value in pairs(CreepsClasses) do 
-            if nameofCreeps == value[1] then
-                return value[2]
-            end
-        end
-    end
 
-    function CreepsSpawner:SpawnNewWave(owner, x, y, facing)
+    function CreepSpawner:SpawnNewWave(owner, facing)
         Log("Spawn new wave")
-        Log("   posx", x)
-        Log("   poxy", y)
-        Log("   facing", facing)
+        Log("   posx"..self.x)
+        Log("   poxy"..self.y)
+        Log("   facing"..facing)
         local CreepsComposition, nComposion, aComposition = self:GetNextWaveSpecification()
         for i, CreepName in pairs(CreepsComposition) do
             Log(CreepName)
             for j =1, nComposion[i], 1
              do
                 Log("Read Class Preset")
-                local CreepPreset = self:loadCreeps(CreepName)
-                Log("initilize CreepPreset")
-                local CreepPreset = CreepPreset()
+                local CreepPresetClass = CreepClasses[CreepName]
+                Log("initialize CreepPreset")
+                local creepPreset = CreepPresetClass()
                 Log("Spawn new unit")
-                local Creep = CreepPreset:Spawn(owner, x, y, facing)
+                local Creep = creepPreset:Spawn(owner, self.x, self.y, facing)
+                local res = Creep:IssueAttackPoint(0, 700)
+                if res then
+                    Log(" Is attack true")
+                else
+                    if res == nil then
+                        Log(" order was not sended")
+                    else
+                        Log(" Is attack false")
+                    end
+                end
             end
         end
-
         Log("Wave was Spawn")
     end
 
     Log("CreepsSpawner load succsesfull")
-    return CreepsSpawner
+    return CreepSpawner
 
 end)
 Module("CreepPreset", function()
@@ -1157,9 +1194,9 @@ Module("Tests.Main", function()
     local UHDUnit = Require("UHDUnit")
     local CreepsSpawner = Require("CreepsSpawner")
     testCreepsSpawner = CreepsSpawner()
-    testCreepsSpawner:SpawnNewWave(WCPlayer.Get(1), 0, 0, 0)
+    testCreepsSpawner:SpawnNewWave(WCPlayer.Get(1), 0)
     local testHeroPreset = DuskKnight()
-    local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 0, 0)
+    local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 700, 0)
 
     Log("Game initialized successfully")
 end)

@@ -27,6 +27,21 @@ do
         return TriggerRegisterUnitEvent(self.handle, unit.handle, event)
     end
 
+    function Trigger:TriggerRegisterEnterRegion(region, event, action, filter)
+        if filter then
+            filter = function ()
+                local result, errOrRet
+                if not result then
+                    Log("Error filtering Region for and event: "..errOrRet)
+                    return false
+                end
+                return errOrRet
+            end
+        end
+        return TriggerRegisterEnterRegion(self.handle, region.handle, event, filter(filter))
+           
+    end
+
     function Trigger:AddAction(action)
         return TriggerAddAction(self.handle, function()
             local result, err = pcall(action)

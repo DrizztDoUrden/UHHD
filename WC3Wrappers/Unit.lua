@@ -12,6 +12,25 @@ do
         return existing
     end
 
+    function Unit:IssuePointOrderById(order, x, y)
+        if math.type(x) and math.type(y) then
+            if math.type(order) == "integer" then
+                local result = IssuePointOrderById(self.handle, order, x, y)
+                return result
+            else
+                error("order should be integer", 2)
+            end
+        else
+            error("coorditane should be a number", 2)
+        end
+    end
+
+    function Unit:IssueAttackPoint(x, y)
+        return self:IssuePointOrderById(851983, x, y)
+    end
+
+
+
     function Unit.EnumInRange(x, y, radius, handler)
         local group = CreateGroup()
         GroupEnumUnitsInRange(group, x, y, radius, Filter(function()
@@ -141,6 +160,8 @@ do
     function Unit:SetManaRegen(value)
         return BlzSetUnitRealField(self.handle, UNIT_RF_MANA_REGENERATION, value)
     end
+
+    
 
     function Unit:GetName() return GetUnitName(self.handle) end
     function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end

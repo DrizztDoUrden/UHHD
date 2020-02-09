@@ -170,6 +170,8 @@ function BlzGetUnitAbility(whichUnit, abilId) end
 ---@return boolean
 function BlzSetUnitRealField(whichUnit, whichField, value) end
 
+
+function IssuePointOrderById(whichUnit, order, x, y) end
 ---@param whichHero unit
 ---@param value integer
 ---@param permanent boolean
@@ -249,6 +251,7 @@ function TriggerAddAction(whichTrigger, actionFunc) end
 ---@return event
 function TriggerRegisterUnitEvent(whichTrigger, whichUnit, whichEvent) end
 
+function TriggerRegisterEnterRegion(trigger, whichTrigger, whichRegion, filter) end
 ---@param func function
 ---@return filterfunc
 function Filter(func) end
