@@ -67,6 +67,58 @@ do
 end
 
 do
+    Region = Class()
+    local regions = {}
+
+    function Region.Get(handle)
+        local existing = regions[handle]
+        if existing then
+            return existing
+        end
+        existing = Unit(handle)
+        return existing
+    end
+
+
+    function Region:ctor()
+        self.handle = CreateRegion()
+    end
+
+    function Region:RemoveRegion()
+        RemoveRegion(self.handle)
+    end
+
+    function Region:IsUnitInRegion(whichUnit)
+        return IsUnitInRegion(self.handle, whichUnit.handle)
+    end
+
+    function Region:RegionAddRect(rect)
+        RegionAddRect(self.handle, rect.handle)
+    end
+
+    CRect = Class()
+    local crects = {}
+    
+    function CRect.Get(handle)
+        local existing = crects[handle]
+        if existing then
+            return existing
+        end
+        existing = Unit(handle)
+        return existing
+    end
+
+    function CRect:ctor(...)
+        local minx, miny, maxx, maxy = ...
+        self.handle = Rect(minx, miny, maxx, maxy)
+    end
+
+    function CRect:RemoveRect()
+        RemoveRect(self.handle)
+    end
+
+end
+do
     AbilityInstance = Class()
 
     function AbilityInstance:ctor(handle)
@@ -158,7 +210,7 @@ do
         return TriggerRegisterUnitEvent(self.handle, unit.handle, event)
     end
 
-    function Trigger:TriggerRegisterEnterRegion(region, event, action, filter)
+    function Trigger:TriggerRegisterEnterRegion(region, filter)
         if filter then
             filter = function ()
                 local result, errOrRet
@@ -169,7 +221,7 @@ do
                 return errOrRet
             end
         end
-        return TriggerRegisterEnterRegion(self.handle, region.handle, event, filter(filter))
+        return TriggerRegisterEnterRegion(self.handle, region.handle, filter)
     end
 
     function Trigger:AddAction(action)
@@ -553,6 +605,53 @@ Module("Creeps.MagicDragon", function()
     Log("MagicDragon load successfull")
     return MagicDragon
 end)
+Module("PathNode", function (arg1, arg2, arg3)
+    
+    PathNode = Class()
+
+    function PathNode:ctor(x, y, prevNode)
+        self.sizex = 300
+        self.sizey = 300
+        self.x = x
+        self.y = y
+        self.prevNode = prevNode or nil
+        self.region = Region()
+        local rect = CRect(x - self.sizex, y - self.sizey, x + self.sizex, y + self.sizey)
+        self.region:RegionAddRect(rect)
+        
+    end
+
+    function PathNode:GetCenterPos()
+        return self.x, self.y
+    end
+
+    function PathNode:IsUnitInNode(whichUnit)
+        return self.region:IsUnitInRegion(whichUnit)
+    end
+
+    function PathNode:GetPrevCenterPos()
+        if self.prevNode then
+            return self.prevNode:GetCenterPos()
+        end
+    end
+
+    function PathNode:IsPrevNode()
+        if not self.prevNode then
+            return true
+        end
+        return false
+    end
+
+    function PathNode:SetEvent(action)
+        if not self.prevNode then
+            local trigger = Trigger()
+            trigger:TriggerRegisterEnterRegion(self.region, nil)
+            trigger:AddAction(function() Log(" Mobs in node: "..self.x.." "..self.y) end)
+        end
+    end
+
+    return PathNode
+end)
 Module("WaveSpecification", function ()
     
     local levelCreepCompositon = {{"MagicDragon"}}
@@ -654,7 +753,7 @@ Module("CreepsSpawner", function()
     local CreepClasses = {MagicDragon = Require("Creeps.MagicDragon")}
 
     local CreepSpawner = Class()
-
+    local PathNodes = Require("PathNode")
 
     function  CreepSpawner:ctor()
         Log("Construct CreepSpawner")
@@ -666,6 +765,25 @@ Module("CreepsSpawner", function()
         self.nComposion = nComposion
         self.maxlevel = maxlevel
         self.aComposition = aComposition
+        self.nodes = {}
+        self.creeps = {}
+        local node = PathNode(0, 700, nil)
+        
+        local node1 = PathNode(0, 0, node)
+        node1:SetEvent()
+        node:SetEvent(function()
+            Log("excute event got next node")
+            for i, creep in pairs(self.creeps) do
+                if node1:IsUnitInRegion(creep) then
+                    if node1:IsPrevNode() then
+                        local x, y = node1:GetPrevCenterPos()
+                        creep:IssueAttackPoint(x, y)
+                    end
+                end
+            end
+        end)
+        table.insert(self.nodes, node)
+        table.insert(self.nodes, node1)
     end
 
     function CreepSpawner:GetNextWaveSpecification()        
@@ -706,16 +824,7 @@ Module("CreepsSpawner", function()
                 local creepPreset = CreepPresetClass()
                 Log("Spawn new unit")
                 local Creep = creepPreset:Spawn(owner, self.x, self.y, facing)
-                local res = Creep:IssueAttackPoint(0, 700)
-                if res then
-                    Log(" Is attack true")
-                else
-                    if res == nil then
-                        Log(" order was not sended")
-                    else
-                        Log(" Is attack false")
-                    end
-                end
+                table.insert(self.creeps, Creep)
             end
         end
         Log("Wave was Spawn")

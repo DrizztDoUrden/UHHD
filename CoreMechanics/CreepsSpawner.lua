@@ -4,7 +4,7 @@ Module("CreepsSpawner", function()
     local CreepClasses = {MagicDragon = Require("Creeps.MagicDragon")}
 
     local CreepSpawner = Class()
-
+    local PathNodes = Require("PathNode")
 
     function  CreepSpawner:ctor()
         Log("Construct CreepSpawner")
@@ -16,6 +16,25 @@ Module("CreepsSpawner", function()
         self.nComposion = nComposion
         self.maxlevel = maxlevel
         self.aComposition = aComposition
+        self.nodes = {}
+        self.creeps = {}
+        local node = PathNode(0, 700, nil)
+        
+        local node1 = PathNode(0, 0, node)
+        node1:SetEvent()
+        node:SetEvent(function()
+            Log("excute event got next node")
+            for i, creep in pairs(self.creeps) do
+                if node1:IsUnitInRegion(creep) then
+                    if node1:IsPrevNode() then
+                        local x, y = node1:GetPrevCenterPos()
+                        creep:IssueAttackPoint(x, y)
+                    end
+                end
+            end
+        end)
+        table.insert(self.nodes, node)
+        table.insert(self.nodes, node1)
     end
 
     function CreepSpawner:GetNextWaveSpecification()        
@@ -56,16 +75,7 @@ Module("CreepsSpawner", function()
                 local creepPreset = CreepPresetClass()
                 Log("Spawn new unit")
                 local Creep = creepPreset:Spawn(owner, self.x, self.y, facing)
-                local res = Creep:IssueAttackPoint(0, 700)
-                if res then
-                    Log(" Is attack true")
-                else
-                    if res == nil then
-                        Log(" order was not sended")
-                    else
-                        Log(" Is attack false")
-                    end
-                end
+                table.insert(self.creeps, Creep)
             end
         end
         Log("Wave was Spawn")

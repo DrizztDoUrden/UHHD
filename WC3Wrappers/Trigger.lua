@@ -27,7 +27,7 @@ do
         return TriggerRegisterUnitEvent(self.handle, unit.handle, event)
     end
 
-    function Trigger:TriggerRegisterEnterRegion(region, event, action, filter)
+    function Trigger:TriggerRegisterEnterRegion(region, filter)
         if filter then
             filter = function ()
                 local result, errOrRet
@@ -38,8 +38,7 @@ do
                 return errOrRet
             end
         end
-        return TriggerRegisterEnterRegion(self.handle, region.handle, event, filter(filter))
-           
+        return TriggerRegisterEnterRegion(self.handle, region.handle, filter)
     end
 
     function Trigger:AddAction(action)

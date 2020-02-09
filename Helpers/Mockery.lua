@@ -26,6 +26,8 @@ EVENT_UNIT_DEATH = {}
 
 EVENT_PLAYER_UNIT_SPELL_FINISH = {}
 
+EVENT_GAME_ENTER_REGION = {}
+
 UNIT_STATE_LIFE = {}
 UNIT_STATE_MANA = {}
 UNIT_STATE_MAX_LIFE = {}
@@ -275,3 +277,16 @@ function GroupEnumUnitsInRange(whichGroup, x, y, radius, filter) end
 
 ---@return unit
 function GetFilterUnit() end
+
+
+function Rect(minx, miny, maxx, maxy) end
+
+function RemoveRect(rect) end
+
+function CreateRegion() end
+    
+function RemoveRegion(region) end
+
+function RegionAddRect(rect) end
+
+function IsUnitInRegion(region, whichUnit) end
