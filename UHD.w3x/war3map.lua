@@ -503,6 +503,19 @@ do
     end
 end
 
+Module("WaveSpecification", function ()
+    
+    local levelCreapCompositon = {{"Creaps.MagicDragon"}}
+    local nComposition = {
+        {1}
+    }
+    local aComposition = {
+        {nil}
+    }
+    Log("WaveSpecification is load")
+
+    return levelCreapCompositon, nComposition, aComposition, 1
+end)
 Module("Stats", function()
     local StatsBase = Class()
 
@@ -585,68 +598,108 @@ Module("Stats", function()
     return Stats
 end)
 
-Module("MobsPreset", function()
+Module("CreapsSpawner", function()
     local Stats = Require("Stats")
-    local Mobs = Require("Mobs")
+    local Creaps = Require("Creap")
+    local levelCreapsComopsion, nComposion, aComposition, maxlevel = Require("WaveSpecification")
 
-    local MobsPreset = Class()
+    local CreapsSpawner = Class()
 
-    function  MobsPreset:ctor()
-        self.basicStats = Stats.Basic()
-        self.secondaryStats = Stats.Secondary()
-        self.unitid = FourCC('0000')
-
-        self.abilities = {}
-
-        self.secondaryStats.health = 100
-        self.secondaryStats.mana = 100
-        self.secondaryStats.healthRegen = .5
-        self.secondaryStats.manaRegen = 1
-
-        self.secondaryStats.weaponDamage = 10
-        self.secondaryStats.attackSpeed = .5
-        self.secondaryStats.physicalDamage = 1
-        self.secondaryStats.spellDamage = 1
-
-        self.secondaryStats.armor = 0
-        self.secondaryStats.evasion = 0.05
-        self.secondaryStats.block = 0
-        self.secondaryStats.ccResist = 0
-        self.secondaryStats.spellResist = 0
-
-        self.secondaryStats.movementSpeed = 1
+    function  CreapsSpawner:ctor()
+        Log("Construct CreapSpawner")
+        self.level = 0
+        self.levelCreapsComopsion = levelCreapsComopsion
+        Log("in zero wave first creater is ",self.levelCreapsComopsion[1][1])
+        self.nComposion = nComposion
+        self.maxlevel = maxlevel
+        self.aComposition = aComposition
     end
 
-    function MobsPreset:Spawn(level, owner, x, y, facing)
+    function CreapsSpawner:GetNextWaveSpecification()        
+        local nextlevel = self.level + 1
 
-        local mobs = Mobs(level, owner, self.unitid, x, y, facing);
-
-        mobs.baseSecondaryStats = self.secondaryStats
-
-        return mobs
+        Log(" get next wave specification", nextlevel)
+        local result_CreapsComposition = self.levelCreapsComopsion[nextlevel]
+        Log(" first wave creap is ", result_CreapsComposition[1])
+        local result_nComposion = self.nComposion[nextlevel]
+        Log(" number first wave creap is ", result_nComposion[1])
+        local result_aComposion = self.aComposition[nextlevel]
+ 
+        self.level = nextlevel
+        return result_CreapsComposition, result_nComposion, result_aComposion
     end
 
-    Log("MobsPreset load succsesfull")
-    return MobsPreset
+    function CreapsSpawner:isNextLevel()
+        if self.level > self.maxlevel then
+            return true
+        end
+        return false
+    end
+
+    function CreapsSpawner:SpawnNewWave(owner, x, y, facing)
+        Log("Spawn new wave")
+        Log("   owner ", owner)
+        Log("   posx", x)
+        Log("   poxy", y)
+        Log("   facing", facing)
+        local CreapsComposition, nComposion, aComposition = self:GetNextWaveSpecification()
+        for i, creapName in pairs(CreapsComposition) do
+            Log(creapName)
+            for j =1, nComposion[i], 1
+             do
+                Log("intilize new creap")
+                Creap = Require(creapName)
+                creap = Creap()
+                Log("Spawn new unit")
+                creap:Spawn(owner, x, y, facing)
+            end
+        end
+
+        Log("Wave was Spawn")
+    end
+
+    Log("CreapsSpawner load succsesfull")
+    return CreapsSpawner
 
 end)
-Module("Mobs", function()
+Module("Creap", function()
 
     local Stats = Require("Stats")
     local UHDUnit = Require("UHDUnit")
 
-    local Mobs = Class(UHDUnit)
+    local Creap = Class(UHDUnit)
 
-    function Mobs:ctor(level, ...)
+    function Creap:ctor(...)
         UHDUnit.ctor(self, ...)
-        self.levelwave = level
-        self.basicStats = Stats.Basic()
-        self.baseSecondaryStats = Stats.Secondary()
-        self.bonusSecondaryStats = Stats.Secondary()
+
+        self.secondaryStats.health = 50
+        self.secondaryStats.mana = 2
+        self.secondaryStats.healthRegen = 1
+        self.secondaryStats.manaRegen = 1
+
+        self.secondaryStats.weaponDamage = 15
+        self.secondaryStats.attackSpeed = 2
+        self.secondaryStats.physicalDamage = 1
+        self.secondaryStats.spellDamage = 1
+
+        self.secondaryStats.armor = 5
+        self.secondaryStats.evasion = 30
+        self.secondaryStats.block = 0
+        self.secondaryStats.ccResist = 0
+        self.secondaryStats.spellResist = 30
+
+        self.secondaryStats.movementSpeed = 1
     end
-    
-    Log("Mobs load succsesfull")
-    return Mobs
+
+    function Creap:Spawn(owner, x, y, facing)
+	Log(" Creap:Spawn")
+        Log("id=", self.unitid)
+        local Creap = Creap(owner, self.unitid, x, y, facing);
+        return Creap
+    end
+
+    Log("Creap load succsesfull")
+    return Creap
 end)
 Module("UHDUnit", function()
     local Stats = Require("Stats")
@@ -1040,17 +1093,21 @@ Module("Heroes.DuskKnight", function()
     return DuskKnight
 end)
 
-Module("Mobs.MagicDragon", function()
-    local MobsPreset = Require("MobsPreset")
+Module("Creaps.MagicDragon", function()
+    local Creap = Require("Creap")
 
-    local MagicDragon = Class(MobsPreset)
+    local MagicDragon = Class(Creap)
 
     function MagicDragon:ctor()
-        MobsPreset.ctor(self)
+        Log("Construct Magic Dragon")
+        Creap.ctor(self)
+        self.secondaryStats.health = 50
+        self.secondaryStats.mana = 15
 
-        self.unitid = FourCC('efdr')   
+        self.unitid = FourCC('efdr')
+        self:ApplyStats()
     end
-
+    Log("MagicDragon load succsesfull")
     return MagicDragon
 end)
 if ExtensiveLog and TestBuild then
@@ -1084,9 +1141,11 @@ end
 
 Module("Tests.Main", function()
     local DuskKnight = Require("Heroes.DuskKnight")
+
     local UHDUnit = Require("UHDUnit")
-    local MagicDragon = Require("Mobs.MagicDragon")
-    local testMobsPreset = MagicDragon():Spawn(1, WCPlayer.Get(1), 0, 0, 0)
+    local CreapsSpawner = Require("CreapsSpawner")
+    testcreapsSpawner = CreapsSpawner()
+    testcreapsSpawner:SpawnNewWave(WCPlayer.Get(1), 0, 0, 0)
     local testHeroPreset = DuskKnight()
     local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 0, 0)
 

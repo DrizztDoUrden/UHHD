@@ -28,6 +28,8 @@ Module("Creap", function()
     end
 
     function Creap:Spawn(owner, x, y, facing)
+        Log(" Creap:Spawn")
+        Log("id=", self.unitid)
         local Creap = Creap(owner, self.unitid, x, y, facing);
         return Creap
     end

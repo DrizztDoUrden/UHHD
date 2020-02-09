@@ -4,6 +4,7 @@ Module("Creaps.MagicDragon", function()
     local MagicDragon = Class(Creap)
 
     function MagicDragon:ctor()
+        Log("Construct Magic Dragon")
         Creap.ctor(self)
         self.secondaryStats.health = 50
         self.secondaryStats.mana = 15

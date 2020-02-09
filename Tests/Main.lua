@@ -5,7 +5,7 @@ Module("Tests.Main", function()
     local UHDUnit = Require("UHDUnit")
     local CreapsSpawner = Require("CreapsSpawner")
     testcreapsSpawner = CreapsSpawner()
-    testcreapsSpawner:WaveSpawn(WCPlayer.Get(1), 0, 0, 0)
+    testcreapsSpawner:SpawnNewWave(WCPlayer.Get(1), 0, 0, 0)
     local testHeroPreset = DuskKnight()
     local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 0, 0)
 
