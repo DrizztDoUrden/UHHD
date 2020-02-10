@@ -29,7 +29,10 @@ do
         return self:IssuePointOrderById(851983, x, y)
     end
 
-
+    function Unit:Destroy()
+        units[self.handle] = nil
+        RemoveUnit(self.handle)
+    end
 
     function Unit.EnumInRange(x, y, radius, handler)
         local group = CreateGroup()

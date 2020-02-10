@@ -23,6 +23,7 @@ ExtensiveLog = false
 ---@class unitrealfield
 
 EVENT_UNIT_DEATH = {}
+EVENT_PLAYER_UNIT_DEATH = {}
 
 EVENT_PLAYER_UNIT_SPELL_FINISH = {}
 
@@ -44,6 +45,8 @@ UNIT_RF_MANA_REGENERATION = {}
 
 UNIT_RF_HIT_POINTS_REGENERATION_RATE = {}
 UNIT_RF_MANA_REGENERATION = {}
+
+
 
 ---@return timer
 function CreateTimer() end
@@ -172,6 +175,7 @@ function BlzGetUnitAbility(whichUnit, abilId) end
 ---@return boolean
 function BlzSetUnitRealField(whichUnit, whichField, value) end
 
+function RemoveUnit(whichUnit) end
 
 function IssuePointOrderById(whichUnit, order, x, y) end
 ---@param whichHero unit
@@ -243,6 +247,8 @@ function DestroyTrigger(trigger) end
 ---@param filter function
 ---@return event
 function TriggerRegisterPlayerUnitEvent(trigger, player, event, filter) end
+
+function GetDyingUnit() end
 ---@param whichTrigger trigger
 ---@param actionFunc function
 ---@return triggeraction

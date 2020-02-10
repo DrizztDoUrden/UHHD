@@ -6,7 +6,7 @@ Module("Creeps.MagicDragon", function()
     function MagicDragon:ctor()
         Log("Construct Magic Dragon")
         CreepPreset.ctor(self)
-        self.secondaryStats.health = 50
+        self.secondaryStats.health = 15
         self.secondaryStats.mana = 15
 
         self.unitid = FourCC('C_MD')

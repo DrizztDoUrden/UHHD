@@ -280,7 +280,10 @@ do
         return self:IssuePointOrderById(851983, x, y)
     end
 
-
+    function Unit:Destroy()
+        units[self.handle] = nil
+        RemoveUnit(self.handle)
+    end
 
     function Unit.EnumInRange(x, y, radius, handler)
         local group = CreateGroup()
@@ -611,7 +614,7 @@ Module("Creeps.MagicDragon", function()
     function MagicDragon:ctor()
         Log("Construct Magic Dragon")
         CreepPreset.ctor(self)
-        self.secondaryStats.health = 50
+        self.secondaryStats.health = 10
         self.secondaryStats.mana = 15
 
         self.unitid = FourCC('C_MD')
@@ -620,6 +623,38 @@ Module("Creeps.MagicDragon", function()
     Log("MagicDragon load successfull")
     return MagicDragon
 end)
+Module("WaveObserver", function()
+
+    local CreepSpawner = Require("CreepSpawner")
+
+    local Creep = Require("Creep")
+
+    local WaveObserver = Class()
+
+    function WaveObserver:ctor(owner)
+        self.creepsSpawner1 = CreepSpawner({{0,700},{0,0},{700,0}})
+        self.creepsSpawner2 = CreepSpawner({{0,700},{0,1400},{700,1400}})
+        local trigger = Trigger()
+        trigger:RegisterPlayerUnitEvent(owner, EVENT_PLAYER_UNIT_DEATH, nil)
+        trigger:AddAction(function()
+            local whichcreep = Creep.Get(GetDyingUnit())
+            whichcreep:Destroy()
+        end)
+        local wavetimer  = Timer()
+        Log(" Create Timer")
+        wavetimer:Start(15, true, function()
+            Log(" Try strart new wave")
+            if self.creepsSpawner1:IsANextWave() then
+                self.creepsSpawner1:SpawnNewWave(owner, 0)
+                self.creepsSpawner2:SpawnNewWave(owner, 0)
+            else
+                Log("No waves")
+                wavetimer:Destroy()
+            end
+        end)
+    end
+    return WaveObserver
+end)
 Module("Creep", function()
 
     local UHDUnit = Require("UHDUnit")
@@ -627,8 +662,16 @@ Module("Creep", function()
 
     function Creep:ctor(...)
         UHDUnit.ctor(self, ...)
+
     end
 
+    function Creep:Destroy()
+        local timer = Timer()
+        timer:Start(10, false, function() 
+            UHDUnit.Destroy(self)
+            timer:Destroy()
+        end)
+    end
     return Creep
 end)
 Module("PathNode", function (arg1, arg2, arg3)
@@ -691,16 +734,29 @@ Module("PathNode", function (arg1, arg2, arg3)
 end)
 Module("WaveSpecification", function ()
     
-    local levelCreepCompositon = {{"MagicDragon", "MagicDragon"}}
+    local levelCreepCompositon = {
+        {"MagicDragon"},
+        {"MagicDragon"},
+        {"MagicDragon"},
+        {"MagicDragon"},
+        {"MagicDragon"},}
     local nComposition = {
-        {1, 1}
+        {1},
+        {1},
+        {1},
+        {1},
+        {1}
     }
     local aComposition = {
+        {nil},
+        {nil},
+        {nil},
+        {nil},
         {nil}
     }
     Log("WaveSpecification is load")
 
-    return levelCreepCompositon, nComposition, aComposition, 1
+    return levelCreepCompositon, nComposition, aComposition, 5
 end)
 Module("Stats", function()
     local StatsBase = Class()
@@ -784,7 +840,7 @@ Module("Stats", function()
     return Stats
 end)
 
-Module("CreepsSpawner", function()
+Module("CreepSpawner", function()
 
     local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("WaveSpecification")
     local CreepClasses = {MagicDragon = Require("Creeps.MagicDragon")}
@@ -793,26 +849,27 @@ Module("CreepsSpawner", function()
     local CreepSpawner = Class()
     local PathNode = Require("PathNode")
 
-    function  CreepSpawner:ctor()
+    function  CreepSpawner:ctor(positions)
         Log("Construct CreepSpawner")
         self.level = 0
-        self.x = 700
-        self.y = 0
         self.levelCreepsComopsion = levelCreepsComopsion
-        Log("in zero wave first creater is ",self.levelCreepsComopsion[1][1])
         self.nComposion = nComposion
         self.maxlevel = maxlevel
         self.aComposition = aComposition
         self.nodes = {}
         self.creeps = {}
-        local node = PathNode(0, 700, nil)
-        local node1 = PathNode(0, 0, node)
-        local node2 = PathNode(700, 0, node1)
-
-
-        table.insert(self.nodes, node)
-        table.insert(self.nodes, node1)
-        table.insert(self.nodes, node2)
+        local prevnode = {}
+        local node = {}
+        for i, pos in pairs(positions) do
+            if i == 1 then
+                node = PathNode(pos[1], pos[2], nil)
+            else
+                node = PathNode(pos[1], pos[2], prevnode)
+            end
+            table.insert(self.nodes, node)
+            prevnode = node
+        end
+        self.x , self.y = self.nodes[#self.nodes]:GetCenterPos()
     end
 
     function CreepSpawner:GetNextWaveSpecification()        
@@ -829,16 +886,16 @@ Module("CreepsSpawner", function()
         return result_CreepsComposition, result_nComposion, result_aComposion
     end
 
-    function CreepSpawner:isNextLevel()
-        if self.level > self.maxlevel then
-            return true
+    function CreepSpawner:IsANextWave()
+        if self.level + 1 > self.maxlevel then
+            return false
         end
-        return false
+        return true
     end
 
 
     function CreepSpawner:SpawnNewWave(owner, facing)
-        Log("Spawn new wave")
+        Log("WAVE"..self.level + 1)
         local CreepsComposition, nComposion, aComposition = self:GetNextWaveSpecification()
         for i, CreepName in pairs(CreepsComposition) do
             Log(CreepName)
@@ -1319,15 +1376,15 @@ if ExtensiveLog and TestBuild then
     end)
 end
 
+
 Module("Tests.Main", function()
     local DuskKnight = Require("Heroes.DuskKnight")
 
     local UHDUnit = Require("UHDUnit")
-    local CreepsSpawner = Require("CreepsSpawner")
-    testCreepsSpawner = CreepsSpawner()
-    testCreepsSpawner:SpawnNewWave(WCPlayer.Get(1), 0)
+    local WaveObserver = Require("WaveObserver")
+    testWaveObserver = WaveObserver(WCPlayer.Get(1))
     local testHeroPreset = DuskKnight()
-    local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 1100, 0)
+    local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 700, 0)
 
     Log("Game initialized successfully")
 end)

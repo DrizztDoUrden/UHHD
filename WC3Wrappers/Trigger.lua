@@ -27,6 +27,7 @@ do
         return TriggerRegisterUnitEvent(self.handle, unit.handle, event)
     end
 
+
     function Trigger:TriggerRegisterEnterRegion(region, filter)
         if filter then
             filter = function ()

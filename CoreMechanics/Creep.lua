@@ -5,7 +5,11 @@ Module("Creep", function()
 
     function Creep:ctor(...)
         UHDUnit.ctor(self, ...)
+
     end
 
+    function Creep:Destroy()
+        UHDUnit.Destroy(self)
+    end
     return Creep
 end)
