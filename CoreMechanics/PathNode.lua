@@ -1,6 +1,6 @@
 Module("PathNode", function (arg1, arg2, arg3)
-    
-    PathNode = Class()
+    local Creep = Require("Creep")
+    local PathNode = Class()
 
     function PathNode:ctor(x, y, prevNode)
         self.sizex = 200
@@ -47,9 +47,11 @@ Module("PathNode", function (arg1, arg2, arg3)
         trigger:TriggerRegisterEnterRegion(self.region, nil)
         trigger:AddAction(function()
             local whichunit = Unit.Get(GetEnteringUnit())
-            local x, y = self:GetPrevCenterPos()
-            whichunit:IssueAttackPoint(x, y)
-            Log(" Mobs in node: "..self.x.." "..self.y)
+            if  whichunit:IsA(Creep) then
+                local x, y = self:GetPrevCenterPos()
+                whichunit:IssueAttackPoint(x, y)
+                Log(" Mobs in node: "..self.x.." "..self.y)
+            end
         end)
     end
     return PathNode

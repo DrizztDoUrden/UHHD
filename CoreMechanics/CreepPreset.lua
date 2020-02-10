@@ -1,9 +1,8 @@
 Module("CreepPreset", function()
 
     local Stats = Require("Stats")
-    local UHDUnit = Require("UHDUnit")
+    local Creep = Require("Creep")
 
-    local Creep = Class(UHDUnit)
     local CreepPreset = Class()
 
     function CreepPreset:ctor()

@@ -562,7 +562,6 @@ do
                         for _, other in pairs(modules) do
                             if other.requirement == module.id and not other.resolvedRequirement then
                                 other.resolvedRequirement = ret
-                                break
                             end
                         end
                         break
@@ -621,9 +620,20 @@ Module("Creeps.MagicDragon", function()
     Log("MagicDragon load successfull")
     return MagicDragon
 end)
+Module("Creep", function()
+
+    local UHDUnit = Require("UHDUnit")
+    local Creep = Class(UHDUnit)
+
+    function Creep:ctor(...)
+        UHDUnit.ctor(self, ...)
+    end
+
+    return Creep
+end)
 Module("PathNode", function (arg1, arg2, arg3)
-    
-    PathNode = Class()
+    local Creep = Require("Creep")
+    local PathNode = Class()
 
     function PathNode:ctor(x, y, prevNode)
         self.sizex = 200
@@ -637,13 +647,10 @@ Module("PathNode", function (arg1, arg2, arg3)
         if prevNode ~= nil then
             self:SetEvent()
         end
-
-        
-
     end
 
     function PathNode:addNode(node)
-        self.prevNode = node    
+        self.prevNode = node
     end
 
     function PathNode:GetCenterPos()
@@ -667,25 +674,26 @@ Module("PathNode", function (arg1, arg2, arg3)
         return false
     end
 
-    function PathNode:SetEvent()
+    function PathNode:SetEvent(formation)
         Log(" Add trigger to path Node in"..self.x.." "..self.y)
         local trigger = Trigger()
         trigger:TriggerRegisterEnterRegion(self.region, nil)
         trigger:AddAction(function()
-            local whichUnit = GetEnteringUnit()
-            local x, y = self:GetPrevCenterPos()
-            IssuePointOrderById(whichUnit, 851983, x, y)
-            Log(" Mobs in node: "..self.x.." "..self.y)
+            local whichunit = Unit.Get(GetEnteringUnit())
+            if  whichunit:IsA(Creep) then
+                local x, y = self:GetPrevCenterPos()
+                whichunit:IssueAttackPoint(x, y)
+                Log(" Mobs in node: "..self.x.." "..self.y)
+            end
         end)
     end
-
     return PathNode
 end)
 Module("WaveSpecification", function ()
     
-    local levelCreepCompositon = {{"MagicDragon"}}
+    local levelCreepCompositon = {{"MagicDragon", "MagicDragon"}}
     local nComposition = {
-        {1}
+        {1, 1}
     }
     local aComposition = {
         {nil}
@@ -781,8 +789,9 @@ Module("CreepsSpawner", function()
     local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("WaveSpecification")
     local CreepClasses = {MagicDragon = Require("Creeps.MagicDragon")}
 
+
     local CreepSpawner = Class()
-    local PathNodes = Require("PathNode")
+    local PathNode = Require("PathNode")
 
     function  CreepSpawner:ctor()
         Log("Construct CreepSpawner")
@@ -799,6 +808,7 @@ Module("CreepsSpawner", function()
         local node = PathNode(0, 700, nil)
         local node1 = PathNode(0, 0, node)
         local node2 = PathNode(700, 0, node1)
+
 
         table.insert(self.nodes, node)
         table.insert(self.nodes, node1)
@@ -850,9 +860,8 @@ end)
 Module("CreepPreset", function()
 
     local Stats = Require("Stats")
-    local UHDUnit = Require("UHDUnit")
+    local Creep = Require("Creep")
 
-    local Creep = Class(UHDUnit)
     local CreepPreset = Class()
 
     function CreepPreset:ctor()

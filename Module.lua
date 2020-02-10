@@ -49,7 +49,6 @@ do
                         for _, other in pairs(modules) do
                             if other.requirement == module.id and not other.resolvedRequirement then
                                 other.resolvedRequirement = ret
-                                break
                             end
                         end
                         break

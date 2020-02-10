@@ -3,8 +3,9 @@ Module("CreepsSpawner", function()
     local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("WaveSpecification")
     local CreepClasses = {MagicDragon = Require("Creeps.MagicDragon")}
 
+
     local CreepSpawner = Class()
-    local PathNodes = Require("PathNode")
+    local PathNode = Require("PathNode")
 
     function  CreepSpawner:ctor()
         Log("Construct CreepSpawner")
