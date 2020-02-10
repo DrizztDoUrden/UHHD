@@ -610,8 +610,8 @@ Module("PathNode", function (arg1, arg2, arg3)
     PathNode = Class()
 
     function PathNode:ctor(x, y, prevNode)
-        self.sizex = 300
-        self.sizey = 300
+        self.sizex = 200
+        self.sizey = 200
         self.x = x
         self.y = y
         self.prevNode = prevNode or nil
@@ -619,6 +619,10 @@ Module("PathNode", function (arg1, arg2, arg3)
         local rect = CRect(x - self.sizex, y - self.sizey, x + self.sizex, y + self.sizey)
         self.region:RegionAddRect(rect)
         
+    end
+
+    function PathNode:addNode(node)
+        self.prevNode = node    
     end
 
     function PathNode:GetCenterPos()
@@ -646,7 +650,9 @@ Module("PathNode", function (arg1, arg2, arg3)
         if not self.prevNode then
             local trigger = Trigger()
             trigger:TriggerRegisterEnterRegion(self.region, nil)
-            trigger:AddAction(function() Log(" Mobs in node: "..self.x.." "..self.y) end)
+            trigger:AddAction(function() Log(" Mobs in node: "..self.x.." "..self.y)
+            action()
+            end)
         end
     end
 
@@ -767,21 +773,24 @@ Module("CreepsSpawner", function()
         self.aComposition = aComposition
         self.nodes = {}
         self.creeps = {}
-        local node = PathNode(0, 700, nil)
         
-        local node1 = PathNode(0, 0, node)
-        node1:SetEvent()
-        node:SetEvent(function()
+        
+        local node1 = PathNode(0, 0, nil)
+        
+        
+        node1:SetEvent(function()
             Log("excute event got next node")
             for i, creep in pairs(self.creeps) do
-                if node1:IsUnitInRegion(creep) then
+
                     if node1:IsPrevNode() then
                         local x, y = node1:GetPrevCenterPos()
                         creep:IssueAttackPoint(x, y)
                     end
-                end
+
             end
         end)
+        local node = PathNode(0, 700, nil)
+        node1:addNode(node)
         table.insert(self.nodes, node)
         table.insert(self.nodes, node1)
     end
@@ -850,7 +859,7 @@ Module("CreepPreset", function()
         self.secondaryStats.healthRegen = 1
         self.secondaryStats.manaRegen = 1
 
-        self.secondaryStats.weaponDamage = 15
+        self.secondaryStats.weaponDamage = 0
         self.secondaryStats.attackSpeed = 2
         self.secondaryStats.physicalDamage = 1
         self.secondaryStats.spellDamage = 1
@@ -1305,7 +1314,7 @@ Module("Tests.Main", function()
     testCreepsSpawner = CreepsSpawner()
     testCreepsSpawner:SpawnNewWave(WCPlayer.Get(1), 0)
     local testHeroPreset = DuskKnight()
-    local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 700, 0)
+    local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 1100, 0)
 
     Log("Game initialized successfully")
 end)

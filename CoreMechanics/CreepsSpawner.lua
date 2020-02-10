@@ -18,11 +18,12 @@ Module("CreepsSpawner", function()
         self.aComposition = aComposition
         self.nodes = {}
         self.creeps = {}
-        local node = PathNode(0, 700, nil)
         
-        local node1 = PathNode(0, 0, node)
-        node1:SetEvent()
-        node:SetEvent(function()
+        
+        local node1 = PathNode(0, 0, nil)
+        
+        
+        node1:SetEvent(function()
             Log("excute event got next node")
             for i, creep in pairs(self.creeps) do
                 if node1:IsUnitInRegion(creep) then
@@ -33,6 +34,8 @@ Module("CreepsSpawner", function()
                 end
             end
         end)
+        local node = PathNode(0, 700, nil)
+        node1:addNode(node)
         table.insert(self.nodes, node)
         table.insert(self.nodes, node1)
     end
@@ -74,8 +77,9 @@ Module("CreepsSpawner", function()
                 Log("initialize CreepPreset")
                 local creepPreset = CreepPresetClass()
                 Log("Spawn new unit")
-                local Creep = creepPreset:Spawn(owner, self.x, self.y, facing)
+                local Creep = creepPreset:Spawn(owner, self.x, self.y - 400, facing)
                 table.insert(self.creeps, Creep)
+                Creep:IssueAttackPoint(self.x, self.y)
             end
         end
         Log("Wave was Spawn")
