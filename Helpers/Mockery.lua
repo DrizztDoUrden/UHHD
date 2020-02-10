@@ -278,6 +278,7 @@ function GroupEnumUnitsInRange(whichGroup, x, y, radius, filter) end
 ---@return unit
 function GetFilterUnit() end
 
+function GetEnteringUnit() end
 
 function Rect(minx, miny, maxx, maxy) end
 

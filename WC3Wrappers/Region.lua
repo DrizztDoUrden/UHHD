@@ -14,6 +14,14 @@ do
 
     function Region:ctor()
         self.handle = CreateRegion()
+        self:Register()
+    end
+
+    function Region:Register()
+        if regions[self.handle] then
+            error("Attempt to reregister a region")
+        end
+        regions[self.handle] = self
     end
 
     function Region:RemoveRegion()
@@ -37,16 +45,24 @@ do
             return existing
         end
         existing = Unit(handle)
+        
         return existing
     end
 
     function CRect:ctor(...)
         local minx, miny, maxx, maxy = ...
         self.handle = Rect(minx, miny, maxx, maxy)
+        self:Register()
     end
 
     function CRect:RemoveRect()
         RemoveRect(self.handle)
     end
 
+    function CRect:Register()
+        if crects[self.handle] then
+            error("Attempt to reregister a crect")
+        end
+        crects[self.handle] = self
+    end
 end
