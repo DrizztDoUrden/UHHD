@@ -592,7 +592,7 @@ function HeroPreset:Spawn(owner, x, y, facing)
     hero:SetBasicStats(self.basicStats)
 
     hero.abilities = Trigger()
-    hero.abilities:RegisterUnitSpellFinish(hero)
+    hero.abilities:RegisterUnitSpellEffect(hero)
     hero.abilities:AddAction(function() self:Cast(hero) end)
 
     for _, ability in pairs(self.abilities) do
@@ -1410,8 +1410,8 @@ function Trigger:RegisterUnitDeath(unit)
     return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_DEATH)
 end
 
-function Trigger:RegisterUnitSpellFinish(unit)
-    return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SPELL_FINISH)
+function Trigger:RegisterUnitSpellEffect(unit)
+    return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SPELL_EFFECT)
 end
 
 function Trigger:RegisterEnterRegion(region, filter)

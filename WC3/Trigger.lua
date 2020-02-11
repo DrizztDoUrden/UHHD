@@ -30,8 +30,8 @@ function Trigger:RegisterUnitDeath(unit)
     return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_DEATH)
 end
 
-function Trigger:RegisterUnitSpellFinish(unit)
-    return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SPELL_FINISH)
+function Trigger:RegisterUnitSpellEffect(unit)
+    return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SPELL_EFFECT)
 end
 
 function Trigger:RegisterEnterRegion(region, filter)

@@ -25,6 +25,7 @@ ExtensiveLog = false
 ---@class rect
 ---@class location
 
+EVENT_UNIT_SPELL_EFFECT = {}
 EVENT_UNIT_SPELL_FINISH = {}
 EVENT_UNIT_DEATH = {}
 
