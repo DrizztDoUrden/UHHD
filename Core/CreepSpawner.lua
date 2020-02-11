@@ -30,19 +30,15 @@ function CreepSpawner:ctor(positions)
         table.insert(self.nodes, node)
         prevnode = node
     end
-    self.x , self.y = self.nodes[#self.nodes]:GetCenterPos()
+    self.x , self.y = self.nodes[#self.nodes]:GetCenter()
 end
 
 function CreepSpawner:GetNextWaveSpecification()
     local nextlevel = self.level + 1
 
-    Log("   get next wave specification"..nextlevel)
     local result_CreepsComposition = self.levelCreepsComopsion[nextlevel]
-    Log("   first wave Creep is "..result_CreepsComposition[1])
     local result_nComposion = self.nComposion[nextlevel]
-    Log("   count first wave Creep is "..result_nComposion[1])
     local result_aComposion = self.aComposition[nextlevel]
-
     self.level = nextlevel
     return result_CreepsComposition, result_nComposion, result_aComposion
 end
@@ -69,5 +65,5 @@ function CreepSpawner:SpawnNewWave(owner, facing)
     end
 end
 
-Log("CreepsSpawner load succsesfull")
+Log("CreepSpawner load succsesfull")
 return CreepSpawner

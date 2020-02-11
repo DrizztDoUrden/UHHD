@@ -1,9 +1,11 @@
 local Class = Require("Class")
-local Trigger = Require("WC3.Trigger")
-local CreepSpawner = Require("Core.CreepSpawner")
-local Creep = Require("Core.Creep")
-local Timer = Require("WC3.Timer")
 local Log = Require("Log")
+local Timer = Require("WC3.Timer")
+local Trigger = Require("WC3.Trigger")
+local Creep = Require("Core.Creep")
+local CreepSpawner = Require("Core.CreepSpawner")
+
+
 
 local WaveObserver = Class()
 

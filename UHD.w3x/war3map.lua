@@ -15,267 +15,10 @@ do
         PreloadGenEnd("log.txt")
     end
 
-<<<<<<< HEAD
-    local units = {}
-
-    function Unit.Get(handle)
-        local existing = units[handle]
-        if existing then
-            return existing
-        end
-        existing = Unit(handle)
-        return existing
-    end
-
-    function Unit:IssuePointOrderById(order, x, y)
-        if math.type(x) and math.type(y) then
-            if math.type(order) == "integer" then
-                local result = IssuePointOrderById(self.handle, order, x, y)
-                return result
-            else
-                error("order should be integer", 2)
-            end
-        else
-            error("coorditane should be a number", 2)
-        end
-    end
-
-    function Unit:IssueAttackPoint(x, y)
-        return self:IssuePointOrderById(851983, x, y)
-    end
-
-    function Unit:Destroy()
-        units[self.handle] = nil
-        RemoveUnit(self.handle)
-    end
-
-    function Unit.EnumInRange(x, y, radius, handler)
-        local group = CreateGroup()
-        GroupEnumUnitsInRange(group, x, y, radius, Filter(function()
-            local result, err = pcall(handler, Unit.Get(GetFilterUnit()))
-            if not result then
-                Log("Error enumerating units in range: " .. err)
-            end
-        end))
-        DestroyGroup(group)
-    end
-
-    function Unit:ctor(...)
-        local params = { ... }
-        if #params == 1 then
-            self.handle = params[0]
-        else
-            local player, unitid, x, y, facing = ...
-            self.handle = CreateUnit(player.handle, unitid, x, y, facing)
-        end
-        self:Register()
-    end
-
-    function Unit:Register()
-        if units[self.handle] then
-            error("Attempt to reregister a unit")
-        end
-        units[self.handle] = self
-    end
-
-    function Unit:SetMaxHealth(value)
-        if math.type(value) then
-            BlzSetUnitMaxHP(self.handle, math.floor(value))
-        else
-            Log("Unit max health should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:SetMaxMana(value)
-        if math.type(value) then
-            BlzSetUnitMaxMana(self.handle, math.floor(value))
-        else
-            Log("Unit max mana should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:SetArmor(value)
-        if math.type(value) then
-            BlzSetUnitArmor(self.handle, value)
-        else
-            Log("Unit armor should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:SetBaseDamage(value, weaponId)
-        weaponId = weaponId or 0
-        if math.type(weaponId) ~= "integer" then
-            Log("Unit weapon id should be an integer (" .. type(weaponId) .. ")")
-            return
-        end
-        if type(value) == "integer" then
-            BlzSetUnitBaseDamage(self.handle, value, weaponId)
-        elseif type(value) == "number" then
-            BlzSetUnitBaseDamage(self.handle, math.floor(value), math.tointeger(weaponId))
-        else
-            Log("Unit base damage should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:SetAttackCooldown(value, weaponId)
-        weaponId = weaponId or 0
-        if math.type(weaponId) ~= "integer" then
-            Log("Unit weapon id should be an integer (" .. type(weaponId) .. ")")
-            return
-        end
-        if type(value) == "integer" or type(value) == "number" then
-            BlzSetUnitAttackCooldown(self.handle, value, math.tointeger(weaponId))
-        else
-            Log("Unit attack cooldown should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:SetStr(value, permanent)
-        if math.type(value) then
-            SetHeroStr(self.handle, math.floor(value), permanent)
-        else
-            Log("Unit strength should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:SetAgi(value, permanent)
-        if math.type(value) then
-            SetHeroAgi(self.handle, math.floor(value), permanent)
-        else
-            Log("Unit agility should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:SetInt(value, permanent)
-        if math.type(value) then
-            SetHeroInt(self.handle, math.floor(value), permanent)
-        else
-            Log("Unit intellect should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:AddAbility(id)
-        if math.type(id) then
-            return UnitAddAbility(self.handle, math.tointeger(id))
-        else
-            Log("Abilityid should be an integer (" .. type(id) .. ")")
-            return false
-        end
-    end
-
-    function Unit:SetAbilityLevel(abilityId, level)
-        return SetUnitAbilityLevel(self.handle, abilityId, level)
-    end
-
-    function Unit:DamageTarget(target, damage, isAttack, isRanged, attackType, damageType, weaponType)
-        return UnitDamageTarget(self.handle, target.handle, damage, isAttack, isRanged, attackType, damageType, weaponType)
-    end
-
-    function Unit:SetHpRegen(value)
-        return BlzSetUnitRealField(self.handle, UNIT_RF_HIT_POINTS_REGENERATION_RATE, value)
-    end
-
-    function Unit:SetManaRegen(value)
-        return BlzSetUnitRealField(self.handle, UNIT_RF_MANA_REGENERATION, value)
-    end
-
-    
-
-    function Unit:GetName() return GetUnitName(self.handle) end
-    function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end
-    function Unit:GetX() return GetUnitX(self.handle) end
-    function Unit:GetY() return GetUnitY(self.handle) end
-    function Unit:GetHP() return GetWidgetLife(self.handle) end
-    function Unit:SetHP(value) return SetWidgetLife(self.handle, value) end
-    function Unit:GetMana() return GetUnitState(self.handle, UNIT_STATE_MANA) end
-    function Unit:SetMana(value) return SetUnitState(self.handle, UNIT_STATE_MANA, value) end
-    function Unit:GetMaxHP() return BlzGetUnitMaxHP(self.handle) end
-    function Unit:GetMaxMana() return BlzGetUnitMaxMana(self.handle) end
-    function Unit:GetOwner() return WCPlayer.Get(GetOwningPlayer(self.handle)) end
-    function Unit:GetArmor() return BlzGetUnitArmor(self.handle) end
-    function Unit:GetFacing() return GetUnitFacing(self.handle) end
-    function Unit:GetAbility(id) return BlzGetUnitAbility(self.handle, id) end
-end
-do
-    local result, err = pcall(function()
-        local handlers = {
-            initGlobals = {},
-            initBlizzard = {},
-            initCustomTriggers = {},
-            initialization = {},
-            gameStart = {},
-        }
-
-        local function FunctionRegistar(table)
-            return setmetatable({}, {
-                __index = {
-                    Add = function(_, func)
-                        table[func] = true
-                    end
-                },
-            })
-        end
-
-        GlobalInit = FunctionRegistar(handlers.initGlobals)
-        CustomTriggerInit = FunctionRegistar(handlers.initCustomTriggers)
-        Initializtion = FunctionRegistar(handlers.initialization)
-        BlizzardInit = FunctionRegistar(handlers.initBlizzard)
-        GameStart = FunctionRegistar(handlers.gameStart)
-
-        local function RunHandlers(table)
-            for handler in pairs(handlers[table]) do
-                local result, err = pcall(function()
-                    handler()
-                end)
-                if not result then Log(err) end
-            end
-            handlers[table] = nil
-        end
-
-        local gst = Timer()
-        gst:Start(0.00, false, function()
-            gst:Destroy()
-            RunHandlers("gameStart")
-        end)
-
-        local oldInitBliz = InitBlizzard
-        local oldInitGlobals = InitGlobals
-        local oldInitTrigs = InitCustomTriggers
-        local oldInit = RunInitializationTriggers
-
-        function InitBlizzard()
-            oldInitBliz()
-            RunHandlers("initBlizzard")
-            if not oldInitGlobals then
-                InitGlobals()
-            end
-            if not oldInitTrigs then
-                InitCustomTriggers()
-            end
-            if not oldInit then
-                RunInitializationTriggers()
-            end
-        end
-
-        function InitGlobals()
-            if oldInitGlobals then oldInitGlobals() end
-            RunHandlers("initGlobals")
-        end
-
-        function InitCustomTriggers()
-            if oldInitTrigs then oldInitTrigs() end
-            RunHandlers("initCustomTriggers")
-        end
-
-        function RunInitializationTriggers()
-            if oldInit then oldInit() end
-            RunHandlers("initialization")
-=======
     local function Log(...)
         if TestBuild then
             local text = table.concat({...}, "\n")
             print(text)
->>>>>>> master
         end
         LogFile(...)
     end
@@ -517,66 +260,14 @@ end)
 -- End of file Initialization.lua
 -- Start of file Log.lua
 Module("Log", function()
-local Class = Require("Class")
-
-local Verbosity = {
-    Fatal = 0,
-    Critical = 1,
-    Error = 2,
-    Warning = 3,
-    Message = 4,
-    Info = 5,
-    Trace = 6,
-}
-
-local Category = Class()
-
-function Category:ctor(name, options)
-    options = options or {}
-    self.name = name
-    self.fileVerbosity = options.fileVerbosity or Verbosity.Message
-    self.printVerbosity = options.printVerbosity or Verbosity.Warning
-    self.buffer = ""
-end
-
-local defaultCategory = Category("Default")
-
-local function LogInternal(category, verbosity, ...)
-    if verbosity <= math.max(category.printVerbosity, category.fileVerbosity) then
-        if verbosity <= category.printVerbosity then
-            for _, line in pairs({...}) do
-                print(line)
-            end
-        end
-        if verbosity <= category.fileVerbosity then
-            for _, line in pairs({...}) do
-                category.buffer = category.buffer .. "\n" .. tostring(line)
-            end
-            PreloadGenClear()
-            PreloadStart()
-            Preload("\")\n" .. category.buffer .. "\n\\")
-            PreloadGenEnd("Logs\\" .. category.name .. ".txt")
-            print(category.buffer)
-        end
+local function Log(...)
+    local text = table.concat({...}, "\n")
+    if TestBuild then
+        print(text)
     end
+    Preload("\")\n" .. text .. "\n\\")
+    PreloadGenEnd("log.txt")
 end
-
-local mt = {
-    __call = function(...) LogInternal(defaultCategory, Verbosity.Message, ...) end,
-    __index = {
-        Fatal = function(cat, ...) LogInternal(cat, Verbosity.Fatal, ...) end,
-        Critical = function(cat, ...) LogInternal(cat, Verbosity.Critical, ...) end,
-        Error = function(cat, ...) LogInternal(cat, Verbosity.Error, ...) end,
-        Warning = function(cat, ...) LogInternal(cat, Verbosity.Warning, ...) end,
-        Message = function(cat, ...) LogInternal(cat, Verbosity.Message, ...) end,
-        Info = function(cat, ...) LogInternal(cat, Verbosity.Info, ...) end,
-        Trace = function(cat, ...) LogInternal(cat, Verbosity.Trace, ...) end,
-
-        Default = defaultCategory,
-    },
-}
-
-local Log = setmetatable({}, mt)
 
 return Log
 end)
@@ -585,8 +276,16 @@ end)
 Module("Core.Creep", function()
 local Class = Require("Class")
 local UHDUnit = Require("Core.UHDUnit")
-
+local Timer = Require("WC3.Timer")
 local Creep = Class(UHDUnit)
+
+    function Creep:Destroy()
+        local timer = Timer()
+        timer:Start(10, false, function()
+            UHDUnit.Destroy(self)
+            timer:Destroy()
+        end)
+    end
 
 return Creep
 end)
@@ -635,8 +334,8 @@ Log("Creep load succsesfull")
 return CreepPreset
 end)
 -- End of file Core\CreepPreset.lua
--- Start of file Core\CreepsSpawner.lua
-Module("Core.CreepsSpawner", function()
+-- Start of file Core\CreepSpawner.lua
+Module("Core.CreepSpawner", function()
 local Log = Require("Log")
 local Class = Require("Class")
 local PathNode = Require("Core.PathNode")
@@ -646,7 +345,7 @@ local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
 
 local CreepSpawner = Class()
 
-function CreepSpawner:ctor()
+function CreepSpawner:ctor(positions)
     Log("Construct CreepSpawner")
     self.level = 0
     self.x = 700
@@ -658,14 +357,18 @@ function CreepSpawner:ctor()
     self.aComposition = aComposition
     self.nodes = {}
     self.creeps = {}
-    local node = PathNode(0, 700, nil)
-    local node1 = PathNode(0, 0, node)
-    local node2 = PathNode(700, 0, node1)
-
-
-    table.insert(self.nodes, node)
-    table.insert(self.nodes, node1)
-    table.insert(self.nodes, node2)
+    local prevnode = {}
+    local node = {}
+    for i, pos in pairs(positions) do
+        if i == 1 then
+            node = PathNode(pos[1], pos[2], nil)
+        else
+            node = PathNode(pos[1], pos[2], prevnode)
+        end
+        table.insert(self.nodes, node)
+        prevnode = node
+    end
+    self.x , self.y = self.nodes[#self.nodes]:GetCenter()
 end
 
 function CreepSpawner:GetNextWaveSpecification()
@@ -682,15 +385,15 @@ function CreepSpawner:GetNextWaveSpecification()
     return result_CreepsComposition, result_nComposion, result_aComposion
 end
 
-function CreepSpawner:isNextLevel()
-    if self.level > self.maxlevel then
-        return true
+function CreepSpawner:IsANextWave()
+    if self.level + 1 > self.maxlevel then
+        return false
     end
-    return false
+    return true
 end
 
 function CreepSpawner:SpawnNewWave(owner, facing)
-    Log("Spawn new wave")
+    Log("WAVE"..self.level + 1)
     local CreepsComposition, nComposion, aComposition = self:GetNextWaveSpecification()
     for i, CreepName in pairs(CreepsComposition) do
         Log(CreepName)
@@ -704,10 +407,10 @@ function CreepSpawner:SpawnNewWave(owner, facing)
     end
 end
 
-Log("CreepsSpawner load succsesfull")
+Log("CreepSpawner load succsesfull")
 return CreepSpawner
 end)
--- End of file Core\CreepsSpawner.lua
+-- End of file Core\CreepSpawner.lua
 -- Start of file Core\Hero.lua
 Module("Core.Hero", function()
 local Class = Require("Class")
@@ -731,92 +434,6 @@ local function BonusMul(base, pow, stat, bonus)
     return base * pow^stat * (1 + bonus)
 end
 
-<<<<<<< HEAD
-    function MagicDragon:ctor()
-        Log("Construct Magic Dragon")
-        CreepPreset.ctor(self)
-        self.secondaryStats.health = 10
-        self.secondaryStats.mana = 15
-
-        self.unitid = FourCC('C_MD')
-        
-    end
-    Log("MagicDragon load successfull")
-    return MagicDragon
-end)
-Module("WaveObserver", function()
-
-    local CreepSpawner = Require("CreepSpawner")
-
-    local Creep = Require("Creep")
-
-    local WaveObserver = Class()
-
-    function WaveObserver:ctor(owner)
-        self.creepsSpawner1 = CreepSpawner({{0,700},{0,0},{700,0}})
-        self.creepsSpawner2 = CreepSpawner({{0,700},{0,1400},{700,1400}})
-        local trigger = Trigger()
-        trigger:RegisterPlayerUnitEvent(owner, EVENT_PLAYER_UNIT_DEATH, nil)
-        trigger:AddAction(function()
-            local whichcreep = Creep.Get(GetDyingUnit())
-            whichcreep:Destroy()
-        end)
-        local wavetimer  = Timer()
-        Log(" Create Timer")
-        wavetimer:Start(15, true, function()
-            Log(" Try strart new wave")
-            if self.creepsSpawner1:IsANextWave() then
-                self.creepsSpawner1:SpawnNewWave(owner, 0)
-                self.creepsSpawner2:SpawnNewWave(owner, 0)
-            else
-                Log("No waves")
-                wavetimer:Destroy()
-            end
-        end)
-    end
-    return WaveObserver
-end)
-Module("Creep", function()
-
-    local UHDUnit = Require("UHDUnit")
-    local Creep = Class(UHDUnit)
-
-    function Creep:ctor(...)
-        UHDUnit.ctor(self, ...)
-
-    end
-
-    function Creep:Destroy()
-        local timer = Timer()
-        timer:Start(10, false, function() 
-            UHDUnit.Destroy(self)
-            timer:Destroy()
-        end)
-    end
-    return Creep
-end)
-Module("PathNode", function (arg1, arg2, arg3)
-    local Creep = Require("Creep")
-    local PathNode = Class()
-
-    function PathNode:ctor(x, y, prevNode)
-        self.sizex = 200
-        self.sizey = 200
-        self.x = x
-        self.y = y
-        self.prevNode = prevNode
-        self.region = Region()
-        local rect = CRect(x - self.sizex, y - self.sizey, x + self.sizex, y + self.sizey)
-        self.region:RegionAddRect(rect)
-        if prevNode ~= nil then
-            self:SetEvent()
-        end
-    end
-
-    function PathNode:addNode(node)
-        self.prevNode = node
-    end
-=======
 local function ProbabilityBased(base, pow, stat, bonus)
     return base + bonus + (1 - base - bonus) * (1 - pow^stat)
 end
@@ -832,7 +449,6 @@ function Hero:UpdateSecondaryStats()
     self.secondaryStats.attackSpeed = BonusMul(self.baseSecondaryStats.attackSpeed, gtoBase, self.basicStats.agility, self.bonusSecondaryStats.attackSpeed)
 
     self.secondaryStats.spellDamage = BonusMul(self.baseSecondaryStats.spellDamage, gtoBase, self.basicStats.intellect, self.bonusSecondaryStats.spellDamage)
->>>>>>> master
 
     self.secondaryStats.health = BonusBeforePow(self.baseSecondaryStats.health, gtoBase, self.basicStats.constitution, self.bonusSecondaryStats.health)
     self.secondaryStats.healthRegen = BonusBeforePow(self.baseSecondaryStats.healthRegen, gtoBase, self.basicStats.constitution, self.bonusSecondaryStats.healthRegen)
@@ -928,51 +544,6 @@ function HeroPreset:Cast(hero)
     end
 end
 
-<<<<<<< HEAD
-    function PathNode:SetEvent(formation)
-        Log(" Add trigger to path Node in"..self.x.." "..self.y)
-        local trigger = Trigger()
-        trigger:TriggerRegisterEnterRegion(self.region, nil)
-        trigger:AddAction(function()
-            local whichunit = Unit.Get(GetEnteringUnit())
-            if  whichunit:IsA(Creep) then
-                local x, y = self:GetPrevCenterPos()
-                whichunit:IssueAttackPoint(x, y)
-                Log(" Mobs in node: "..self.x.." "..self.y)
-            end
-        end)
-    end
-    return PathNode
-end)
-Module("WaveSpecification", function ()
-    
-    local levelCreepCompositon = {
-        {"MagicDragon"},
-        {"MagicDragon"},
-        {"MagicDragon"},
-        {"MagicDragon"},
-        {"MagicDragon"},}
-    local nComposition = {
-        {1},
-        {1},
-        {1},
-        {1},
-        {1}
-    }
-    local aComposition = {
-        {nil},
-        {nil},
-        {nil},
-        {nil},
-        {nil}
-    }
-    Log("WaveSpecification is load")
-
-    return levelCreepCompositon, nComposition, aComposition, 5
-end)
-Module("Stats", function()
-    local StatsBase = Class()
-=======
 return HeroPreset
 
 end)
@@ -1005,7 +576,6 @@ end
 function PathNode:GetCenter()
     return self.x, self.y
 end
->>>>>>> master
 
 function PathNode:IsUnitInNode(whichUnit)
     return self.region:IsUnitIn(whichUnit)
@@ -1149,38 +719,6 @@ function UHDUnit:ctor(...)
     self:AddAbility(mpRegenAbility)
 end
 
-<<<<<<< HEAD
-Module("CreepSpawner", function()
-
-    local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("WaveSpecification")
-    local CreepClasses = {MagicDragon = Require("Creeps.MagicDragon")}
-
-
-    local CreepSpawner = Class()
-    local PathNode = Require("PathNode")
-
-    function  CreepSpawner:ctor(positions)
-        Log("Construct CreepSpawner")
-        self.level = 0
-        self.levelCreepsComopsion = levelCreepsComopsion
-        self.nComposion = nComposion
-        self.maxlevel = maxlevel
-        self.aComposition = aComposition
-        self.nodes = {}
-        self.creeps = {}
-        local prevnode = {}
-        local node = {}
-        for i, pos in pairs(positions) do
-            if i == 1 then
-                node = PathNode(pos[1], pos[2], nil)
-            else
-                node = PathNode(pos[1], pos[2], prevnode)
-            end
-            table.insert(self.nodes, node)
-            prevnode = node
-        end
-        self.x , self.y = self.nodes[#self.nodes]:GetCenterPos()
-=======
 function UHDUnit:ApplyStats()
     local oldMaxHp = self:GetMaxHP()
     local oldMaxMana = self:GetMaxMana()
@@ -1205,27 +743,78 @@ function UHDUnit:ApplyStats()
         self:SetMana(oldMana * self.secondaryStats.mana / oldMaxMana)
     else
         self:SetMana(self.secondaryStats.mana)
->>>>>>> master
     end
 end
 
 return UHDUnit
 end)
 -- End of file Core\UHDUnit.lua
+-- Start of file Core\WaveObserver.lua
+Module("Core.WaveObserver", function()
+local Class = Require("Class")
+local Log = Require("Log")
+local Timer = Require("WC3.Timer")
+local Trigger = Require("WC3.Trigger")
+local Creep = Require("Core.Creep")
+local CreepSpawner = Require("Core.CreepSpawner")
+
+
+
+local WaveObserver = Class()
+
+function WaveObserver:ctor(owner)
+    self.creepsSpawner1 = CreepSpawner({{0,700},{0,0},{700,0}})
+    self.creepsSpawner2 = CreepSpawner({{0,700},{0,1400},{700,1400}})
+    local trigger = Trigger()
+    trigger:RegisterPlayerUnitEvent(owner, EVENT_PLAYER_UNIT_DEATH, nil)
+    trigger:AddAction(function()
+        local whichcreep = Creep.Get(GetDyingUnit())
+        whichcreep:Destroy()
+    end)
+    local wavetimer  = Timer()
+    Log(" Create Timer")
+    wavetimer:Start(5, true, function()
+        Log(" Try strart new wave")
+        if self.creepsSpawner1:IsANextWave() then
+            self.creepsSpawner1:SpawnNewWave(owner, 0)
+            self.creepsSpawner2:SpawnNewWave(owner, 0)
+        else
+            Log("No waves")
+            wavetimer:Destroy()
+        end
+    end)
+end
+return WaveObserver
+
+end)
+-- End of file Core\WaveObserver.lua
 -- Start of file Core\WaveSpecification.lua
 Module("Core.WaveSpecification", function()
 local Log = Require("Log")
 
-local levelCreepCompositon = {{"MagicDragon"}}
-local nComposition = {
-    {1}
-}
-local aComposition = {
-    {nil}
-}
+local levelCreepCompositon = {
+    {"MagicDragon"},
+    {"MagicDragon"},
+    {"MagicDragon"},
+    {"MagicDragon"},
+    {"MagicDragon"},}
+    local nComposition = {
+        {1},
+        {1},
+        {1},
+        {1},
+        {1}
+    }
+    local aComposition = {
+        {nil},
+        {nil},
+        {nil},
+        {nil},
+        {nil}
+    }
 
 Log("WaveSpecification is load")
-return levelCreepCompositon, nComposition, aComposition, 1
+return levelCreepCompositon, nComposition, aComposition, 5
 end)
 -- End of file Core\WaveSpecification.lua
 -- Start of file Core\Creeps\MagicDragon.lua
@@ -1246,14 +835,6 @@ function MagicDragon:ctor()
 end
 Log("MagicDragon load successfull")
 
-<<<<<<< HEAD
-    function CreepSpawner:IsANextWave()
-        if self.level + 1 > self.maxlevel then
-            return false
-        end
-        return true
-    end
-=======
 return MagicDragon
 end)
 -- End of file Core\Creeps\MagicDragon.lua
@@ -1322,7 +903,6 @@ function DuskKnight:ctor()
             period = function(_) return 0.1 end,
         },
     }
->>>>>>> master
 
     self.basicStats.strength = 12
     self.basicStats.agility = 6
@@ -1332,21 +912,6 @@ function DuskKnight:ctor()
     self.basicStats.willpower = 11
 end
 
-<<<<<<< HEAD
-    function CreepSpawner:SpawnNewWave(owner, facing)
-        Log("WAVE"..self.level + 1)
-        local CreepsComposition, nComposion, aComposition = self:GetNextWaveSpecification()
-        for i, CreepName in pairs(CreepsComposition) do
-            Log(CreepName)
-            for j =1, nComposion[i], 1
-             do
-                local CreepPresetClass = CreepClasses[CreepName]
-                local creepPreset = CreepPresetClass()
-                Log("Spawn new unit")
-                local Creep = creepPreset:Spawn(owner, self.x, self.y, facing)
-                table.insert(self.creeps, Creep)
-            end
-=======
 function DrainLight:ctor(definition, caster)
     self.caster = caster
     self.affected = {}
@@ -1374,7 +939,6 @@ function DrainLight:Cast()
                 toReturn = self.toSteal,
                 toBonus = 0.25,
             })
->>>>>>> master
         end
     end)
 
@@ -1387,12 +951,6 @@ function DrainLight:Cast()
 
         self.stealTimeLeft = self.stealTimeLeft - self.period
 
-<<<<<<< HEAD
-    local Stats = Require("Stats")
-    local Creep = Require("Creep")
-
-    local CreepPreset = Class()
-=======
         for _, target in pairs(self.affected) do
             self:Drain(target)
         end
@@ -1403,7 +961,6 @@ function DrainLight:Cast()
         end
     end)
 end
->>>>>>> master
 
 function DrainLight:Effect()
     local timer = Timer()
@@ -1613,16 +1170,13 @@ Module("Tests.Main", function()
 local Log = Require("Log")
 local WCPlayer = Require("WC3.Player")
 local DuskKnight = Require("Heroes.DuskKnight")
-local CreepsSpawner = Require("Core.CreepsSpawner")
-
+local WaveObserver = Require("Core.WaveObserver")
 local testHeroPreset = DuskKnight()
 local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 700, 0)
 
-local testCreepsSpawner = CreepsSpawner()
-testCreepsSpawner:SpawnNewWave(WCPlayer.Get(1), 0)
+local testWaveObserver = WaveObserver(WCPlayer.Get(1))
 
 Log("Game initialized successfully")
-
 end)
 -- End of file Tests\Main.lua
 -- Start of file WC3\AbilityInstance.lua
@@ -2035,17 +1589,6 @@ function Unit:SetMoveSpeed(value)
     SetUnitMoveSpeed(self.handle, 300 * value)
 end
 
-<<<<<<< HEAD
-
-Module("Tests.Main", function()
-    local DuskKnight = Require("Heroes.DuskKnight")
-
-    local UHDUnit = Require("UHDUnit")
-    local WaveObserver = Require("WaveObserver")
-    testWaveObserver = WaveObserver(WCPlayer.Get(1))
-    local testHeroPreset = DuskKnight()
-    local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 700, 0)
-=======
 function Unit:SetX(value)
     SetUnitX(self.handle, value)
 end
@@ -2053,7 +1596,6 @@ end
 function Unit:SetY(value)
     SetUnitY(self.handle, value)
 end
->>>>>>> master
 
 function Unit:GetName() return GetUnitName(self.handle) end
 function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end
@@ -2074,6 +1616,178 @@ function Unit:GetAbility(id) return BlzGetUnitAbility(self.handle, id) end
 return Unit
 end)
 -- End of file WC3\Unit.lua
+-- Start of file Core\CreepPreset.lua
+Module("Core.CreepPreset", function()
+local Class = Require("Class")
+local Log = Require("Log")
+local Stats = Require("Core.Stats")
+local Creep = Require("Core.Creep")
+
+local CreepPreset = Class()
+
+function CreepPreset:ctor()
+    self.secondaryStats = Stats.Secondary()
+
+    self.secondaryStats.health = 50
+    self.secondaryStats.mana = 2
+    self.secondaryStats.healthRegen = 1
+    self.secondaryStats.manaRegen = 1
+
+    self.secondaryStats.weaponDamage = 15
+    self.secondaryStats.attackSpeed = 2
+    self.secondaryStats.physicalDamage = 1
+    self.secondaryStats.spellDamage = 1
+
+    self.secondaryStats.armor = 5
+    self.secondaryStats.evasion = 30
+    self.secondaryStats.block = 0
+    self.secondaryStats.ccResist = 0
+    self.secondaryStats.spellResist = 30
+
+    self.secondaryStats.movementSpeed = 1
+end
+
+function CreepPreset:Spawn(owner, x, y, facing)
+    Log(" CreepPreset:Spawn")
+    Log(" id=", self.unitid)
+    local creep = Creep(owner, self.unitid, x, y, facing);
+    creep.secondaryStats = self.secondaryStats
+    creep:ApplyStats()
+    return creep
+end
+
+Log("Creep load succsesfull")
+return CreepPreset
+end)
+-- End of file Core\CreepPreset.lua
+-- Start of file Core\CreepSpawner.lua
+Module("Core.CreepSpawner", function()
+local Log = Require("Log")
+local Class = Require("Class")
+local PathNode = Require("Core.PathNode")
+
+local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
+local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
+
+local CreepSpawner = Class()
+
+function CreepSpawner:ctor(positions)
+    Log("Construct CreepSpawner")
+    self.level = 0
+    self.x = 700
+    self.y = 0
+    self.levelCreepsComopsion = levelCreepsComopsion
+    Log("in zero wave first creater is ",self.levelCreepsComopsion[1][1])
+    self.nComposion = nComposion
+    self.maxlevel = maxlevel
+    self.aComposition = aComposition
+    self.nodes = {}
+    self.creeps = {}
+    local prevnode = {}
+    local node = {}
+    for i, pos in pairs(positions) do
+        if i == 1 then
+            node = PathNode(pos[1], pos[2], nil)
+        else
+            node = PathNode(pos[1], pos[2], prevnode)
+        end
+        node:GetCenterPos()
+        table.insert(self.nodes, node)
+        prevnode = node
+    end
+    self.x , self.y = self.nodes[#self.nodes]:GetCenterPos()
+end
+
+function CreepSpawner:GetNextWaveSpecification()
+    local nextlevel = self.level + 1
+
+    Log("   get next wave specification"..nextlevel)
+    local result_CreepsComposition = self.levelCreepsComopsion[nextlevel]
+    Log("   first wave Creep is "..result_CreepsComposition[1])
+    local result_nComposion = self.nComposion[nextlevel]
+    Log("   count first wave Creep is "..result_nComposion[1])
+    local result_aComposion = self.aComposition[nextlevel]
+
+    self.level = nextlevel
+    return result_CreepsComposition, result_nComposion, result_aComposion
+end
+
+function CreepSpawner:IsANextWave()
+    if self.level + 1 > self.maxlevel then
+        return false
+    end
+    return true
+end
+
+function CreepSpawner:SpawnNewWave(owner, facing)
+    Log("WAVE"..self.level + 1)
+    local CreepsComposition, nComposion, aComposition = self:GetNextWaveSpecification()
+    for i, CreepName in pairs(CreepsComposition) do
+        Log(CreepName)
+        for j = 1, nComposion[i] do
+            local creepPresetClass = CreepClasses[CreepName]
+            local creepPreset = creepPresetClass()
+            Log("Spawn new unit")
+            local Creep = creepPreset:Spawn(owner, self.x, self.y, facing)
+            table.insert(self.creeps, Creep)
+        end
+    end
+end
+
+Log("CreepSpawner load succsesfull")
+return CreepSpawner
+end)
+-- End of file Core\CreepSpawner.lua
+-- Start of file Core\WaveSpecification.lua
+Module("Core.WaveSpecification", function()
+local Log = Require("Log")
+
+local levelCreepCompositon = {
+    {"MagicDragon"},
+    {"MagicDragon"},
+    {"MagicDragon"},
+    {"MagicDragon"},
+    {"MagicDragon"},}
+    local nComposition = {
+        {1},
+        {1},
+        {1},
+        {1},
+        {1}
+    }
+    local aComposition = {
+        {nil},
+        {nil},
+        {nil},
+        {nil},
+        {nil}
+    }
+
+Log("WaveSpecification is load")
+return levelCreepCompositon, nComposition, aComposition, 5
+end)
+-- End of file Core\WaveSpecification.lua
+-- Start of file Core\Creeps\MagicDragon.lua
+Module("Core.Creeps.MagicDragon", function()
+local Class = Require("Class")
+local CreepPreset = Require("Core.CreepPreset")
+local Log = Require("Log")
+
+local MagicDragon = Class(CreepPreset)
+
+function MagicDragon:ctor()
+    Log("Construct Magic Dragon")
+    CreepPreset.ctor(self)
+    self.secondaryStats.health = 50
+    self.secondaryStats.mana = 15
+
+    self.unitid = FourCC('C_MD')
+end
+Log("MagicDragon load successfull")
+
+return MagicDragon
+end)
+-- End of file Core\Creeps\MagicDragon.lua
 function CreateUnitsForPlayer0()
     local p = Player(0)
     local u
