@@ -272,6 +272,34 @@ local Verbosity = {
     Trace = 6,
 }
 
+local verbosityNames = {
+    "Fatal",
+    "Critical",
+    "Error",
+    "Warning",
+    "Message",
+    "Info",
+    "Trace",
+}
+
+local function LogInternal(category, verbosity, ...)
+    if verbosity <= math.max(category.printVerbosity, category.fileVerbosity) then
+        if verbosity <= category.printVerbosity then
+            print("[" .. verbosityNames[verbosity] .. "]" .. category.name .. ": ", ...)
+        end
+        if verbosity <= category.fileVerbosity then
+            category.buffer = category.buffer .. "\n[" .. verbosityNames[verbosity] .. "]"
+            for _, line in pairs({...}) do
+                category.buffer = category.buffer .. "\t" .. tostring(line)
+            end
+            PreloadGenClear()
+            PreloadStart()
+            Preload("\")" .. category.buffer .. "\n")
+            PreloadGenEnd("Logs\\" .. category.name .. ".txt")
+        end
+    end
+end
+
 local Category = Class()
 
 function Category:ctor(name, options)
@@ -282,40 +310,45 @@ function Category:ctor(name, options)
     self.buffer = ""
 end
 
-local defaultCategory = Category("Default")
-
-local function LogInternal(category, verbosity, ...)
-    if verbosity <= math.max(category.printVerbosity, category.fileVerbosity) then
-        if verbosity <= category.printVerbosity then
-            for _, line in pairs({...}) do
-                print(line)
-            end
-        end
-        if verbosity <= category.fileVerbosity then
-            for _, line in pairs({...}) do
-                category.buffer = category.buffer .. "\n" .. tostring(line)
-            end
-            PreloadGenClear()
-            PreloadStart()
-            Preload("\")\n" .. category.buffer .. "\n\\")
-            PreloadGenEnd("Logs\\" .. category.name .. ".txt")
-            print(category.buffer)
-        end
-    end
+function Category:Log(verbosity, ...)
+    LogInternal(self, verbosity, ...)
 end
 
-local mt = {
-    __call = function(...) LogInternal(defaultCategory, Verbosity.Message, ...) end,
-    __index = {
-        Fatal = function(cat, ...) LogInternal(cat, Verbosity.Fatal, ...) end,
-        Critical = function(cat, ...) LogInternal(cat, Verbosity.Critical, ...) end,
-        Error = function(cat, ...) LogInternal(cat, Verbosity.Error, ...) end,
-        Warning = function(cat, ...) LogInternal(cat, Verbosity.Warning, ...) end,
-        Message = function(cat, ...) LogInternal(cat, Verbosity.Message, ...) end,
-        Info = function(cat, ...) LogInternal(cat, Verbosity.Info, ...) end,
-        Trace = function(cat, ...) LogInternal(cat, Verbosity.Trace, ...) end,
+function Category:Fatal(...)
+    LogInternal(self, Verbosity.Fatal, ...)
+end
 
-        Default = defaultCategory,
+function Category:Critical(...)
+    LogInternal(self, Verbosity.Critical, ...)
+end
+
+function Category:Error(...)
+    LogInternal(self, Verbosity.Error, ...)
+end
+
+function Category:Warning(...)
+    LogInternal(self, Verbosity.Warning, ...)
+end
+
+function Category:Message(...)
+    LogInternal(self, Verbosity.Message, ...)
+end
+
+function Category:Info(...)
+    LogInternal(self, Verbosity.Info, ...)
+end
+
+function Category:Trace(...)
+    LogInternal(self, Verbosity.Trace, ...)
+end
+
+Category.Default = Category("Default")
+
+local mt = {
+    __call = function(_, ...) LogInternal(Category.Default, Verbosity.Message, ...) end,
+    __index = {
+        Verbosity = Verbosity,
+        Category = Category,
     },
 }
 
@@ -574,7 +607,6 @@ end
 
 function HeroPreset:Cast(hero)
     local abilityId = GetSpellAbilityId()
-    print(GetSpellTargetX(), GetSpellTargetY())
 
     for _, ability in pairs(self.abilities) do
         if ability.id == abilityId then
@@ -835,6 +867,12 @@ local Unit = Require("WC3.Unit")
 local Location = Require("WC3.Location")
 local HeroPreset = Require("Core.HeroPreset")
 local UHDUnit = Require("Core.UHDUnit")
+local Log = Require("Log")
+
+local logDuskKnight = Log.Category("Heroes\\Dusk Knight", {
+--    printVerbosity = Log.Verbosity.Trace,
+--    fileVerbosity = Log.Verbosity.Trace,
+})
 
 local DuskKnight = Class(HeroPreset)
 
@@ -1052,9 +1090,8 @@ function ShadowLeap:Cast()
     local selfPush = math.min(targetDistance, self.distance) / math.floor(self.duration / self.period)
     local castAngle = math.atan(targetY - self.caster:GetY(), targetX - self.caster:GetX())
 
-    print(targetX, targetX)
-    print(targetX - self.caster:GetX(), targetY - self.caster:GetY())
-    print(castAngle * 180 / math.pi)
+    logDuskKnight:Info(targetX, targetY)
+    logDuskKnight:Info(GetSpellTargetX(), GetSpellTargetY())
 
     local selfPushX = selfPush * math.cos(castAngle)
     local selfPushY = selfPush * math.sin(castAngle)

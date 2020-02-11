@@ -53,7 +53,6 @@ end
 
 function HeroPreset:Cast(hero)
     local abilityId = GetSpellAbilityId()
-    print(GetSpellTargetX(), GetSpellTargetY())
 
     for _, ability in pairs(self.abilities) do
         if ability.id == abilityId then

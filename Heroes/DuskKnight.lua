@@ -5,6 +5,12 @@ local Unit = Require("WC3.Unit")
 local Location = Require("WC3.Location")
 local HeroPreset = Require("Core.HeroPreset")
 local UHDUnit = Require("Core.UHDUnit")
+local Log = Require("Log")
+
+local logDuskKnight = Log.Category("Heroes\\Dusk Knight", {
+--    printVerbosity = Log.Verbosity.Trace,
+--    fileVerbosity = Log.Verbosity.Trace,
+})
 
 local DuskKnight = Class(HeroPreset)
 
@@ -222,9 +228,8 @@ function ShadowLeap:Cast()
     local selfPush = math.min(targetDistance, self.distance) / math.floor(self.duration / self.period)
     local castAngle = math.atan(targetY - self.caster:GetY(), targetX - self.caster:GetX())
 
-    print(targetX, targetX)
-    print(targetX - self.caster:GetX(), targetY - self.caster:GetY())
-    print(castAngle * 180 / math.pi)
+    logDuskKnight:Info(targetX, targetY)
+    logDuskKnight:Info(GetSpellTargetX(), GetSpellTargetY())
 
     local selfPushX = selfPush * math.cos(castAngle)
     local selfPushY = selfPush * math.sin(castAngle)
