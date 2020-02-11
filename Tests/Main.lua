@@ -1,8 +1,7 @@
 local Log = Require("Log")
 local WCPlayer = Require("WC3.Player")
 local DuskKnight = Require("Heroes.DuskKnight")
-local UHDUnit = Require("Core.UHDUnit")
-local CreepsSpawner = Require("CreepsSpawner")
+local CreepsSpawner = Require("Core.CreepsSpawner")
 
 local testHeroPreset = DuskKnight()
 local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 700, 0)

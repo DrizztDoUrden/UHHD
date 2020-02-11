@@ -21,6 +21,8 @@ ExtensiveLog = false
 ---@class ability
 ---@class abilityreallevelfield
 ---@class unitrealfield
+---@class region
+---@class rect
 
 EVENT_UNIT_DEATH = {}
 
@@ -277,17 +279,28 @@ function GroupEnumUnitsInRange(whichGroup, x, y, radius, filter) end
 
 ---@return unit
 function GetFilterUnit() end
-
+---@return unit
 function GetEnteringUnit() end
+---@return region
+function GetTriggeringRegion() end
 
+---@param minx number
+---@param miny number
+---@param maxx number
+---@param maxy number
+---@return rect
 function Rect(minx, miny, maxx, maxy) end
-
+---@param rect rect
 function RemoveRect(rect) end
 
+---@return region
 function CreateRegion() end
-    
+---@param region region
 function RemoveRegion(region) end
-
-function RegionAddRect(rect) end
-
+---@param region region
+---@param rect rect
+function RegionAddRect(region, rect) end
+---@param region region
+---@param whichUnit unit
+---@return boolean
 function IsUnitInRegion(region, whichUnit) end

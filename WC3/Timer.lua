@@ -3,7 +3,7 @@ local Log = Require("Log")
 
 local Timer = Class()
 
-function Timer:ctor(handle)
+function Timer:ctor()
     self.handle = CreateTimer()
 end
 

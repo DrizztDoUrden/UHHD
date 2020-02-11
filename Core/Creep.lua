@@ -1,12 +1,6 @@
-Module("Creep", function()
+local Class = Require("Class")
+local UHDUnit = Require("Core.UHDUnit")
 
-    UHDUnit = Require(UHDUnit)
+local Creep = Class(UHDUnit)
 
-    Creep = Class(UHDUnit)
-
-    function Creep:ctor()
-        
-    end
-
-    return Creep
-end)
+return Creep

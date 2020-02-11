@@ -1,7 +1,13 @@
 function InitGlobals()
 end
 
+do
+
 TestBuild = true
+ExtensiveLog = false
+
+end
+
 do
     local function LogFile(...)
         local text = table.concat({...}, "\n")
@@ -17,452 +23,6 @@ do
         LogFile(...)
     end
 
-do
-    Region = Class()
-    local regions = {}
-
-    function Region.Get(handle)
-        local existing = regions[handle]
-        if existing then
-            return existing
-        end
-        existing = Unit(handle)
-        return existing
-    end
-
-
-    function Region:ctor()
-        self.handle = CreateRegion()
-        self:Register()
-    end
-
-    function Region:Register()
-        if regions[self.handle] then
-            error("Attempt to reregister a region")
-        end
-        regions[self.handle] = self
-    end
-
-    function Region:RemoveRegion()
-        RemoveRegion(self.handle)
-    end
-
-    function Region:IsUnitInRegion(whichUnit)
-        return IsUnitInRegion(self.handle, whichUnit.handle)
-    end
-
-    function Region:RegionAddRect(rect)
-        RegionAddRect(self.handle, rect.handle)
-    end
-
-    CRect = Class()
-    local crects = {}
-    
-    function CRect.Get(handle)
-        local existing = crects[handle]
-        if existing then
-            return existing
-        end
-        existing = Unit(handle)
-        
-        return existing
-    end
-
-    function CRect:ctor(...)
-        local minx, miny, maxx, maxy = ...
-        self.handle = Rect(minx, miny, maxx, maxy)
-        self:Register()
-    end
-
-    function CRect:RemoveRect()
-        RemoveRect(self.handle)
-    end
-
-    function CRect:Register()
-        if crects[self.handle] then
-            error("Attempt to reregister a crect")
-        end
-        crects[self.handle] = self
-    end
-end
-do
-    AbilityInstance = Class()
-
-    function AbilityInstance:ctor(handle)
-        self.handle = handle
-    end
-
-    function AbilityInstance:SetHpRegen(level, value)
-        return BlzSetAbilityRealLevelField(self.handle, ABILITY_ILF_HIT_POINTS_REGENERATED_PER_SECOND, level, value)
-    end
-
-    function AbilityInstance:SetMpRegen(level, value)
-        return BlzSetAbilityRealLevelField(self.handle, ABILITY_ILF_HIT_POINTS_REGENERATED_PER_SECOND, level, value)
-    end
-end
-
-do
-    WCPlayer = Class()
-    local players = {}
-
-    function WCPlayer.Get(player)
-        if math.type(player) == "integer" then
-            player = Player(player)
-        end
-        if not players[player] then
-            players[player] = WCPlayer(player)
-        end
-        return players[player]
-    end
-
-    function WCPlayer:ctor(player)
-        self.handle = player
-    end
-
-    function WCPlayer:IsEnemy(other)
-        if not other:IsA(WCPlayer) then
-            error("Expected player as an argument")
-        end
-        return IsPlayerEnemy(self.handle, other.handle)
-    end
-end
-
-do
-    Timer = Class()
-    
-    function Timer:ctor(handle)
-        self.handle = CreateTimer()
-    end
-
-    function Timer:Destroy()
-        DestroyTimer(self.handle)
-    end
-
-    function Timer:Start(period, periodic, onEnd)
-        TimerStart(self.handle, period, periodic, function()
-            local result, err = pcall(onEnd)
-            if not result then
-                Log("Error running timer handler: " .. err)
-            end
-        end)
-    end
-end
-
-do
-    Trigger = Class()
-
-    function Trigger:ctor()
-        self.handle = CreateTrigger()
-    end
-
-    function Trigger:Destroy()
-        DestroyTrigger(self.handle)
-    end
-
-    function Trigger:RegisterPlayerUnitEvent(player, event, filter)
-        if filter then
-            filter = function()
-                local result, errOrRet = pcall(filter, Unit.Get(GetFilterUnit()))
-                if not result then
-                    Log("Error filtering player units for and event: " .. errOrRet)
-                    return false
-                end
-                return errOrRet
-            end
-        end
-        return TriggerRegisterPlayerUnitEvent(self.handle, player.handle, event, Filter(filter))
-    end
-
-    function Trigger:RegisterUnitEvent(unit, event)
-        return TriggerRegisterUnitEvent(self.handle, unit.handle, event)
-    end
-
-    function Trigger:TriggerRegisterEnterRegion(region, filter)
-        if filter then
-            filter = function ()
-                local result, errOrRet
-                if not result then
-                    Log("Error filtering Region for and event: "..errOrRet)
-                    return false
-                end
-                return errOrRet
-            end
-        end
-        return TriggerRegisterEnterRegion(self.handle, region.handle, filter)
-    end
-
-    function Trigger:AddAction(action)
-        return TriggerAddAction(self.handle, function()
-            local result, err = pcall(action)
-            if not result then
-                Log("Error running trigger action: " .. err)
-            end
-        end)
-    end
-end
-do
-    Unit = Class()
-
-    local units = {}
-
-    function Unit.Get(handle)
-        local existing = units[handle]
-        if existing then
-            return existing
-        end
-        existing = Unit(handle)
-        return existing
-    end
-
-    function Unit:IssuePointOrderById(order, x, y)
-        if math.type(x) and math.type(y) then
-            if math.type(order) == "integer" then
-                local result = IssuePointOrderById(self.handle, order, x, y)
-                return result
-            else
-                error("order should be integer", 2)
-            end
-        else
-            error("coorditane should be a number", 2)
-        end
-    end
-
-    function Unit:IssueAttackPoint(x, y)
-        return self:IssuePointOrderById(851983, x, y)
-    end
-
-
-
-    function Unit.EnumInRange(x, y, radius, handler)
-        local group = CreateGroup()
-        GroupEnumUnitsInRange(group, x, y, radius, Filter(function()
-            local result, err = pcall(handler, Unit.Get(GetFilterUnit()))
-            if not result then
-                Log("Error enumerating units in range: " .. err)
-            end
-        end))
-        DestroyGroup(group)
-    end
-
-    function Unit:ctor(...)
-        local params = { ... }
-        if #params == 1 then
-            self.handle = params[0]
-        else
-            local player, unitid, x, y, facing = ...
-            self.handle = CreateUnit(player.handle, unitid, x, y, facing)
-        end
-        self:Register()
-    end
-
-    function Unit:Register()
-        if units[self.handle] then
-            error("Attempt to reregister a unit")
-        end
-        units[self.handle] = self
-    end
-
-    function Unit:SetMaxHealth(value)
-        if math.type(value) then
-            BlzSetUnitMaxHP(self.handle, math.floor(value))
-        else
-            Log("Unit max health should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:SetMaxMana(value)
-        if math.type(value) then
-            BlzSetUnitMaxMana(self.handle, math.floor(value))
-        else
-            Log("Unit max mana should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:SetArmor(value)
-        if math.type(value) then
-            BlzSetUnitArmor(self.handle, value)
-        else
-            Log("Unit armor should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:SetBaseDamage(value, weaponId)
-        weaponId = weaponId or 0
-        if math.type(weaponId) ~= "integer" then
-            Log("Unit weapon id should be an integer (" .. type(weaponId) .. ")")
-            return
-        end
-        if type(value) == "integer" then
-            BlzSetUnitBaseDamage(self.handle, value, weaponId)
-        elseif type(value) == "number" then
-            BlzSetUnitBaseDamage(self.handle, math.floor(value), math.tointeger(weaponId))
-        else
-            Log("Unit base damage should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:SetAttackCooldown(value, weaponId)
-        weaponId = weaponId or 0
-        if math.type(weaponId) ~= "integer" then
-            Log("Unit weapon id should be an integer (" .. type(weaponId) .. ")")
-            return
-        end
-        if type(value) == "integer" or type(value) == "number" then
-            BlzSetUnitAttackCooldown(self.handle, value, math.tointeger(weaponId))
-        else
-            Log("Unit attack cooldown should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:SetStr(value, permanent)
-        if math.type(value) then
-            SetHeroStr(self.handle, math.floor(value), permanent)
-        else
-            Log("Unit strength should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:SetAgi(value, permanent)
-        if math.type(value) then
-            SetHeroAgi(self.handle, math.floor(value), permanent)
-        else
-            Log("Unit agility should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:SetInt(value, permanent)
-        if math.type(value) then
-            SetHeroInt(self.handle, math.floor(value), permanent)
-        else
-            Log("Unit intellect should be a number (" .. type(value) .. ")")
-        end
-    end
-
-    function Unit:AddAbility(id)
-        if math.type(id) then
-            return UnitAddAbility(self.handle, math.tointeger(id))
-        else
-            Log("Abilityid should be an integer (" .. type(id) .. ")")
-            return false
-        end
-    end
-
-    function Unit:SetAbilityLevel(abilityId, level)
-        return SetUnitAbilityLevel(self.handle, abilityId, level)
-    end
-
-    function Unit:DamageTarget(target, damage, isAttack, isRanged, attackType, damageType, weaponType)
-        return UnitDamageTarget(self.handle, target.handle, damage, isAttack, isRanged, attackType, damageType, weaponType)
-    end
-
-    function Unit:SetHpRegen(value)
-        return BlzSetUnitRealField(self.handle, UNIT_RF_HIT_POINTS_REGENERATION_RATE, value)
-    end
-
-    function Unit:SetManaRegen(value)
-        return BlzSetUnitRealField(self.handle, UNIT_RF_MANA_REGENERATION, value)
-    end
-
-    
-
-    function Unit:GetName() return GetUnitName(self.handle) end
-    function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end
-    function Unit:GetX() return GetUnitX(self.handle) end
-    function Unit:GetY() return GetUnitY(self.handle) end
-    function Unit:GetHP() return GetWidgetLife(self.handle) end
-    function Unit:SetHP(value) return SetWidgetLife(self.handle, value) end
-    function Unit:GetMana() return GetUnitState(self.handle, UNIT_STATE_MANA) end
-    function Unit:SetMana(value) return SetUnitState(self.handle, UNIT_STATE_MANA, value) end
-    function Unit:GetMaxHP() return BlzGetUnitMaxHP(self.handle) end
-    function Unit:GetMaxMana() return BlzGetUnitMaxMana(self.handle) end
-    function Unit:GetOwner() return WCPlayer.Get(GetOwningPlayer(self.handle)) end
-    function Unit:GetArmor() return BlzGetUnitArmor(self.handle) end
-    function Unit:GetFacing() return GetUnitFacing(self.handle) end
-    function Unit:GetAbility(id) return BlzGetUnitAbility(self.handle, id) end
-end
-do
-    local result, err = pcall(function()
-        local handlers = {
-            initGlobals = {},
-            initBlizzard = {},
-            initCustomTriggers = {},
-            initialization = {},
-            gameStart = {},
-        }
-
-        local function FunctionRegistar(table)
-            return setmetatable({}, {
-                __index = {
-                    Add = function(_, func)
-                        table[func] = true
-                    end
-                },
-            })
-        end
-
-        GlobalInit = FunctionRegistar(handlers.initGlobals)
-        CustomTriggerInit = FunctionRegistar(handlers.initCustomTriggers)
-        Initializtion = FunctionRegistar(handlers.initialization)
-        BlizzardInit = FunctionRegistar(handlers.initBlizzard)
-        GameStart = FunctionRegistar(handlers.gameStart)
-
-        local function RunHandlers(table)
-            for handler in pairs(handlers[table]) do
-                local result, err = pcall(function()
-                    handler()
-                end)
-                if not result then Log(err) end
-            end
-            handlers[table] = nil
-        end
-
-        local gst = Timer()
-        gst:Start(0.00, false, function()
-            gst:Destroy()
-            RunHandlers("gameStart")
-        end)
-
-        local oldInitBliz = InitBlizzard
-        local oldInitGlobals = InitGlobals
-        local oldInitTrigs = InitCustomTriggers
-        local oldInit = RunInitializationTriggers
-
-        function InitBlizzard()
-            oldInitBliz()
-            RunHandlers("initBlizzard")
-            if not oldInitGlobals then
-                InitGlobals()
-            end
-            if not oldInitTrigs then
-                InitCustomTriggers()
-            end
-            if not oldInit then
-                RunInitializationTriggers()
-            end
-        end
-
-        function InitGlobals()
-            if oldInitGlobals then oldInitGlobals() end
-            RunHandlers("initGlobals")
-        end
-
-        function InitCustomTriggers()
-            if oldInitTrigs then oldInitTrigs() end
-            RunHandlers("initCustomTriggers")
-        end
-
-        function RunInitializationTriggers()
-            if oldInit then oldInit() end
-            RunHandlers("initialization")
-        end
-    end)
-
-    if not result then
-        print(err)
-    end
-end
-
-do
     local modules = {}
     local readyModules = {}
 
@@ -509,10 +69,7 @@ do
                     until not module.resolvedRequirement
 
                     if coocked then
-                        if ExtensiveLog or true then
-                            Log("Successfully loaded " .. module.id)
-                        end
-                        anyFound = true
+                        LogFile("Successfully loaded " .. module.id)
                         readyModules[module.id] = ret
                         table.remove(modules, moduleId)
                         for _, other in pairs(modules) do
@@ -562,101 +119,112 @@ do
     end
 end
 
-Module("Creeps.MagicDragon", function()
-    local CreepPreset = Require("CreepPreset")
 
-    local MagicDragon = Class(CreepPreset)
+-- Start of file Class.lua
+Module("Class", function()
+local function Class(base, ctor)
+    local class = {}
 
-    function MagicDragon:ctor()
-        Log("Construct Magic Dragon")
-        CreepPreset.ctor(self)
-        self.secondaryStats.health = 50
-        self.secondaryStats.mana = 15
-
-        self.unitid = FourCC('C_MD')
-        
-    end
-    Log("MagicDragon load successfull")
-    return MagicDragon
-end)
-Module("PathNode", function (arg1, arg2, arg3)
-    
-    PathNode = Class()
-
-    function PathNode:ctor(x, y, prevNode)
-        self.sizex = 200
-        self.sizey = 200
-        self.x = x
-        self.y = y
-        self.prevNode = prevNode
-        self.region = Region()
-        local rect = CRect(x - self.sizex, y - self.sizey, x + self.sizex, y + self.sizey)
-        self.region:RegionAddRect(rect)
-        if prevNode ~= nil then
-            self:SetEvent()
+    if not ctor and type(base) == 'function' then
+        ctor = base
+        base = nil
+        elseif type(base) == 'table' then
+        for i,v in pairs(base) do
+            class[i] = v
         end
-
-        
-
+        class._base = base
     end
 
-    function PathNode:addNode(node)
-        self.prevNode = node    
+    class.__index = class
+
+    if base and base.ctor and not ctor then
+        ctor = base.ctor
+    elseif not ctor then
+        ctor = function() end
     end
 
-    function PathNode:GetCenterPos()
-        return self.x, self.y
+    local mt = {}
+    function mt:__call(...)
+        local instance = {}
+        setmetatable(instance, class)
+        instance:ctor(...)
+        return instance
     end
 
-    function PathNode:IsUnitInNode(whichUnit)
-        return self.region:IsUnitInRegion(whichUnit)
+    class.ctor = ctor
+    function class:GetType()
+        return getmetatable(self)
     end
-
-    function PathNode:GetPrevCenterPos()
-        if self.prevNode then
-            return self.prevNode:GetCenterPos()
-        end
-    end
-
-    function PathNode:IsPrevNode()
-        if not self.prevNode then
-            return true
+    function class:IsA(other)
+        local curClass = self:GetType()
+        while curClass do 
+            if curClass == other then return true end
+            curClass = curClass._base
         end
         return false
+    end
+    setmetatable(class, mt)
+    return class
+end
+
+return Class
+end)
+-- End of file Class.lua
+-- Start of file Initialization.lua
+Module("Initialization", function()
+local Log = Require("Log")
+local Timer = Require("WC3.Timer")
+
+local handlers = {
+    initGlobals = { funcs = {}, executed = false, },
+    initBlizzard = { funcs = {}, executed = false, },
+    initCustomTriggers = { funcs = {}, executed = false, },
+    initialization = { funcs = {}, executed = false, },
+    gameStart = { funcs = {}, executed = false, },
+}
+
+local function FunctionRegistar(table)
+    return setmetatable({}, {
+        __index = {
+            Add = function(_, func)
+                if table.executed then
+                    local result, err = pcall(func)
+                    if not result then Log(err) end
+                else
+                    table.funcs[func] = true
+                end
+            end
+        },
+    })
+end
+
+local Init = {
+    Global = FunctionRegistar(handlers.initGlobals),
+    CustomTrigger = FunctionRegistar(handlers.initCustomTriggers),
+    Initializtion = FunctionRegistar(handlers.initialization),
+    Blizzard = FunctionRegistar(handlers.initBlizzard),
+    GameStart = FunctionRegistar(handlers.gameStart),
+}
+
+local function RunHandlers(table)
+    for handler in pairs(handlers[table].funcs) do
+        local result, err = pcall(handler)
+        if not result then Log(err) end
     end
     handlers[table].funcs = nil
     handlers[table].executed = true
 end
 
-    function PathNode:SetEvent()
-        Log(" Add trigger to path Node in"..self.x.." "..self.y)
-        local trigger = Trigger()
-        trigger:TriggerRegisterEnterRegion(self.region, nil)
-        trigger:AddAction(function()
-            local whichUnit = GetEnteringUnit()
-            local x, y = self:GetPrevCenterPos()
-            IssuePointOrderById(whichUnit, 851983, x, y)
-            Log(" Mobs in node: "..self.x.." "..self.y)
-        end)
-    end
-
-    return PathNode
+local gst = Timer()
+gst:Start(0.00, false, function()
+    gst:Destroy()
+    RunHandlers("gameStart")
 end)
-Module("WaveSpecification", function ()
-    
-    local levelCreepCompositon = {{"MagicDragon"}}
-    local nComposition = {
-        {1}
-    }
-    local aComposition = {
-        {nil}
-    }
-    Log("WaveSpecification is load")
 
-    return levelCreepCompositon, nComposition, aComposition, 1
-end)
-Module("Stats", function()
-    local StatsBase = Class()
+local oldInitBliz = InitBlizzard
+local oldInitGlobals = InitGlobals
+local oldInitTrigs = InitCustomTriggers
+local oldInit = RunInitializationTriggers
 
 function InitBlizzard()
     oldInitBliz()
@@ -704,6 +272,133 @@ end
 return Log
 end)
 -- End of file Log.lua
+-- Start of file Core\Creep.lua
+Module("Core.Creep", function()
+local Class = Require("Class")
+local UHDUnit = Require("Core.UHDUnit")
+
+local Creep = Class(UHDUnit)
+
+return Creep
+end)
+-- End of file Core\Creep.lua
+-- Start of file Core\CreepPreset.lua
+Module("Core.CreepPreset", function()
+local Class = Require("Class")
+local Log = Require("Log")
+local Stats = Require("Core.Stats")
+local Creep = Require("Core.Creep")
+
+local CreepPreset = Class()
+
+function CreepPreset:ctor()
+    self.secondaryStats = Stats.Secondary()
+
+    self.secondaryStats.health = 50
+    self.secondaryStats.mana = 2
+    self.secondaryStats.healthRegen = 1
+    self.secondaryStats.manaRegen = 1
+
+    self.secondaryStats.weaponDamage = 15
+    self.secondaryStats.attackSpeed = 2
+    self.secondaryStats.physicalDamage = 1
+    self.secondaryStats.spellDamage = 1
+
+    self.secondaryStats.armor = 5
+    self.secondaryStats.evasion = 30
+    self.secondaryStats.block = 0
+    self.secondaryStats.ccResist = 0
+    self.secondaryStats.spellResist = 30
+
+    self.secondaryStats.movementSpeed = 1
+end
+
+function CreepPreset:Spawn(owner, x, y, facing)
+    Log(" CreepPreset:Spawn")
+    Log(" id=", self.unitid)
+    local creep = Creep(owner, self.unitid, x, y, facing);
+    creep.secondaryStats = self.secondaryStats
+    creep:ApplyStats()
+    return creep
+end
+
+Log("Creep load succsesfull")
+return CreepPreset
+end)
+-- End of file Core\CreepPreset.lua
+-- Start of file Core\CreepsSpawner.lua
+Module("Core.CreepsSpawner", function()
+local Log = Require("Log")
+local Class = Require("Class")
+local PathNode = Require("Core.PathNode")
+
+local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
+local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
+
+local CreepSpawner = Class()
+
+function CreepSpawner:ctor()
+    Log("Construct CreepSpawner")
+    self.level = 0
+    self.x = 700
+    self.y = 0
+    self.levelCreepsComopsion = levelCreepsComopsion
+    Log("in zero wave first creater is ",self.levelCreepsComopsion[1][1])
+    self.nComposion = nComposion
+    self.maxlevel = maxlevel
+    self.aComposition = aComposition
+    self.nodes = {}
+    self.creeps = {}
+    local node = PathNode(0, 700, nil)
+    local node1 = PathNode(0, 0, node)
+    local node2 = PathNode(700, 0, node1)
+
+
+    table.insert(self.nodes, node)
+    table.insert(self.nodes, node1)
+    table.insert(self.nodes, node2)
+end
+
+function CreepSpawner:GetNextWaveSpecification()
+    local nextlevel = self.level + 1
+
+    Log("   get next wave specification"..nextlevel)
+    local result_CreepsComposition = self.levelCreepsComopsion[nextlevel]
+    Log("   first wave Creep is "..result_CreepsComposition[1])
+    local result_nComposion = self.nComposion[nextlevel]
+    Log("   count first wave Creep is "..result_nComposion[1])
+    local result_aComposion = self.aComposition[nextlevel]
+
+    self.level = nextlevel
+    return result_CreepsComposition, result_nComposion, result_aComposion
+end
+
+function CreepSpawner:isNextLevel()
+    if self.level > self.maxlevel then
+        return true
+    end
+    return false
+end
+
+function CreepSpawner:SpawnNewWave(owner, facing)
+    Log("Spawn new wave")
+    local CreepsComposition, nComposion, aComposition = self:GetNextWaveSpecification()
+    for i, CreepName in pairs(CreepsComposition) do
+        Log(CreepName)
+        for j = 1, nComposion[i] do
+            local creepPresetClass = CreepClasses[CreepName]
+            local creepPreset = creepPresetClass()
+            Log("Spawn new unit")
+            local Creep = creepPreset:Spawn(owner, self.x, self.y, facing)
+            table.insert(self.creeps, Creep)
+        end
+    end
+end
+
+Log("CreepsSpawner load succsesfull")
+return CreepSpawner
+end)
+-- End of file Core\CreepsSpawner.lua
 -- Start of file Core\Hero.lua
 Module("Core.Hero", function()
 local Class = Require("Class")
@@ -777,185 +472,7 @@ local Trigger = Require("WC3.Trigger")
 local Stats = Require("Core.Stats")
 local Hero = Require("Core.Hero")
 
-Module("CreepsSpawner", function()
-
-    local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("WaveSpecification")
-    local CreepClasses = {MagicDragon = Require("Creeps.MagicDragon")}
-
-    local CreepSpawner = Class()
-    local PathNodes = Require("PathNode")
-
-    function  CreepSpawner:ctor()
-        Log("Construct CreepSpawner")
-        self.level = 0
-        self.x = 700
-        self.y = 0
-        self.levelCreepsComopsion = levelCreepsComopsion
-        Log("in zero wave first creater is ",self.levelCreepsComopsion[1][1])
-        self.nComposion = nComposion
-        self.maxlevel = maxlevel
-        self.aComposition = aComposition
-        self.nodes = {}
-        self.creeps = {}
-        local node = PathNode(0, 700, nil)
-        local node1 = PathNode(0, 0, node)
-        local node2 = PathNode(700, 0, node1)
-
-        table.insert(self.nodes, node)
-        table.insert(self.nodes, node1)
-        table.insert(self.nodes, node2)
-    end
-
-    function CreepSpawner:GetNextWaveSpecification()        
-        local nextlevel = self.level + 1
-
-        Log("   get next wave specification"..nextlevel)
-        local result_CreepsComposition = self.levelCreepsComopsion[nextlevel]
-        Log("   first wave Creep is "..result_CreepsComposition[1])
-        local result_nComposion = self.nComposion[nextlevel]
-        Log("   count first wave Creep is "..result_nComposion[1])
-        local result_aComposion = self.aComposition[nextlevel]
- 
-        self.level = nextlevel
-        return result_CreepsComposition, result_nComposion, result_aComposion
-    end
-
-    function CreepSpawner:isNextLevel()
-        if self.level > self.maxlevel then
-            return true
-        end
-        return false
-    end
-
-
-    function CreepSpawner:SpawnNewWave(owner, facing)
-        Log("Spawn new wave")
-        local CreepsComposition, nComposion, aComposition = self:GetNextWaveSpecification()
-        for i, CreepName in pairs(CreepsComposition) do
-            Log(CreepName)
-            for j =1, nComposion[i], 1
-             do
-                local CreepPresetClass = CreepClasses[CreepName]
-                local creepPreset = CreepPresetClass()
-                Log("Spawn new unit")
-                local Creep = creepPreset:Spawn(owner, self.x, self.y, facing)
-                table.insert(self.creeps, Creep)
-            end
-        end
-    end
-
-    Log("CreepsSpawner load succsesfull")
-    return CreepSpawner
-
-end)
-Module("CreepPreset", function()
-
-    local Stats = Require("Stats")
-    local UHDUnit = Require("UHDUnit")
-
-    local Creep = Class(UHDUnit)
-    local CreepPreset = Class()
-
-    function CreepPreset:ctor()
-        self.secondaryStats = Stats.Secondary()
-
-        self.secondaryStats.health = 50
-        self.secondaryStats.mana = 2
-        self.secondaryStats.healthRegen = 1
-        self.secondaryStats.manaRegen = 1
-
-        self.secondaryStats.weaponDamage = 0
-        self.secondaryStats.attackSpeed = 2
-        self.secondaryStats.physicalDamage = 1
-        self.secondaryStats.spellDamage = 1
-
-        self.secondaryStats.armor = 5
-        self.secondaryStats.evasion = 30
-        self.secondaryStats.block = 0
-        self.secondaryStats.ccResist = 0
-        self.secondaryStats.spellResist = 30
-
-        self.secondaryStats.movementSpeed = 1
-    end
-
-    function CreepPreset:Spawn(owner, x, y, facing)
-        Log(" CreepPreset:Spawn")
-        Log(" id=", self.unitid)
-        local Creep = Creep(owner, self.unitid, x, y, facing);
-        Creep.secondaryStats = self.secondaryStats
-        Creep:ApplyStats()
-        return Creep
-    end
-
-    Log("Creep load succsesfull")
-    return CreepPreset
-end)
-Module("UHDUnit", function()
-    local Stats = Require("Stats")
-
-    local UHDUnit = Class(Unit)
-
-    local hpRegenAbility = FourCC('_HPR')
-    local mpRegenAbility = FourCC('_MPR')
-
-    function UHDUnit:ctor(...)
-        Unit.ctor(self, ...)
-        self.secondaryStats = Stats.Secondary()
-
-        self.secondaryStats.health = 100
-        self.secondaryStats.mana = 100
-        self.secondaryStats.healthRegen = .5
-        self.secondaryStats.manaRegen = 1
-
-        self.secondaryStats.weaponDamage = 10
-        self.secondaryStats.attackSpeed = .5
-        self.secondaryStats.physicalDamage = 1
-        self.secondaryStats.spellDamage = 1
-
-        self.secondaryStats.armor = 0
-        self.secondaryStats.evasion = 0.05
-        self.secondaryStats.block = 0
-        self.secondaryStats.ccResist = 0
-        self.secondaryStats.spellResist = 0
-
-        self.secondaryStats.movementSpeed = 1
-
-        self:AddAbility(hpRegenAbility)
-        self:AddAbility(mpRegenAbility)
-    end
-
-    function UHDUnit:ApplyStats()
-        local oldMaxHp = self:GetMaxHP()
-        local oldMaxMana = self:GetMaxMana()
-        local oldHp = self:GetHP()
-        local oldMana = self:GetMana()
-
-        self:SetMaxHealth(self.secondaryStats.health)
-        self:SetMaxMana(self.secondaryStats.mana)
-        self:SetBaseDamage(self.secondaryStats.weaponDamage)
-        self:SetAttackCooldown(1 / self.secondaryStats.attackSpeed)
-        self:SetArmor(self.secondaryStats.armor)
-        self:SetHpRegen(self.secondaryStats.healthRegen)
-        self:SetManaRegen(self.secondaryStats.manaRegen)
-
-        if oldMaxHp > 0 then
-            self:SetHP(oldHp * self.secondaryStats.health / oldMaxHp)
-        else
-            self:SetHP(self.secondaryStats.health)
-        end
-        if oldMaxMana > 0 then
-            self:SetMana(oldMana * self.secondaryStats.mana / oldMaxMana)
-        else
-            self:SetMana(self.secondaryStats.mana)
-        end
-    end
-
-    return UHDUnit
-end)
-
-Module("Hero", function()
-    local Stats = Require("Stats")
-    local UHDUnit = Require("UHDUnit")
+local HeroPreset = Class()
 
 function HeroPreset:ctor()
     self.basicStats = Stats.Basic()
@@ -1018,6 +535,56 @@ return HeroPreset
 
 end)
 -- End of file Core\HeroPreset.lua
+-- Start of file Core\PathNode.lua
+Module("Core.PathNode", function()
+local Class = Require("Class")
+local Log = Require("Log")
+local WCRect = Require("WC3.Rect")
+local Region = Require("WC3.Region")
+local Trigger = Require("WC3.Trigger")
+local Unit = Require("WC3.Unit")
+
+local PathNode = Class()
+
+function PathNode:ctor(x, y, prev)
+    self.sizex = 200
+    self.sizey = 200
+    self.x = x
+    self.y = y
+    self.prev = prev
+    self.region = Region()
+    local rect = WCRect(x - self.sizex, y - self.sizey, x + self.sizex, y + self.sizey)
+    self.region:AddRect(rect)
+    if prev ~= nil then
+        self:SetEvent()
+    end
+end
+
+function PathNode:GetCenter()
+    return self.x, self.y
+end
+
+function PathNode:IsUnitInNode(whichUnit)
+    return self.region:IsUnitIn(whichUnit)
+end
+
+function PathNode:SetEvent(formation)
+    Log(" Add trigger to path Node in"..self.x.." "..self.y)
+    local trigger = Trigger()
+    trigger:RegisterEnterRegion(self.region)
+    trigger:AddAction(function()
+        local whichunit = Unit.GetEntering()
+        if self.prev then
+            local x, y = self.prev:GetCenter()
+            whichunit:IssueAttackPoint(x, y)
+        end
+        Log(" Mobs in node: "..self.x.." "..self.y)
+    end)
+end
+
+return PathNode
+end)
+-- End of file Core\PathNode.lua
 -- Start of file Core\Stats.lua
 Module("Core.Stats", function()
 local Class = Require("Class")
@@ -1168,6 +735,43 @@ end
 return UHDUnit
 end)
 -- End of file Core\UHDUnit.lua
+-- Start of file Core\WaveSpecification.lua
+Module("Core.WaveSpecification", function()
+local Log = Require("Log")
+
+local levelCreepCompositon = {{"MagicDragon"}}
+local nComposition = {
+    {1}
+}
+local aComposition = {
+    {nil}
+}
+
+Log("WaveSpecification is load")
+return levelCreepCompositon, nComposition, aComposition, 1
+end)
+-- End of file Core\WaveSpecification.lua
+-- Start of file Core\Creeps\MagicDragon.lua
+Module("Core.Creeps.MagicDragon", function()
+local Class = Require("Class")
+local CreepPreset = Require("Core.CreepPreset")
+local Log = Require("Log")
+
+local MagicDragon = Class(CreepPreset)
+
+function MagicDragon:ctor()
+    Log("Construct Magic Dragon")
+    CreepPreset.ctor(self)
+    self.secondaryStats.health = 50
+    self.secondaryStats.mana = 15
+
+    self.unitid = FourCC('C_MD')
+end
+Log("MagicDragon load successfull")
+
+return MagicDragon
+end)
+-- End of file Core\Creeps\MagicDragon.lua
 -- Start of file Heroes\DuskKnight.lua
 Module("Heroes.DuskKnight", function()
 local Class = Require("Class")
@@ -1412,20 +1016,16 @@ Module("Tests.Main", function()
 local Log = Require("Log")
 local WCPlayer = Require("WC3.Player")
 local DuskKnight = Require("Heroes.DuskKnight")
-local UHDUnit = Require("Core.UHDUnit")
+local CreepsSpawner = Require("Core.CreepsSpawner")
 
 local testHeroPreset = DuskKnight()
-local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 0, 0)
+local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 700, 0)
 
-local dummy = UHDUnit(WCPlayer.Get(1), FourCC('hfoo'), 500, 0, 0)
-
-dummy.secondaryStats.health = 150
-dummy.secondaryStats.weaponDamage = 15
-dummy.secondaryStats.armor = 5
-
-dummy:ApplyStats()
+local testCreepsSpawner = CreepsSpawner()
+testCreepsSpawner:SpawnNewWave(WCPlayer.Get(1), 0)
 
 Log("Game initialized successfully")
+
 end)
 -- End of file Tests\Main.lua
 -- Start of file WC3\AbilityInstance.lua
@@ -1480,6 +1080,70 @@ end
 return WCPlayer
 end)
 -- End of file WC3\Player.lua
+-- Start of file WC3\Rect.lua
+Module("WC3.Rect", function()
+local Class = Require("Class")
+
+local WCRect = Class()
+
+function WCRect:ctor(...)
+    local minx, miny, maxx, maxy = ...
+    self.handle = Rect(minx, miny, maxx, maxy)
+end
+
+function WCRect:Destroy()
+    RemoveRect(self.handle)
+end
+
+return WCRect
+end)
+-- End of file WC3\Rect.lua
+-- Start of file WC3\Region.lua
+Module("WC3.Region", function()
+local Class = Require("Class")
+
+local Region = Class()
+local regions = {}
+
+function Region.GetTriggering()
+    local handle = GetTriggeringRegion()
+    if handle == nil then
+        return nil
+    end
+    local existing = regions[handle]
+    if existing then
+        return existing
+    end
+    return Region(handle)
+end
+
+local function Register(region)
+    if regions[region.handle] then
+        error("Attempt to reregister a region", 3)
+    end
+    regions[region.handle] = region
+end
+
+function Region:ctor(handle)
+    self.handle = handle or CreateRegion()
+    Register(self)
+end
+
+function Region:Destroy()
+    RemoveRegion(self.handle)
+end
+
+function Region:IsUnitIn(whichUnit)
+    return IsUnitInRegion(self.handle, whichUnit.handle)
+end
+
+function Region:AddRect(rect)
+    RegionAddRect(self.handle, rect.handle)
+end
+
+return Region
+end)
+-- End of file WC3\Region.lua
 -- Start of file WC3\Timer.lua
 Module("WC3.Timer", function()
 local Class = Require("Class")
@@ -1487,7 +1151,7 @@ local Log = Require("Log")
 
 local Timer = Class()
 
-function Timer:ctor(handle)
+function Timer:ctor()
     self.handle = CreateTimer()
 end
 
@@ -1541,6 +1205,20 @@ function Trigger:RegisterUnitEvent(unit, event)
     return TriggerRegisterUnitEvent(self.handle, unit.handle, event)
 end
 
+function Trigger:RegisterEnterRegion(region, filter)
+    if filter then
+        filter = function ()
+            local result, errOrRet
+            if not result then
+                Log("Error filtering Region for and event: "..errOrRet)
+                return false
+            end
+            return errOrRet
+        end
+    end
+    return TriggerRegisterEnterRegion(self.handle, region.handle, filter)
+end
+
 function Trigger:AddAction(action)
     return TriggerAddAction(self.handle, function()
         local result, err = pcall(action)
@@ -1557,26 +1235,34 @@ end)
 Module("WC3.Unit", function()
 local Class = Require("Class")
 local WCPlayer = Require("WC3.Player")
+local Log = Require("Log")
 
 local Unit = Class()
 
 local units = {}
 
-function Unit.Get(handle)
+local function Get(handle)
     local existing = units[handle]
     if existing then
         return existing
     end
-    existing = Unit(handle)
-    return existing
+    return Unit(handle)
+end
+
+function Unit.GetFiltered()
+    return Get(GetFilterUnit())
+end
+
+function Unit.GetEntering()
+    return Get(GetEnteringUnit())
 end
 
 function Unit.EnumInRange(x, y, radius, handler)
     local group = CreateGroup()
     GroupEnumUnitsInRange(group, x, y, radius, Filter(function()
-        local result, err = pcall(handler, Unit.Get(GetFilterUnit()))
+        local result, err = pcall(handler, Unit.GetFiltered())
         if not result then
-            error("Error enumerating units in range: " .. err, 2)
+            Log("Error enumerating units in range: " .. err)
         end
     end))
     DestroyGroup(group)
@@ -1585,7 +1271,7 @@ end
 function Unit:ctor(...)
     local params = { ... }
     if #params == 1 then
-        self.handle = params[0]
+        self.handle = params[1]
     else
         local player, unitid, x, y, facing = ...
         self.handle = CreateUnit(player.handle, unitid, x, y, facing)
@@ -1685,18 +1371,57 @@ function Unit:AddAbility(id)
     end
 end
 
-Module("Tests.Main", function()
-    local DuskKnight = Require("Heroes.DuskKnight")
+function Unit:SetAbilityLevel(abilityId, level)
+    return SetUnitAbilityLevel(self.handle, abilityId, level)
+end
 
-    local UHDUnit = Require("UHDUnit")
-    local CreepsSpawner = Require("CreepsSpawner")
-    testCreepsSpawner = CreepsSpawner()
-    testCreepsSpawner:SpawnNewWave(WCPlayer.Get(1), 0)
-    local testHeroPreset = DuskKnight()
-    local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 1100, 0)
+function Unit:DamageTarget(target, damage, isAttack, isRanged, attackType, damageType, weaponType)
+    return UnitDamageTarget(self.handle, target.handle, damage, isAttack, isRanged, attackType, damageType, weaponType)
+end
 
-    Log("Game initialized successfully")
+function Unit:SetHpRegen(value)
+    return BlzSetUnitRealField(self.handle, UNIT_RF_HIT_POINTS_REGENERATION_RATE, value)
+end
+
+function Unit:SetManaRegen(value)
+    return BlzSetUnitRealField(self.handle, UNIT_RF_MANA_REGENERATION, value)
+end
+
+function Unit:IssuePointOrderById(order, x, y)
+    if math.type(x) and math.type(y) then
+        if math.type(order) == "integer" then
+            local result = IssuePointOrderById(self.handle, order, x, y)
+            return result
+        else
+            error("order should be integer", 2)
+        end
+    else
+        error("coorditane should be a number", 2)
+    end
+end
+
+function Unit:IssueAttackPoint(x, y)
+    return self:IssuePointOrderById(851983, x, y)
+end
+
+function Unit:GetName() return GetUnitName(self.handle) end
+function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end
+function Unit:GetX() return GetUnitX(self.handle) end
+function Unit:GetY() return GetUnitY(self.handle) end
+function Unit:GetHP() return GetWidgetLife(self.handle) end
+function Unit:SetHP(value) return SetWidgetLife(self.handle, value) end
+function Unit:GetMana() return GetUnitState(self.handle, UNIT_STATE_MANA) end
+function Unit:SetMana(value) return SetUnitState(self.handle, UNIT_STATE_MANA, value) end
+function Unit:GetMaxHP() return BlzGetUnitMaxHP(self.handle) end
+function Unit:GetMaxMana() return BlzGetUnitMaxMana(self.handle) end
+function Unit:GetOwner() return WCPlayer.Get(GetOwningPlayer(self.handle)) end
+function Unit:GetArmor() return BlzGetUnitArmor(self.handle) end
+function Unit:GetFacing() return GetUnitFacing(self.handle) end
+function Unit:GetAbility(id) return BlzGetUnitAbility(self.handle, id) end
+
+return Unit
 end)
+-- End of file WC3\Unit.lua
 function CreateUnitsForPlayer0()
     local p = Player(0)
     local u

@@ -1,56 +1,46 @@
-Module("PathNode", function (arg1, arg2, arg3)
-    
-    PathNode = Class()
+local Class = Require("Class")
+local Log = Require("Log")
+local WCRect = Require("WC3.Rect")
+local Region = Require("WC3.Region")
+local Trigger = Require("WC3.Trigger")
+local Unit = Require("WC3.Unit")
 
-    function PathNode:ctor(x, y, prevNode)
-        self.sizex = 200
-        self.sizey = 200
-        self.x = x
-        self.y = y
-        self.prevNode = prevNode
-        self.region = Region()
-        local rect = CRect(x - self.sizex, y - self.sizey, x + self.sizex, y + self.sizey)
-        self.region:RegionAddRect(rect)
-        if prevNode ~= nil then
-            self:SetEvent()
-        end
+local PathNode = Class()
+
+function PathNode:ctor(x, y, prev)
+    self.sizex = 200
+    self.sizey = 200
+    self.x = x
+    self.y = y
+    self.prev = prev
+    self.region = Region()
+    local rect = WCRect(x - self.sizex, y - self.sizey, x + self.sizex, y + self.sizey)
+    self.region:AddRect(rect)
+    if prev ~= nil then
+        self:SetEvent()
     end
+end
 
-    function PathNode:addNode(node)
-        self.prevNode = node
-    end
+function PathNode:GetCenter()
+    return self.x, self.y
+end
 
-    function PathNode:GetCenterPos()
-        return self.x, self.y
-    end
+function PathNode:IsUnitInNode(whichUnit)
+    return self.region:IsUnitIn(whichUnit)
+end
 
-    function PathNode:IsUnitInNode(whichUnit)
-        return self.region:IsUnitInRegion(whichUnit)
-    end
-
-    function PathNode:GetPrevCenterPos()
-        if self.prevNode then
-            return self.prevNode:GetCenterPos()
-        end
-    end
-
-    function PathNode:IsPrevNode()
-        if not self.prevNode then
-            return true
-        end
-        return false
-    end
-
-    function PathNode:SetEvent(formation)
-        Log(" Add trigger to path Node in"..self.x.." "..self.y)
-        local trigger = Trigger()
-        trigger:TriggerRegisterEnterRegion(self.region, nil)
-        trigger:AddAction(function()
-            local whichunit = Unit.Get(GetEnteringUnit())
-            local x, y = self:GetPrevCenterPos()
+function PathNode:SetEvent(formation)
+    Log(" Add trigger to path Node in"..self.x.." "..self.y)
+    local trigger = Trigger()
+    trigger:RegisterEnterRegion(self.region)
+    trigger:AddAction(function()
+        local whichunit = Unit.GetEntering()
+        if self.prev then
+            local x, y = self.prev:GetCenter()
             whichunit:IssueAttackPoint(x, y)
-            Log(" Mobs in node: "..self.x.." "..self.y)
-        end)
-    end
-    return PathNode
-end)
+        end
+        Log(" Mobs in node: "..self.x.." "..self.y)
+    end)
+end
+
+return PathNode

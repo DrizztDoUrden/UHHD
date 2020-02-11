@@ -1,56 +1,33 @@
 local Class = Require("Class")
 local WCPlayer = Require("WC3.Player")
+local Log = Require("Log")
 
 local Unit = Class()
 
 local units = {}
 
-function Unit.Get(handle)
+local function Get(handle)
     local existing = units[handle]
     if existing then
         return existing
     end
-    existing = Unit(handle)
-    return existing
+    return Unit(handle)
 end
 
-    function Unit:IssuePointOrderById(order, x, y)
-        if math.type(x) and math.type(y) then
-            if math.type(order) == "integer" then
-                local result = IssuePointOrderById(self.handle, order, x, y)
-                return result
-            else
-                error("order should be integer", 2)
-            end
-        else
-            error("coorditane should be a number", 2)
-        end
-    end
+function Unit.GetFiltered()
+    return Get(GetFilterUnit())
+end
 
-    function Unit:IssueAttackPoint(x, y)
-        return self:IssuePointOrderById(851983, x, y)
-    end
+function Unit.GetEntering()
+    return Get(GetEnteringUnit())
+end
 
-
-
-    function Unit.EnumInRange(x, y, radius, handler)
-        local group = CreateGroup()
-        GroupEnumUnitsInRange(group, x, y, radius, Filter(function()
-            local result, err = pcall(handler, Unit.Get(GetFilterUnit()))
-            if not result then
-                Log("Error enumerating units in range: " .. err)
-            end
-        end))
-        DestroyGroup(group)
-    end
-
-    function Unit:ctor(...)
-        local params = { ... }
-        if #params == 1 then
-            self.handle = params[0]
-        else
-            local player, unitid, x, y, facing = ...
-            self.handle = CreateUnit(player.handle, unitid, x, y, facing)
+function Unit.EnumInRange(x, y, radius, handler)
+    local group = CreateGroup()
+    GroupEnumUnitsInRange(group, x, y, radius, Filter(function()
+        local result, err = pcall(handler, Unit.GetFiltered())
+        if not result then
+            Log("Error enumerating units in range: " .. err)
         end
     end))
     DestroyGroup(group)
@@ -59,7 +36,7 @@ end
 function Unit:ctor(...)
     local params = { ... }
     if #params == 1 then
-        self.handle = params[0]
+        self.handle = params[1]
     else
         local player, unitid, x, y, facing = ...
         self.handle = CreateUnit(player.handle, unitid, x, y, facing)
@@ -173,6 +150,23 @@ end
 
 function Unit:SetManaRegen(value)
     return BlzSetUnitRealField(self.handle, UNIT_RF_MANA_REGENERATION, value)
+end
+
+function Unit:IssuePointOrderById(order, x, y)
+    if math.type(x) and math.type(y) then
+        if math.type(order) == "integer" then
+            local result = IssuePointOrderById(self.handle, order, x, y)
+            return result
+        else
+            error("order should be integer", 2)
+        end
+    else
+        error("coorditane should be a number", 2)
+    end
+end
+
+function Unit:IssueAttackPoint(x, y)
+    return self:IssuePointOrderById(851983, x, y)
 end
 
 function Unit:GetName() return GetUnitName(self.handle) end
