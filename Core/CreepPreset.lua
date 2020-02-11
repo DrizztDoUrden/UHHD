@@ -29,7 +29,7 @@ end
 
 function CreepPreset:Spawn(owner, x, y, facing)
     Log(" CreepPreset:Spawn")
-    Log(" id=", self.unitid)
+    Log(" id="..self.unitid)
     local creep = Creep(owner, self.unitid, x, y, facing);
     creep.secondaryStats = self.secondaryStats
     creep:ApplyStats()

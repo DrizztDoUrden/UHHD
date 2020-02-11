@@ -1,36 +1,19 @@
 local Log = Require("Log")
 local Class = Require("Class")
-local PathNode = Require("Core.PathNode")
-
+local PathNode = Require("Core.Node.PathNode")
 local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
 local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
 
-local CreepSpawner = Class()
+local CreepSpawner = Class(PathNode)
 
-function CreepSpawner:ctor(positions)
+function CreepSpawner:ctor(x, y, prevnode)
+    PathNode.ctor(self, x, y, prevnode)
     Log("Construct CreepSpawner")
     self.level = 0
-    self.x = 700
-    self.y = 0
     self.levelCreepsComopsion = levelCreepsComopsion
-    Log("in zero wave first creater is ",self.levelCreepsComopsion[1][1])
     self.nComposion = nComposion
     self.maxlevel = maxlevel
     self.aComposition = aComposition
-    self.nodes = {}
-    self.creeps = {}
-    local prevnode = {}
-    local node = {}
-    for i, pos in pairs(positions) do
-        if i == 1 then
-            node = PathNode(pos[1], pos[2], nil)
-        else
-            node = PathNode(pos[1], pos[2], prevnode)
-        end
-        table.insert(self.nodes, node)
-        prevnode = node
-    end
-    self.x , self.y = self.nodes[#self.nodes]:GetCenter()
 end
 
 function CreepSpawner:GetNextWaveSpecification()
@@ -58,9 +41,7 @@ function CreepSpawner:SpawnNewWave(owner, facing)
         for j = 1, nComposion[i] do
             local creepPresetClass = CreepClasses[CreepName]
             local creepPreset = creepPresetClass()
-            Log("Spawn new unit")
-            local Creep = creepPreset:Spawn(owner, self.x, self.y, facing)
-            table.insert(self.creeps, Creep)
+            local creep = creepPreset:Spawn(owner, self.x, self.y, facing)
         end
     end
 end

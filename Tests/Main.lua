@@ -3,7 +3,7 @@ local WCPlayer = Require("WC3.Player")
 local DuskKnight = Require("Heroes.DuskKnight")
 local WaveObserver = Require("Core.WaveObserver")
 local testHeroPreset = DuskKnight()
-local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 700, 0)
+local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 0, 0)
 
 local testWaveObserver = WaveObserver(WCPlayer.Get(1))
 
