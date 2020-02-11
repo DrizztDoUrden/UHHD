@@ -1,81 +1,84 @@
-do
-    local result, err = pcall(function()
-        local handlers = {
-            initGlobals = {},
-            initBlizzard = {},
-            initCustomTriggers = {},
-            initialization = {},
-            gameStart = {},
-        }
+local Log = Require("Log")
+local Timer = Require("WC3.Timer")
 
-        local function FunctionRegistar(table)
-            return setmetatable({}, {
-                __index = {
-                    Add = function(_, func)
-                        table[func] = true
-                    end
-                },
-            })
-        end
+local handlers = {
+    initGlobals = { funcs = {}, executed = false, },
+    initBlizzard = { funcs = {}, executed = false, },
+    initCustomTriggers = { funcs = {}, executed = false, },
+    initialization = { funcs = {}, executed = false, },
+    gameStart = { funcs = {}, executed = false, },
+}
 
-        GlobalInit = FunctionRegistar(handlers.initGlobals)
-        CustomTriggerInit = FunctionRegistar(handlers.initCustomTriggers)
-        Initializtion = FunctionRegistar(handlers.initialization)
-        BlizzardInit = FunctionRegistar(handlers.initBlizzard)
-        GameStart = FunctionRegistar(handlers.gameStart)
-
-        local function RunHandlers(table)
-            for handler in pairs(handlers[table]) do
-                local result, err = pcall(function()
-                    handler()
-                end)
-                if not result then Log(err) end
+local function FunctionRegistar(table)
+    return setmetatable({}, {
+        __index = {
+            Add = function(_, func)
+                if table.executed then
+                    local result, err = pcall(func)
+                    if not result then Log(err) end
+                else
+                    table.funcs[func] = true
+                end
             end
-            handlers[table] = nil
-        end
+        },
+    })
+end
 
-        local gst = Timer()
-        gst:Start(0.00, false, function()
-            gst:Destroy()
-            RunHandlers("gameStart")
-        end)
+local Init = {
+    Global = FunctionRegistar(handlers.initGlobals),
+    CustomTrigger = FunctionRegistar(handlers.initCustomTriggers),
+    Initializtion = FunctionRegistar(handlers.initialization),
+    Blizzard = FunctionRegistar(handlers.initBlizzard),
+    GameStart = FunctionRegistar(handlers.gameStart),
+}
 
-        local oldInitBliz = InitBlizzard
-        local oldInitGlobals = InitGlobals
-        local oldInitTrigs = InitCustomTriggers
-        local oldInit = RunInitializationTriggers
+local function RunHandlers(table)
+    for handler in pairs(handlers[table].funcs) do
+        local result, err = pcall(handler)
+        if not result then Log(err) end
+    end
+    handlers[table].funcs = nil
+    handlers[table].executed = true
+end
 
-        function InitBlizzard()
-            oldInitBliz()
-            RunHandlers("initBlizzard")
-            if not oldInitGlobals then
-                InitGlobals()
-            end
-            if not oldInitTrigs then
-                InitCustomTriggers()
-            end
-            if not oldInit then
-                RunInitializationTriggers()
-            end
-        end
+local gst = Timer()
+gst:Start(0.00, false, function()
+    gst:Destroy()
+    RunHandlers("gameStart")
+end)
 
-        function InitGlobals()
-            if oldInitGlobals then oldInitGlobals() end
-            RunHandlers("initGlobals")
-        end
+local oldInitBliz = InitBlizzard
+local oldInitGlobals = InitGlobals
+local oldInitTrigs = InitCustomTriggers
+local oldInit = RunInitializationTriggers
 
-        function InitCustomTriggers()
-            if oldInitTrigs then oldInitTrigs() end
-            RunHandlers("initCustomTriggers")
-        end
-
-        function RunInitializationTriggers()
-            if oldInit then oldInit() end
-            RunHandlers("initialization")
-        end
-    end)
-
-    if not result then
-        print(err)
+function InitBlizzard()
+    oldInitBliz()
+    RunHandlers("initBlizzard")
+    if not oldInitGlobals then
+        InitGlobals()
+    end
+    if not oldInitTrigs then
+        InitCustomTriggers()
+    end
+    if not oldInit then
+        RunInitializationTriggers()
     end
 end
+
+function InitGlobals()
+    if oldInitGlobals then oldInitGlobals() end
+    RunHandlers("initGlobals")
+end
+
+function InitCustomTriggers()
+    if oldInitTrigs then oldInitTrigs() end
+    RunHandlers("initCustomTriggers")
+end
+
+function RunInitializationTriggers()
+    if oldInit then oldInit() end
+    RunHandlers("initialization")
+end
+
+return Init
