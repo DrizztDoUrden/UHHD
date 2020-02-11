@@ -1,6 +1,10 @@
+local Log = Require("Log")
+local WCPlayer = Require("WC3.Player")
+local DuskKnight = Require("Heroes.DuskKnight")
+local CreepsSpawner = Require("Core.CreepsSpawner")
 
-Module("Tests.Main", function()
-    local DuskKnight = Require("Heroes.DuskKnight")
+local testHeroPreset = DuskKnight()
+local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 700, 0)
 
     local UHDUnit = Require("UHDUnit")
     local WaveObserver = Require("WaveObserver")
@@ -8,5 +12,4 @@ Module("Tests.Main", function()
     local testHeroPreset = DuskKnight()
     local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 700, 0)
 
-    Log("Game initialized successfully")
-end)
+Log("Game initialized successfully")

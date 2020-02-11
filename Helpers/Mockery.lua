@@ -21,7 +21,11 @@ ExtensiveLog = false
 ---@class ability
 ---@class abilityreallevelfield
 ---@class unitrealfield
+---@class region
+---@class rect
+---@class location
 
+EVENT_UNIT_SPELL_FINISH = {}
 EVENT_UNIT_DEATH = {}
 EVENT_PLAYER_UNIT_DEATH = {}
 
@@ -174,6 +178,15 @@ function BlzGetUnitAbility(whichUnit, abilId) end
 ---@param value number
 ---@return boolean
 function BlzSetUnitRealField(whichUnit, whichField, value) end
+---@param whichUnit unit
+---@param newSpeed number
+function SetUnitMoveSpeed(whichUnit, newSpeed) end
+---@param unit unit
+---@param value number
+function SetUnitX(unit, value) end
+---@param unit unit
+---@param value number
+function SetUnitY(unit, value) end
 
 function RemoveUnit(whichUnit) end
 
@@ -283,17 +296,44 @@ function GroupEnumUnitsInRange(whichGroup, x, y, radius, filter) end
 
 ---@return unit
 function GetFilterUnit() end
-
+---@return unit
 function GetEnteringUnit() end
+---@return region
+function GetTriggeringRegion() end
 
+---@param minx number
+---@param miny number
+---@param maxx number
+---@param maxy number
+---@return rect
 function Rect(minx, miny, maxx, maxy) end
-
+---@param rect rect
 function RemoveRect(rect) end
 
+---@return region
 function CreateRegion() end
-    
+---@param region region
 function RemoveRegion(region) end
-
-function RegionAddRect(rect) end
-
+---@param region region
+---@param rect rect
+function RegionAddRect(region, rect) end
+---@param region region
+---@param whichUnit unit
+---@return boolean
 function IsUnitInRegion(region, whichUnit) end
+
+---@return number
+function GetSpellTargetX() end
+---@return number
+function GetSpellTargetY() end
+---@return location
+function GetSpellTargetLoc() end
+
+---@param loc location
+function GetLocationX(loc) end
+---@param loc location
+function GetLocationY(loc) end
+---@param loc location
+function GetLocationZ(loc) end
+---@param loc location
+function RemoveLocation(loc) end

@@ -1,4 +1,4 @@
-function Class(base, ctor)
+local function Class(base, ctor)
     local class = {}
 
     if not ctor and type(base) == 'function' then
@@ -42,3 +42,5 @@ function Class(base, ctor)
     setmetatable(class, mt)
     return class
 end
+
+return Class

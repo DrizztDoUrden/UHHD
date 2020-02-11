@@ -1,0 +1,5 @@
+{
+    "wpsc.excludes": [
+        "Helpers\\Mockery.lua"
+    ]
+}
