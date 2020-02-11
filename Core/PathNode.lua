@@ -4,7 +4,7 @@ local WCRect = Require("WC3.Rect")
 local Region = Require("WC3.Region")
 local Trigger = Require("WC3.Trigger")
 local Unit = Require("WC3.Unit")
-
+local Creep = Require("Core.Creep")
 local PathNode = Class()
 
 function PathNode:ctor(x, y, prev)
@@ -35,7 +35,7 @@ function PathNode:SetEvent(formation)
     trigger:RegisterEnterRegion(self.region)
     trigger:AddAction(function()
         local whichunit = Unit.GetEntering()
-        if self.prev then
+        if self.prev and whichunit:IsA(Creep) then
             local x, y = self.prev:GetCenter()
             whichunit:IssueAttackPoint(x, y)
         end

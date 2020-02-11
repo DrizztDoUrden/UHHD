@@ -5,7 +5,7 @@ local Creep = Class(UHDUnit)
 
     function Creep:Destroy()
         local timer = Timer()
-        timer:Start(10, false, function()
+        timer:Start(5, false, function()
             UHDUnit.Destroy(self)
             timer:Destroy()
         end)

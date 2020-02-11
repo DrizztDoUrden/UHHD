@@ -18,6 +18,10 @@ function Unit.GetFiltered()
     return Get(GetFilterUnit())
 end
 
+function Unit.GetDying()
+    return Get(GetDyingUnit())
+end
+
 function Unit.GetEntering()
     return Get(GetEnteringUnit())
 end
@@ -117,6 +121,11 @@ function Unit:SetAgi(value, permanent)
     else
         error("Unit agility should be a number (" .. type(value) .. ")", 2)
     end
+end
+
+function Unit:Destroy()
+    units[self.handle] = nil
+    RemoveUnit(self.handle)
 end
 
 function Unit:SetInt(value, permanent)
