@@ -14,12 +14,43 @@ function Unit.Get(handle)
     return existing
 end
 
-function Unit.EnumInRange(x, y, radius, handler)
-    local group = CreateGroup()
-    GroupEnumUnitsInRange(group, x, y, radius, Filter(function()
-        local result, err = pcall(handler, Unit.Get(GetFilterUnit()))
-        if not result then
-            error("Error enumerating units in range: " .. err, 2)
+    function Unit:IssuePointOrderById(order, x, y)
+        if math.type(x) and math.type(y) then
+            if math.type(order) == "integer" then
+                local result = IssuePointOrderById(self.handle, order, x, y)
+                return result
+            else
+                error("order should be integer", 2)
+            end
+        else
+            error("coorditane should be a number", 2)
+        end
+    end
+
+    function Unit:IssueAttackPoint(x, y)
+        return self:IssuePointOrderById(851983, x, y)
+    end
+
+
+
+    function Unit.EnumInRange(x, y, radius, handler)
+        local group = CreateGroup()
+        GroupEnumUnitsInRange(group, x, y, radius, Filter(function()
+            local result, err = pcall(handler, Unit.Get(GetFilterUnit()))
+            if not result then
+                Log("Error enumerating units in range: " .. err)
+            end
+        end))
+        DestroyGroup(group)
+    end
+
+    function Unit:ctor(...)
+        local params = { ... }
+        if #params == 1 then
+            self.handle = params[0]
+        else
+            local player, unitid, x, y, facing = ...
+            self.handle = CreateUnit(player.handle, unitid, x, y, facing)
         end
     end))
     DestroyGroup(group)

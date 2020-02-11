@@ -142,3 +142,9 @@ STRING 35
 Heals the caster by |cff3cff3c20 + 10%|r of current HP over 4 seconds.|nCooldown: 15 seconds
 }
 
+STRING 36
+// Units: C_MD (MagicDragon), Name (Name)
+{
+MagicDragon
+}
+

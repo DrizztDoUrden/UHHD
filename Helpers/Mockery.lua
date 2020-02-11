@@ -26,6 +26,8 @@ EVENT_UNIT_DEATH = {}
 
 EVENT_PLAYER_UNIT_SPELL_FINISH = {}
 
+EVENT_GAME_ENTER_REGION = {}
+
 UNIT_STATE_LIFE = {}
 UNIT_STATE_MANA = {}
 UNIT_STATE_MAX_LIFE = {}
@@ -170,6 +172,8 @@ function BlzGetUnitAbility(whichUnit, abilId) end
 ---@return boolean
 function BlzSetUnitRealField(whichUnit, whichField, value) end
 
+
+function IssuePointOrderById(whichUnit, order, x, y) end
 ---@param whichHero unit
 ---@param value integer
 ---@param permanent boolean
@@ -249,6 +253,7 @@ function TriggerAddAction(whichTrigger, actionFunc) end
 ---@return event
 function TriggerRegisterUnitEvent(whichTrigger, whichUnit, whichEvent) end
 
+function TriggerRegisterEnterRegion(trigger, whichTrigger, whichRegion, filter) end
 ---@param func function
 ---@return filterfunc
 function Filter(func) end
@@ -272,3 +277,17 @@ function GroupEnumUnitsInRange(whichGroup, x, y, radius, filter) end
 
 ---@return unit
 function GetFilterUnit() end
+
+function GetEnteringUnit() end
+
+function Rect(minx, miny, maxx, maxy) end
+
+function RemoveRect(rect) end
+
+function CreateRegion() end
+    
+function RemoveRegion(region) end
+
+function RegionAddRect(rect) end
+
+function IsUnitInRegion(region, whichUnit) end
