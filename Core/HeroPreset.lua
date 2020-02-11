@@ -38,7 +38,7 @@ function HeroPreset:Spawn(owner, x, y, facing)
     hero:SetBasicStats(self.basicStats)
 
     hero.abilities = Trigger()
-    hero.abilities:RegisterPlayerUnitEvent(owner, EVENT_PLAYER_UNIT_SPELL_FINISH)
+    hero.abilities:RegisterUnitSpellFinish(hero)
     hero.abilities:AddAction(function() self:Cast(hero) end)
 
     for _, ability in pairs(self.abilities) do
@@ -53,6 +53,7 @@ end
 
 function HeroPreset:Cast(hero)
     local abilityId = GetSpellAbilityId()
+    print(GetSpellTargetX(), GetSpellTargetY())
 
     for _, ability in pairs(self.abilities) do
         if ability.id == abilityId then

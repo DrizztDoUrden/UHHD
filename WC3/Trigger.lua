@@ -26,8 +26,12 @@ function Trigger:RegisterPlayerUnitEvent(player, event, filter)
     return TriggerRegisterPlayerUnitEvent(self.handle, player.handle, event, Filter(filter))
 end
 
-function Trigger:RegisterUnitEvent(unit, event)
-    return TriggerRegisterUnitEvent(self.handle, unit.handle, event)
+function Trigger:RegisterUnitDeath(unit)
+    return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_DEATH)
+end
+
+function Trigger:RegisterUnitSpellFinish(unit)
+    return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SPELL_FINISH)
 end
 
 function Trigger:RegisterEnterRegion(region, filter)

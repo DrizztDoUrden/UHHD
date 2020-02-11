@@ -148,3 +148,15 @@ STRING 36
 MagicDragon
 }
 
+STRING 37
+// Abilities: DK_2 (Shadow Leap), Tip (Tooltip - Normal)
+{
+Shadow Leap
+}
+
+STRING 38
+// Abilities: DK_2 (Shadow Leap), Ubertip (Tooltip - Normal - Extended)
+{
+Hero charges up to 300 distance to a point in up to 0.5 seconds. Every creep on the way gets |cffff606020|r damage and is pushed 100 aside.|nCooldown: 12 seconds.
+}
+

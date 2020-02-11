@@ -46,6 +46,7 @@ function UHDUnit:ApplyStats()
     self:SetArmor(self.secondaryStats.armor)
     self:SetHpRegen(self.secondaryStats.healthRegen)
     self:SetManaRegen(self.secondaryStats.manaRegen)
+    self:SetMoveSpeed(self.secondaryStats.movementSpeed)
 
     if oldMaxHp > 0 then
         self:SetHP(oldHp * self.secondaryStats.health / oldMaxHp)

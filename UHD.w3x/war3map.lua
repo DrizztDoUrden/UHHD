@@ -260,14 +260,66 @@ end)
 -- End of file Initialization.lua
 -- Start of file Log.lua
 Module("Log", function()
-local function Log(...)
-    local text = table.concat({...}, "\n")
-    if TestBuild then
-        print(text)
-    end
-    Preload("\")\n" .. text .. "\n\\")
-    PreloadGenEnd("log.txt")
+local Class = Require("Class")
+
+local Verbosity = {
+    Fatal = 0,
+    Critical = 1,
+    Error = 2,
+    Warning = 3,
+    Message = 4,
+    Info = 5,
+    Trace = 6,
+}
+
+local Category = Class()
+
+function Category:ctor(name, options)
+    options = options or {}
+    self.name = name
+    self.fileVerbosity = options.fileVerbosity or Verbosity.Message
+    self.printVerbosity = options.printVerbosity or Verbosity.Warning
+    self.buffer = ""
 end
+
+local defaultCategory = Category("Default")
+
+local function LogInternal(category, verbosity, ...)
+    if verbosity <= math.max(category.printVerbosity, category.fileVerbosity) then
+        if verbosity <= category.printVerbosity then
+            for _, line in pairs({...}) do
+                print(line)
+            end
+        end
+        if verbosity <= category.fileVerbosity then
+            for _, line in pairs({...}) do
+                category.buffer = category.buffer .. "\n" .. tostring(line)
+            end
+            PreloadGenClear()
+            PreloadStart()
+            Preload("\")\n" .. category.buffer .. "\n\\")
+            PreloadGenEnd("Logs\\" .. category.name .. ".txt")
+            print(category.buffer)
+        end
+    end
+end
+
+local mt = {
+    __call = function(...) LogInternal(defaultCategory, Verbosity.Message, ...) end,
+    __index = {
+        Fatal = function(cat, ...) LogInternal(cat, Verbosity.Fatal, ...) end,
+        Critical = function(cat, ...) LogInternal(cat, Verbosity.Critical, ...) end,
+        Error = function(cat, ...) LogInternal(cat, Verbosity.Error, ...) end,
+        Warning = function(cat, ...) LogInternal(cat, Verbosity.Warning, ...) end,
+        Message = function(cat, ...) LogInternal(cat, Verbosity.Message, ...) end,
+        Info = function(cat, ...) LogInternal(cat, Verbosity.Info, ...) end,
+        Trace = function(cat, ...) LogInternal(cat, Verbosity.Trace, ...) end,
+
+        Default = defaultCategory,
+    },
+}
+
+local Log = setmetatable({}, mt)
 
 return Log
 end)
@@ -507,7 +559,7 @@ function HeroPreset:Spawn(owner, x, y, facing)
     hero:SetBasicStats(self.basicStats)
 
     hero.abilities = Trigger()
-    hero.abilities:RegisterPlayerUnitEvent(owner, EVENT_PLAYER_UNIT_SPELL_FINISH)
+    hero.abilities:RegisterUnitSpellFinish(hero)
     hero.abilities:AddAction(function() self:Cast(hero) end)
 
     for _, ability in pairs(self.abilities) do
@@ -522,6 +574,7 @@ end
 
 function HeroPreset:Cast(hero)
     local abilityId = GetSpellAbilityId()
+    print(GetSpellTargetX(), GetSpellTargetY())
 
     for _, ability in pairs(self.abilities) do
         if ability.id == abilityId then
@@ -719,6 +772,7 @@ function UHDUnit:ApplyStats()
     self:SetArmor(self.secondaryStats.armor)
     self:SetHpRegen(self.secondaryStats.healthRegen)
     self:SetManaRegen(self.secondaryStats.manaRegen)
+    self:SetMoveSpeed(self.secondaryStats.movementSpeed)
 
     if oldMaxHp > 0 then
         self:SetHP(oldHp * self.secondaryStats.health / oldMaxHp)
@@ -778,7 +832,9 @@ local Class = Require("Class")
 local Timer = Require("WC3.Timer")
 local Trigger = Require("WC3.Trigger")
 local Unit = Require("WC3.Unit")
+local Location = Require("WC3.Location")
 local HeroPreset = Require("Core.HeroPreset")
+local UHDUnit = Require("Core.UHDUnit")
 
 local DuskKnight = Class(HeroPreset)
 
@@ -810,21 +866,26 @@ function DuskKnight:ctor()
             availableFromStart = true,
             radius = function(_) return 75 end,
             distance = function(_) return 75 end,
-            baseDamage = function(_) return 30 end,
+            baseDamage = function(_, caster) return 30 * caster.secondaryStats.physicalDamage end,
+            baseSlow = function(_) return 0.3 end,
+            slowDuration = function(_) return 3 end,
         },
         shadowLeap = {
             id = FourCC('DK_2'),
             handler = ShadowLeap,
             availableFromStart = true,
-            -- radius = function(_) return 75 end,
-            -- distance = function(_) return 75 end,
-            -- baseDamage = function(_) return 30 end,
+            period = function(_) return 0.05 end,
+            duration = function(_) return 0.5 end,
+            distance = function(_) return 300 end,
+            baseDamage = function(_, caster) return 20 * caster.secondaryStats.physicalDamage end,
+            push = function(_) return 100 end,
+            pushDuration = function(_) return 0.5 end,
         },
         darkMend = {
             id = FourCC('DK_3'),
             handler = DarkMend,
             availableFromStart = true,
-            baseHeal = function(_) return 20 end,
+            baseHeal = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
             duration = function(_) return 4 end,
             percentHeal = function(_) return 0.1 end,
             period = function(_) return 0.1 end,
@@ -933,6 +994,8 @@ function HeavySlash:ctor(definition, caster)
     self.radius = definition:radius(caster)
     self.distance = definition:distance(caster)
     self.baseDamage = definition:baseDamage(caster)
+    self.baseSlow = definition:baseSlow(caster)
+    self.slowDuration = definition:slowDuration(caster)
     self:Cast()
 end
 
@@ -940,15 +1003,90 @@ function HeavySlash:Cast()
     local facing = self.caster:GetFacing() * math.pi / 180
     local x = self.caster:GetX() + math.cos(facing) * self.distance
     local y = self.caster:GetY() + math.sin(facing) * self.distance
+    local affected = {}
 
     Unit.EnumInRange(x, y, self.radius, function(unit)
         if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DamageTarget(unit, self.baseDamage, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_METAL_MEDIUM_SLICE)
+
+            if unit:IsA(UHDUnit) then
+                affected[unit] = true
+                unit.secondaryStats.movementSpeed = unit.secondaryStats.movementSpeed * (1 - self.baseSlow)
+                unit.secondaryStats.attackSpeed = unit.secondaryStats.attackSpeed * (1 - self.baseSlow)
+                unit:ApplyStats()
+            end
+        end
+    end)
+
+    local timer = Timer()
+    timer:Start(self.slowDuration, false, function()
+        timer:Destroy()
+        for unit in pairs(affected) do
+            unit.secondaryStats.movementSpeed = unit.secondaryStats.movementSpeed / (1 - self.baseSlow)
+            unit.secondaryStats.attackSpeed = unit.secondaryStats.attackSpeed / (1 - self.baseSlow)
+            unit:ApplyStats()
         end
     end)
 end
 
 function ShadowLeap:ctor(definition, caster)
+    self.caster = caster
+    self.period = definition:period(caster)
+    self.duration = definition:duration(caster)
+    self.distance = definition:distance(caster)
+    self.baseDamage = definition:baseDamage(caster)
+    self.push = definition:push(caster)
+    self.pushDuration = definition:pushDuration(caster)
+    self:Cast()
+end
+
+function ShadowLeap:Cast()
+    local timer = Timer()
+    local timeLeft = self.duration
+    local affected = {}
+    local pushTicks = math.floor(self.pushDuration / self.period);
+    local target = Location.SpellTarget()
+    local targetX = target.x
+    local targetY = target.y
+    local targetDistance = math.sqrt((targetX - self.caster:GetX())^2 + (targetY - self.caster:GetY())^2)
+    local selfPush = math.min(targetDistance, self.distance) / math.floor(self.duration / self.period)
+    local castAngle = math.atan(targetY - self.caster:GetY(), targetX - self.caster:GetX())
+
+    print(targetX, targetX)
+    print(targetX - self.caster:GetX(), targetY - self.caster:GetY())
+    print(castAngle * 180 / math.pi)
+
+    local selfPushX = selfPush * math.cos(castAngle)
+    local selfPushY = selfPush * math.sin(castAngle)
+    timer:Start(self.period, true, function()
+        if timeLeft <= -self.pushDuration then
+            timer:Destroy()
+        end
+        if timeLeft > 0 then
+            self.caster:SetX(self.caster:GetX() + selfPushX)
+            self.caster:SetY(self.caster:GetY() + selfPushY)
+            Unit.EnumInRange(self.caster:GetX(), self.caster:GetY(), 50, function (unit)
+                if not affected[unit] and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+                    local angle = math.atan(self.caster:GetY() - unit:GetY(), self.caster:GetX() - unit:GetX())
+                    affected[unit] = {
+                        x = self.push * math.cos(angle) / pushTicks,
+                        y = self.push * math.sin(angle) / pushTicks,
+                        ticksLeft = pushTicks,
+                    }
+                    self.caster:DamageTarget(unit, self.baseDamage, false, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_METAL_MEDIUM_SLICE)
+                end
+            end)
+        end
+        timeLeft = timeLeft - self.period
+        for unit, push in pairs(affected) do
+            unit:SetX(unit:GetX() + push.x)
+            unit:SetY(unit:GetY() + push.y)
+            push.ticksLeft = push.ticksLeft - 1
+            if push.ticksLeft == 0 then
+                affected[unit] = nil
+            end
+        end
+    end)
 end
 
 function DarkMend:ctor(definition, caster)
@@ -957,7 +1095,6 @@ function DarkMend:ctor(definition, caster)
     self.duration = definition:duration(caster)
     self.percentHeal = definition:percentHeal(caster)
     self.period = definition:period(caster)
-    self.spellDamage = caster.secondaryStats.spellDamage
     self:Cast()
 end
 
@@ -965,9 +1102,14 @@ function DarkMend:Cast()
     local timer = Timer()
     local timeLeft = self.duration
     timer:Start(self.period, true, function()
+        local curHp = self.caster:GetHP();
+        if curHp <= 0 then
+            timer:Destroy()
+            return
+        end
         timeLeft = timeLeft - self.period
         local part = self.period / self.duration
-        self.caster:SetHP(self.caster:GetHP() + (self.caster:GetHP() * self.percentHeal + self.baseHeal) * self.spellDamage * part)
+        self.caster:SetHP(curHp + (self.caster:GetHP() * self.percentHeal + self.baseHeal) * part)
         if timeLeft <= 0 then
             timer:Destroy()
         end
@@ -1049,6 +1191,32 @@ end
 return AbilityInstance
 end)
 -- End of file WC3\AbilityInstance.lua
+-- Start of file WC3\Location.lua
+Module("WC3.Location", function()
+local Class = Require("Class")
+
+local Location = Class()
+
+function Location.SpellTarget()
+    return Location(GetSpellTargetLoc())
+end
+
+function Location:ctor(...)
+    if #{...} > 1 then
+        self.x, self.y, self.z = ...
+        self.z = self.z or 0
+    else
+        local loc = ...
+        self.x = GetLocationX(loc)
+        self.y = GetLocationY(loc)
+        self.z = GetLocationZ(loc)
+        RemoveLocation(loc)
+    end
+end
+
+return Location
+end)
+-- End of file WC3\Location.lua
 -- Start of file WC3\Player.lua
 Module("WC3.Player", function()
 local Class = Require("Class")
@@ -1201,8 +1369,12 @@ function Trigger:RegisterPlayerUnitEvent(player, event, filter)
     return TriggerRegisterPlayerUnitEvent(self.handle, player.handle, event, Filter(filter))
 end
 
-function Trigger:RegisterUnitEvent(unit, event)
-    return TriggerRegisterUnitEvent(self.handle, unit.handle, event)
+function Trigger:RegisterUnitDeath(unit)
+    return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_DEATH)
+end
+
+function Trigger:RegisterUnitSpellFinish(unit)
+    return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SPELL_FINISH)
 end
 
 function Trigger:RegisterEnterRegion(region, filter)
@@ -1404,10 +1576,23 @@ function Unit:IssueAttackPoint(x, y)
     return self:IssuePointOrderById(851983, x, y)
 end
 
+function Unit:SetMoveSpeed(value)
+    SetUnitMoveSpeed(self.handle, 300 * value)
+end
+
+function Unit:SetX(value)
+    SetUnitX(self.handle, value)
+end
+
+function Unit:SetY(value)
+    SetUnitY(self.handle, value)
+end
+
 function Unit:GetName() return GetUnitName(self.handle) end
 function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end
 function Unit:GetX() return GetUnitX(self.handle) end
 function Unit:GetY() return GetUnitY(self.handle) end
+function Unit:GetPos() return self:GetX(), self:GetY() end
 function Unit:GetHP() return GetWidgetLife(self.handle) end
 function Unit:SetHP(value) return SetWidgetLife(self.handle, value) end
 function Unit:GetMana() return GetUnitState(self.handle, UNIT_STATE_MANA) end

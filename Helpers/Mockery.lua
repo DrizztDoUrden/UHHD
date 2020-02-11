@@ -23,7 +23,9 @@ ExtensiveLog = false
 ---@class unitrealfield
 ---@class region
 ---@class rect
+---@class location
 
+EVENT_UNIT_SPELL_FINISH = {}
 EVENT_UNIT_DEATH = {}
 
 EVENT_PLAYER_UNIT_SPELL_FINISH = {}
@@ -173,7 +175,15 @@ function BlzGetUnitAbility(whichUnit, abilId) end
 ---@param value number
 ---@return boolean
 function BlzSetUnitRealField(whichUnit, whichField, value) end
-
+---@param whichUnit unit
+---@param newSpeed number
+function SetUnitMoveSpeed(whichUnit, newSpeed) end
+---@param unit unit
+---@param value number
+function SetUnitX(unit, value) end
+---@param unit unit
+---@param value number
+function SetUnitY(unit, value) end
 
 function IssuePointOrderById(whichUnit, order, x, y) end
 ---@param whichHero unit
@@ -304,3 +314,19 @@ function RegionAddRect(region, rect) end
 ---@param whichUnit unit
 ---@return boolean
 function IsUnitInRegion(region, whichUnit) end
+
+---@return number
+function GetSpellTargetX() end
+---@return number
+function GetSpellTargetY() end
+---@return location
+function GetSpellTargetLoc() end
+
+---@param loc location
+function GetLocationX(loc) end
+---@param loc location
+function GetLocationY(loc) end
+---@param loc location
+function GetLocationZ(loc) end
+---@param loc location
+function RemoveLocation(loc) end

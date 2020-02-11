@@ -169,10 +169,23 @@ function Unit:IssueAttackPoint(x, y)
     return self:IssuePointOrderById(851983, x, y)
 end
 
+function Unit:SetMoveSpeed(value)
+    SetUnitMoveSpeed(self.handle, 300 * value)
+end
+
+function Unit:SetX(value)
+    SetUnitX(self.handle, value)
+end
+
+function Unit:SetY(value)
+    SetUnitY(self.handle, value)
+end
+
 function Unit:GetName() return GetUnitName(self.handle) end
 function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end
 function Unit:GetX() return GetUnitX(self.handle) end
 function Unit:GetY() return GetUnitY(self.handle) end
+function Unit:GetPos() return self:GetX(), self:GetY() end
 function Unit:GetHP() return GetWidgetLife(self.handle) end
 function Unit:SetHP(value) return SetWidgetLife(self.handle, value) end
 function Unit:GetMana() return GetUnitState(self.handle, UNIT_STATE_MANA) end
