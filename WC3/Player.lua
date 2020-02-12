@@ -27,11 +27,11 @@ end
 
 function WCPlayer.PlayersWin(playersCount)
     local tplayer = {}
-    for id = 1,1, playersCount + 1 do
+    for id = 1, playersCount + 1, 1  do
         local player = WCPlayer.Get(id)
         tplayer[id] = player
     end
-    for id = 1,1, playersCount + 1 do
+    for id = 1, playersCount + 1, 1  do
         tplayer[id]:RemovePlayer(PLAYER_GAME_RESULT_VICTORY)
     end
     EndGame()
@@ -39,11 +39,11 @@ end
 
 function WCPlayer.PlayersLossing(playersCount)
     local tplayer = {}
-    for id = 1,1, playersCount + 1 do
+    for id = 1, playersCount + 1 , 1 do
         local player = WCPlayer.Get(id)
         tplayer[id] = player
     end
-    for id = 1,1, playersCount + 1 do
+    for id = 1, playersCount + 1, 1 do
         tplayer[id]:RemovePlayer(PLAYER_GAME_RESULT_DEFEAT)
     end
     EndGame()
