@@ -3,6 +3,7 @@ local Log = Require("Log")
 local Stats = Require("Core.Stats")
 local Creep = Require("Core.Creep")
 
+
 local CreepPreset = Class()
 
 function CreepPreset:ctor()
@@ -14,7 +15,7 @@ function CreepPreset:ctor()
     self.secondaryStats.manaRegen = 1
 
     self.secondaryStats.weaponDamage = 15
-    self.secondaryStats.attackSpeed = 2
+    self.secondaryStats.attackSpeed = 0.5
     self.secondaryStats.physicalDamage = 1
     self.secondaryStats.spellDamage = 1
 
@@ -28,8 +29,6 @@ function CreepPreset:ctor()
 end
 
 function CreepPreset:Spawn(owner, x, y, facing)
-    Log(" CreepPreset:Spawn")
-    Log(" id=", self.unitid)
     local creep = Creep(owner, self.unitid, x, y, facing);
     creep.secondaryStats = self.secondaryStats
     creep:ApplyStats()

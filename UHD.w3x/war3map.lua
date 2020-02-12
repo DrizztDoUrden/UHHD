@@ -361,8 +361,16 @@ end)
 Module("Core.Creep", function()
 local Class = Require("Class")
 local UHDUnit = Require("Core.UHDUnit")
-
+local Timer = Require("WC3.Timer")
 local Creep = Class(UHDUnit)
+
+    function Creep:Destroy()
+        local timer = Timer()
+        timer:Start(15, false, function()
+            UHDUnit.Destroy(self)
+            timer:Destroy()
+        end)
+    end
 
 return Creep
 end)
@@ -373,6 +381,7 @@ local Class = Require("Class")
 local Log = Require("Log")
 local Stats = Require("Core.Stats")
 local Creep = Require("Core.Creep")
+
 
 local CreepPreset = Class()
 
@@ -385,7 +394,7 @@ function CreepPreset:ctor()
     self.secondaryStats.manaRegen = 1
 
     self.secondaryStats.weaponDamage = 15
-    self.secondaryStats.attackSpeed = 2
+    self.secondaryStats.attackSpeed = 0.5
     self.secondaryStats.physicalDamage = 1
     self.secondaryStats.spellDamage = 1
 
@@ -399,8 +408,6 @@ function CreepPreset:ctor()
 end
 
 function CreepPreset:Spawn(owner, x, y, facing)
-    Log(" CreepPreset:Spawn")
-    Log(" id=", self.unitid)
     local creep = Creep(owner, self.unitid, x, y, facing);
     creep.secondaryStats = self.secondaryStats
     creep:ApplyStats()
@@ -411,79 +418,6 @@ Log("Creep load succsesfull")
 return CreepPreset
 end)
 -- End of file Core\CreepPreset.lua
--- Start of file Core\CreepsSpawner.lua
-Module("Core.CreepsSpawner", function()
-local Log = Require("Log")
-local Class = Require("Class")
-local PathNode = Require("Core.PathNode")
-
-local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
-local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
-
-local CreepSpawner = Class()
-
-function CreepSpawner:ctor()
-    Log("Construct CreepSpawner")
-    self.level = 0
-    self.x = 700
-    self.y = 0
-    self.levelCreepsComopsion = levelCreepsComopsion
-    Log("in zero wave first creater is ",self.levelCreepsComopsion[1][1])
-    self.nComposion = nComposion
-    self.maxlevel = maxlevel
-    self.aComposition = aComposition
-    self.nodes = {}
-    self.creeps = {}
-    local node = PathNode(0, 700, nil)
-    local node1 = PathNode(0, 0, node)
-    local node2 = PathNode(700, 0, node1)
-
-
-    table.insert(self.nodes, node)
-    table.insert(self.nodes, node1)
-    table.insert(self.nodes, node2)
-end
-
-function CreepSpawner:GetNextWaveSpecification()
-    local nextlevel = self.level + 1
-
-    Log("   get next wave specification"..nextlevel)
-    local result_CreepsComposition = self.levelCreepsComopsion[nextlevel]
-    Log("   first wave Creep is "..result_CreepsComposition[1])
-    local result_nComposion = self.nComposion[nextlevel]
-    Log("   count first wave Creep is "..result_nComposion[1])
-    local result_aComposion = self.aComposition[nextlevel]
-
-    self.level = nextlevel
-    return result_CreepsComposition, result_nComposion, result_aComposion
-end
-
-function CreepSpawner:isNextLevel()
-    if self.level > self.maxlevel then
-        return true
-    end
-    return false
-end
-
-function CreepSpawner:SpawnNewWave(owner, facing)
-    Log("Spawn new wave")
-    local CreepsComposition, nComposion, aComposition = self:GetNextWaveSpecification()
-    for i, CreepName in pairs(CreepsComposition) do
-        Log(CreepName)
-        for j = 1, nComposion[i] do
-            local creepPresetClass = CreepClasses[CreepName]
-            local creepPreset = creepPresetClass()
-            Log("Spawn new unit")
-            local Creep = creepPreset:Spawn(owner, self.x, self.y, facing)
-            table.insert(self.creeps, Creep)
-        end
-    end
-end
-
-Log("CreepsSpawner load succsesfull")
-return CreepSpawner
-end)
--- End of file Core\CreepsSpawner.lua
 -- Start of file Core\Hero.lua
 Module("Core.Hero", function()
 local Class = Require("Class")
@@ -620,56 +554,6 @@ return HeroPreset
 
 end)
 -- End of file Core\HeroPreset.lua
--- Start of file Core\PathNode.lua
-Module("Core.PathNode", function()
-local Class = Require("Class")
-local Log = Require("Log")
-local WCRect = Require("WC3.Rect")
-local Region = Require("WC3.Region")
-local Trigger = Require("WC3.Trigger")
-local Unit = Require("WC3.Unit")
-
-local PathNode = Class()
-
-function PathNode:ctor(x, y, prev)
-    self.sizex = 200
-    self.sizey = 200
-    self.x = x
-    self.y = y
-    self.prev = prev
-    self.region = Region()
-    local rect = WCRect(x - self.sizex, y - self.sizey, x + self.sizex, y + self.sizey)
-    self.region:AddRect(rect)
-    if prev ~= nil then
-        self:SetEvent()
-    end
-end
-
-function PathNode:GetCenter()
-    return self.x, self.y
-end
-
-function PathNode:IsUnitInNode(whichUnit)
-    return self.region:IsUnitIn(whichUnit)
-end
-
-function PathNode:SetEvent(formation)
-    Log(" Add trigger to path Node in"..self.x.." "..self.y)
-    local trigger = Trigger()
-    trigger:RegisterEnterRegion(self.region)
-    trigger:AddAction(function()
-        local whichunit = Unit.GetEntering()
-        if self.prev then
-            local x, y = self.prev:GetCenter()
-            whichunit:IssueAttackPoint(x, y)
-        end
-        Log(" Mobs in node: "..self.x.." "..self.y)
-    end)
-end
-
-return PathNode
-end)
--- End of file Core\PathNode.lua
 -- Start of file Core\Stats.lua
 Module("Core.Stats", function()
 local Class = Require("Class")
@@ -821,20 +705,91 @@ end
 return UHDUnit
 end)
 -- End of file Core\UHDUnit.lua
+-- Start of file Core\WaveObserver.lua
+Module("Core.WaveObserver", function()
+local Class = Require("Class")
+local Log = Require("Log")
+local Timer = Require("WC3.Timer")
+local Trigger = Require("WC3.Trigger")
+local Creep = Require("Core.Creep")
+local PathNode = Require("Core.Node.PathNode")
+local CreepSpawner = Require("Core.Node.CreepSpawner")
+
+local logWaveObserver = Log.Category("WaveObserver\\WaveObserver", {
+    -- printVerbosity = Log.Verbosity.Trace,
+    -- fileVerbosity = Log.Verbosity.Trace,
+    })
+
+
+local WaveObserver = Class()
+
+function WaveObserver:ctor(owner)
+    local node = PathNode(0, 0, nil)
+    local node1 = PathNode(0, 700, node)
+    local creepSpawner1 = CreepSpawner(700, 700, node1)
+    local creepSpawner2 = CreepSpawner(-700, 700, node1)
+    local trigger = Trigger()
+    self.needtokillallcreep = false
+    local creepcount = 0
+    trigger:RegisterPlayerUnitEvent(owner, EVENT_PLAYER_UNIT_DEATH, nil)
+    trigger:AddAction(function()
+        local whichcreep = Creep.GetDying()
+        whichcreep:Destroy()
+        creepcount = creepcount - 1
+    end)
+    local wavetimer  = Timer()
+    
+    local triggercheckalldead = Trigger()
+    triggercheckalldead:RegisterPlayerUnitEvent(owner, EVENT_PLAYER_UNIT_DEATH, nil)
+    triggercheckalldead:AddAction(function ()
+    if creepcount == 0 and self.needtokillallcreep then
+        logWaveObserver:Info("Players Win")
+    end
+    end)
+
+    Log(" Create Timer")
+    
+    wavetimer:Start(25, true, function()
+        if creepSpawner1:IsANextWave() then
+            creepcount = creepcount + creepSpawner1:SpawnNewWave(owner, 0)
+            creepcount = creepcount + creepSpawner2:SpawnNewWave(owner, 0)
+        else
+            self.needtokillallcreep = true
+            wavetimer:Destroy()
+        end
+    end)
+end
+return WaveObserver
+
+end)
+-- End of file Core\WaveObserver.lua
 -- Start of file Core\WaveSpecification.lua
 Module("Core.WaveSpecification", function()
 local Log = Require("Log")
 
-local levelCreepCompositon = {{"MagicDragon"}}
-local nComposition = {
-    {1}
-}
-local aComposition = {
-    {nil}
-}
+local levelCreepCompositon = {
+    {"MagicDragon"},
+    {"MagicDragon"},
+    {"MagicDragon"},
+    {"MagicDragon"},
+    {"MagicDragon"},}
+    local nComposition = {
+        {3},
+        {1},
+        {1},
+        {1},
+        {1}
+    }
+    local aComposition = {
+        {nil},
+        {nil},
+        {nil},
+        {nil},
+        {nil}
+    }
 
 Log("WaveSpecification is load")
-return levelCreepCompositon, nComposition, aComposition, 1
+return levelCreepCompositon, nComposition, aComposition, 5
 end)
 -- End of file Core\WaveSpecification.lua
 -- Start of file Core\Creeps\MagicDragon.lua
@@ -846,10 +801,10 @@ local Log = Require("Log")
 local MagicDragon = Class(CreepPreset)
 
 function MagicDragon:ctor()
-    Log("Construct Magic Dragon")
     CreepPreset.ctor(self)
-    self.secondaryStats.health = 50
-    self.secondaryStats.mana = 15
+    self.secondaryStats.health = 15
+    self.secondaryStats.mana = 5
+    self.secondaryStats.weaponDamage = 3
 
     self.unitid = FourCC('C_MD')
 end
@@ -858,6 +813,151 @@ Log("MagicDragon load successfull")
 return MagicDragon
 end)
 -- End of file Core\Creeps\MagicDragon.lua
+-- Start of file Core\Node\CreepSpawner.lua
+Module("Core.Node.CreepSpawner", function()
+local Log = Require("Log")
+local Class = Require("Class")
+local Node = Require("Core.Node.Node")
+local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
+local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
+
+local CreepSpawner = Class(Node)
+
+local logCreepSpawner= Log.Category("CreepSpawner\\CreepSpawnerr", {
+    printVerbosity = Log.Verbosity.Trace,
+    fileVerbosity = Log.Verbosity.Trace,
+    })
+
+function CreepSpawner:ctor(x, y, prevnode)
+    Node.ctor(self, x, y, prevnode)
+    Log("Construct CreepSpawner")
+    self.level = 0
+    self.levelCreepsComopsion = levelCreepsComopsion
+    self.nComposion = nComposion
+    self.maxlevel = maxlevel
+    self.aComposition = aComposition
+end
+
+function CreepSpawner:GetNextWaveSpecification()
+    local nextlevel = self.level + 1
+
+    local result_CreepsComposition = self.levelCreepsComopsion[nextlevel]
+    local result_nComposion = self.nComposion[nextlevel]
+    local result_aComposion = self.aComposition[nextlevel]
+    self.level = nextlevel
+    return result_CreepsComposition, result_nComposion, result_aComposion
+end
+
+function CreepSpawner:IsANextWave()
+    if self.level + 1 > self.maxlevel then
+        return false
+    end
+    return true
+end
+
+function CreepSpawner:SpawnNewWave(owner, facing)
+    -- logCreepSpawner:Info("WAVE "..self.level + 1)
+    local CreepsComposition, nComposion, aComposition = self:GetNextWaveSpecification()
+    local acc = 0
+    for i, CreepName in pairs(CreepsComposition) do
+        for j = 1, nComposion[i] do
+            local creepPresetClass = CreepClasses[CreepName]
+            local creepPreset = creepPresetClass()
+            local creep = creepPreset:Spawn(owner, self.x, self.y, facing)
+            local x, y = self.prev:GetCenter()
+            creep:IssueAttackPoint(x, y)
+            acc = acc + 1
+        end
+    end
+    return acc
+end
+
+Log("CreepSpawner load succsesfull")
+return CreepSpawner
+end)
+-- End of file Core\Node\CreepSpawner.lua
+-- Start of file Core\Node\Node.lua
+Module("Core.Node.Node", function()
+local Class = Require("Class")
+local Log = Require("Log")
+
+local Node = Class()
+
+function Node:ctor(x, y, prev)
+    self.x = x
+    self.y = y
+    self.prev = prev
+end
+
+function Node:GetCenter()
+    return self.x, self.y
+end
+
+return Node
+
+end)
+-- End of file Core\Node\Node.lua
+-- Start of file Core\Node\PathNode.lua
+Module("Core.Node.PathNode", function()
+local Class = Require("Class")
+local Log = Require("Log")
+
+local Trigger = Require("WC3.Trigger")
+local Unit = Require("WC3.Unit")
+local Creep = Require("Core.Creep")
+local RectNode = Require("Core.Node.RectNode")
+local PathNode = Class(RectNode)
+function PathNode:ctor(x, y, prev)
+    RectNode.ctor(self, 200, 200, x, y, prev)
+    if prev ~= nil then
+        self:SetEvent()
+    end
+end
+
+
+function PathNode:SetEvent(formation)
+    Log(" Add trigger to path Node in"..self.x.." "..self.y)
+    local trigger = Trigger()
+    trigger:RegisterEnterRegion(self.region)
+    trigger:AddAction(function()
+        local whichunit = Unit.GetEntering()
+        if self.prev and whichunit:IsA(Creep) then
+            local x, y = self.prev:GetCenter()
+            whichunit:IssueAttackPoint(x, y)
+        end
+        Log(" Mobs in node: "..self.x.." "..self.y)
+    end)
+end
+
+return PathNode
+end)
+-- End of file Core\Node\PathNode.lua
+-- Start of file Core\Node\RectNode.lua
+Module("Core.Node.RectNode", function()
+local Class = Require("Class")
+local Log = Require("Log")
+local WCRect = Require("WC3.Rect")
+local Region = Require("WC3.Region")
+local Node = Require("Core.Node.Node")
+
+local RectNode = Class(Node)
+
+function RectNode:ctor(sizex, sizey, x, y, prevnode)
+    Node.ctor(self, x, y, prevnode)
+    self.region = Region()
+    self.sizex = sizex
+    self.sizey = sizey
+    local rect = WCRect(x - self.sizex, y - self.sizey, x + self.sizex, y + self.sizey)
+    self.region:AddRect(rect)
+end
+
+function RectNode:IsUnitInNode(whichUnit)
+    return self.region:IsUnitIn(whichUnit)
+end
+
+return RectNode
+end)
+-- End of file Core\Node\RectNode.lua
 -- Start of file Heroes\DuskKnight.lua
 Module("Heroes.DuskKnight", function()
 local Class = Require("Class")
@@ -1195,16 +1295,13 @@ Module("Tests.Main", function()
 local Log = Require("Log")
 local WCPlayer = Require("WC3.Player")
 local DuskKnight = Require("Heroes.DuskKnight")
-local CreepsSpawner = Require("Core.CreepsSpawner")
-
+local WaveObserver = Require("Core.WaveObserver")
 local testHeroPreset = DuskKnight()
-local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 700, 0)
+local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 0, 0)
 
-local testCreepsSpawner = CreepsSpawner()
-testCreepsSpawner:SpawnNewWave(WCPlayer.Get(1), 0)
+local testWaveObserver = WaveObserver(WCPlayer.Get(12))
 
 Log("Game initialized successfully")
-
 end)
 -- End of file Tests\Main.lua
 -- Start of file WC3\AbilityInstance.lua
@@ -1462,6 +1559,10 @@ function Unit.GetFiltered()
     return Get(GetFilterUnit())
 end
 
+function Unit.GetDying()
+    return Get(GetDyingUnit())
+end
+
 function Unit.GetEntering()
     return Get(GetEnteringUnit())
 end
@@ -1563,6 +1664,11 @@ function Unit:SetAgi(value, permanent)
     end
 end
 
+function Unit:Destroy()
+    units[self.handle] = nil
+    RemoveUnit(self.handle)
+end
+
 function Unit:SetInt(value, permanent)
     if math.type(value) then
         SetHeroInt(self.handle, math.floor(value), permanent)
@@ -1644,6 +1750,445 @@ function Unit:GetAbility(id) return BlzGetUnitAbility(self.handle, id) end
 return Unit
 end)
 -- End of file WC3\Unit.lua
+-- Start of file Core\CreepPreset.lua
+Module("Core.CreepPreset", function()
+local Class = Require("Class")
+local Log = Require("Log")
+local Stats = Require("Core.Stats")
+local Creep = Require("Core.Creep")
+
+
+local CreepPreset = Class()
+
+function CreepPreset:ctor()
+    self.secondaryStats = Stats.Secondary()
+
+    self.secondaryStats.health = 50
+    self.secondaryStats.mana = 2
+    self.secondaryStats.healthRegen = 1
+    self.secondaryStats.manaRegen = 1
+
+    self.secondaryStats.weaponDamage = 15
+    self.secondaryStats.attackSpeed = 0.5
+    self.secondaryStats.physicalDamage = 1
+    self.secondaryStats.spellDamage = 1
+
+    self.secondaryStats.armor = 5
+    self.secondaryStats.evasion = 30
+    self.secondaryStats.block = 0
+    self.secondaryStats.ccResist = 0
+    self.secondaryStats.spellResist = 30
+
+    self.secondaryStats.movementSpeed = 1
+end
+
+function CreepPreset:Spawn(owner, x, y, facing)
+    local creep = Creep(owner, self.unitid, x, y, facing);
+    creep.secondaryStats = self.secondaryStats
+    creep:ApplyStats()
+    return creep
+end
+
+Log("Creep load succsesfull")
+return CreepPreset
+end)
+-- End of file Core\CreepPreset.lua
+-- Start of file Core\HeroPreset.lua
+Module("Core.HeroPreset", function()
+local Class = Require("Class")
+local Trigger = Require("WC3.Trigger")
+local Stats = Require("Core.Stats")
+local Hero = Require("Core.Hero")
+
+local HeroPreset = Class()
+
+function HeroPreset:ctor()
+    self.basicStats = Stats.Basic()
+    self.secondaryStats = Stats.Secondary()
+    self.unitid = FourCC('0000')
+
+    self.abilities = {}
+
+    self.secondaryStats.health = 100
+    self.secondaryStats.mana = 100
+    self.secondaryStats.healthRegen = .5
+    self.secondaryStats.manaRegen = 1
+
+    self.secondaryStats.weaponDamage = 10
+    self.secondaryStats.attackSpeed = .5
+    self.secondaryStats.physicalDamage = 1
+    self.secondaryStats.spellDamage = 1
+
+    self.secondaryStats.armor = 0
+    self.secondaryStats.evasion = 0.05
+    self.secondaryStats.block = 0
+    self.secondaryStats.ccResist = 0
+    self.secondaryStats.spellResist = 0
+
+    self.secondaryStats.movementSpeed = 1
+end
+
+function HeroPreset:Spawn(owner, x, y, facing)
+    local hero = Hero(owner, self.unitid, x, y, facing);
+
+    hero.baseSecondaryStats = self.secondaryStats
+    hero:SetBasicStats(self.basicStats)
+
+    hero.abilities = Trigger()
+    hero.abilities:RegisterUnitSpellEffect(hero)
+    hero.abilities:AddAction(function() self:Cast(hero) end)
+
+    for _, ability in pairs(self.abilities) do
+        if ability.availableFromStart then
+            hero:AddAbility(ability.id)
+            hero:SetAbilityLevel(ability.id, 1)
+        end
+    end
+
+    return hero
+end
+
+function HeroPreset:Cast(hero)
+    local abilityId = GetSpellAbilityId()
+
+    for _, ability in pairs(self.abilities) do
+        if ability.id == abilityId then
+            ability:handler(hero)
+            break
+        end
+    end
+end
+
+return HeroPreset
+
+end)
+-- End of file Core\HeroPreset.lua
+-- Start of file Core\WaveSpecification.lua
+Module("Core.WaveSpecification", function()
+local Log = Require("Log")
+
+local levelCreepCompositon = {
+    {"MagicDragon"},
+    {"MagicDragon"},
+    {"MagicDragon"},
+    {"MagicDragon"},
+    {"MagicDragon"},}
+    local nComposition = {
+        {3},
+        {1},
+        {1},
+        {1},
+        {1}
+    }
+    local aComposition = {
+        {nil},
+        {nil},
+        {nil},
+        {nil},
+        {nil}
+    }
+
+Log("WaveSpecification is load")
+return levelCreepCompositon, nComposition, aComposition, 5
+end)
+-- End of file Core\WaveSpecification.lua
+-- Start of file Core\Creeps\MagicDragon.lua
+Module("Core.Creeps.MagicDragon", function()
+local Class = Require("Class")
+local CreepPreset = Require("Core.CreepPreset")
+local Log = Require("Log")
+
+local MagicDragon = Class(CreepPreset)
+
+function MagicDragon:ctor()
+    CreepPreset.ctor(self)
+    self.secondaryStats.health = 15
+    self.secondaryStats.mana = 5
+    self.secondaryStats.weaponDamage = 3
+
+    self.unitid = FourCC('C_MD')
+end
+Log("MagicDragon load successfull")
+
+return MagicDragon
+end)
+-- End of file Core\Creeps\MagicDragon.lua
+-- Start of file Core\Node\CreepSpawner.lua
+Module("Core.Node.CreepSpawner", function()
+local Log = Require("Log")
+local Class = Require("Class")
+local Node = Require("Core.Node.Node")
+local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
+local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
+
+local CreepSpawner = Class(Node)
+
+local logCreepSpawner= Log.Category("CreepSpawner\\CreepSpawnerr", {
+    printVerbosity = Log.Verbosity.Trace,
+    fileVerbosity = Log.Verbosity.Trace,
+    })
+
+function CreepSpawner:ctor(x, y, prevnode)
+    Node.ctor(self, x, y, prevnode)
+    Log("Construct CreepSpawner")
+    self.level = 0
+    self.levelCreepsComopsion = levelCreepsComopsion
+    self.nComposion = nComposion
+    self.maxlevel = maxlevel
+    self.aComposition = aComposition
+end
+
+function CreepSpawner:GetNextWaveSpecification()
+    local nextlevel = self.level + 1
+
+    local result_CreepsComposition = self.levelCreepsComopsion[nextlevel]
+    local result_nComposion = self.nComposion[nextlevel]
+    local result_aComposion = self.aComposition[nextlevel]
+    self.level = nextlevel
+    return result_CreepsComposition, result_nComposion, result_aComposion
+end
+
+function CreepSpawner:IsANextWave()
+    if self.level + 1 > self.maxlevel then
+        return false
+    end
+    return true
+end
+
+function CreepSpawner:SpawnNewWave(owner, facing)
+    -- logCreepSpawner:Info("WAVE "..self.level + 1)
+    local CreepsComposition, nComposion, aComposition = self:GetNextWaveSpecification()
+    local acc = 0
+    for i, CreepName in pairs(CreepsComposition) do
+        for j = 1, nComposion[i] do
+            local creepPresetClass = CreepClasses[CreepName]
+            local creepPreset = creepPresetClass()
+            local creep = creepPreset:Spawn(owner, self.x, self.y, facing)
+            local x, y = self.prev:GetCenter()
+            creep:IssueAttackPoint(x, y)
+            acc = acc + 1
+        end
+    end
+    return acc
+end
+
+Log("CreepSpawner load succsesfull")
+return CreepSpawner
+end)
+-- End of file Core\Node\CreepSpawner.lua
+-- Start of file WC3\Trigger.lua
+Module("WC3.Trigger", function()
+local Class = Require("Class")
+local Log = Require("Log")
+local Unit = Require("WC3.Unit")
+
+local Trigger = Class()
+
+function Trigger:ctor()
+    self.handle = CreateTrigger()
+end
+
+function Trigger:Destroy()
+    DestroyTrigger(self.handle)
+end
+
+function Trigger:RegisterPlayerUnitEvent(player, event, filter)
+    if filter then
+        filter = function()
+            local result, errOrRet = pcall(filter, Unit.Get(GetFilterUnit()))
+            if not result then
+                Log("Error filtering player units for and event: " .. errOrRet)
+                return false
+            end
+            return errOrRet
+        end
+    end
+    return TriggerRegisterPlayerUnitEvent(self.handle, player.handle, event, Filter(filter))
+end
+
+function Trigger:RegisterUnitDeath(unit)
+    return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_DEATH)
+end
+
+function Trigger:RegisterUnitSpellEffect(unit)
+    return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SPELL_EFFECT)
+end
+
+function Trigger:RegisterEnterRegion(region, filter)
+    if filter then
+        filter = function ()
+            local result, errOrRet
+            if not result then
+                Log("Error filtering Region for and event: "..errOrRet)
+                return false
+            end
+            return errOrRet
+        end
+    end
+    return TriggerRegisterEnterRegion(self.handle, region.handle, filter)
+end
+
+function Trigger:AddAction(action)
+    return TriggerAddAction(self.handle, function()
+        local result, err = pcall(action)
+        if not result then
+            Log("Error running trigger action: " .. err)
+        end
+    end)
+end
+
+return Trigger
+end)
+-- End of file WC3\Trigger.lua
+-- Start of file Core\CreepPreset.lua
+Module("Core.CreepPreset", function()
+local Class = Require("Class")
+local Log = Require("Log")
+local Stats = Require("Core.Stats")
+local Creep = Require("Core.Creep")
+
+local CreepPreset = Class()
+
+function CreepPreset:ctor()
+    self.secondaryStats = Stats.Secondary()
+
+    self.secondaryStats.health = 50
+    self.secondaryStats.mana = 2
+    self.secondaryStats.healthRegen = 1
+    self.secondaryStats.manaRegen = 1
+
+    self.secondaryStats.weaponDamage = 15
+    self.secondaryStats.attackSpeed = 2
+    self.secondaryStats.physicalDamage = 1
+    self.secondaryStats.spellDamage = 1
+
+    self.secondaryStats.armor = 5
+    self.secondaryStats.evasion = 30
+    self.secondaryStats.block = 0
+    self.secondaryStats.ccResist = 0
+    self.secondaryStats.spellResist = 30
+
+    self.secondaryStats.movementSpeed = 1
+end
+
+function CreepPreset:Spawn(owner, x, y, facing)
+    Log(" CreepPreset:Spawn")
+    Log(" id="..self.unitid)
+    local creep = Creep(owner, self.unitid, x, y, facing);
+    creep.secondaryStats = self.secondaryStats
+    creep:ApplyStats()
+    return creep
+end
+
+Log("Creep load succsesfull")
+return CreepPreset
+end)
+-- End of file Core\CreepPreset.lua
+-- Start of file Core\WaveSpecification.lua
+Module("Core.WaveSpecification", function()
+local Log = Require("Log")
+
+local levelCreepCompositon = {
+    {"MagicDragon"},
+    {"MagicDragon"},
+    {"MagicDragon"},
+    {"MagicDragon"},
+    {"MagicDragon"},}
+    local nComposition = {
+        {1},
+        {1},
+        {1},
+        {1},
+        {1}
+    }
+    local aComposition = {
+        {nil},
+        {nil},
+        {nil},
+        {nil},
+        {nil}
+    }
+
+Log("WaveSpecification is load")
+return levelCreepCompositon, nComposition, aComposition, 5
+end)
+-- End of file Core\WaveSpecification.lua
+-- Start of file Core\Creeps\MagicDragon.lua
+Module("Core.Creeps.MagicDragon", function()
+local Class = Require("Class")
+local CreepPreset = Require("Core.CreepPreset")
+local Log = Require("Log")
+
+local MagicDragon = Class(CreepPreset)
+
+function MagicDragon:ctor()
+    Log("Construct Magic Dragon")
+    CreepPreset.ctor(self)
+    self.secondaryStats.health = 15
+    self.secondaryStats.mana = 5
+    self.secondaryStats.weaponDamage = 3
+
+    self.unitid = FourCC('C_MD')
+end
+Log("MagicDragon load successfull")
+
+return MagicDragon
+end)
+-- End of file Core\Creeps\MagicDragon.lua
+-- Start of file Core\Node\CreepSpawner.lua
+Module("Core.Node.CreepSpawner", function()
+local Log = Require("Log")
+local Class = Require("Class")
+local PathNode = Require("Core.Node.PathNode")
+local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
+local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
+
+local CreepSpawner = Class(PathNode)
+
+function CreepSpawner:ctor(x, y, prevnode)
+    PathNode.ctor(self, x, y, prevnode)
+    Log("Construct CreepSpawner")
+    self.level = 0
+    self.levelCreepsComopsion = levelCreepsComopsion
+    self.nComposion = nComposion
+    self.maxlevel = maxlevel
+    self.aComposition = aComposition
+end
+
+function CreepSpawner:GetNextWaveSpecification()
+    local nextlevel = self.level + 1
+
+    local result_CreepsComposition = self.levelCreepsComopsion[nextlevel]
+    local result_nComposion = self.nComposion[nextlevel]
+    local result_aComposion = self.aComposition[nextlevel]
+    self.level = nextlevel
+    return result_CreepsComposition, result_nComposion, result_aComposion
+end
+
+function CreepSpawner:IsANextWave()
+    if self.level + 1 > self.maxlevel then
+        return false
+    end
+    return true
+end
+
+function CreepSpawner:SpawnNewWave(owner, facing)
+    Log("WAVE"..self.level + 1)
+    local CreepsComposition, nComposion, aComposition = self:GetNextWaveSpecification()
+    for i, CreepName in pairs(CreepsComposition) do
+        Log(CreepName)
+        for j = 1, nComposion[i] do
+            local creepPresetClass = CreepClasses[CreepName]
+            local creepPreset = creepPresetClass()
+            local creep = creepPreset:Spawn(owner, self.x, self.y, facing)
+        end
+    end
+end
+
+Log("CreepSpawner load succsesfull")
+return CreepSpawner
+end)
+-- End of file Core\Node\CreepSpawner.lua
 function CreateUnitsForPlayer0()
     local p = Player(0)
     local u
