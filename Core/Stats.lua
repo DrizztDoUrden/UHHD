@@ -42,7 +42,7 @@ function Stats.Basic:ctor()
         "strength",
         "agility",
         "intellect",
-        "constintution",
+        "constitution",
         "endurance",
         "willpower",
     }

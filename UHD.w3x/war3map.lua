@@ -305,8 +305,12 @@ local Category = Class()
 function Category:ctor(name, options)
     options = options or {}
     self.name = name
-    self.fileVerbosity = options.fileVerbosity or Verbosity.Message
     self.printVerbosity = options.printVerbosity or Verbosity.Warning
+    if TestBuild then
+        self.fileVerbosity = options.fileVerbosity or Verbosity.Trace
+    else
+        self.fileVerbosity = options.fileVerbosity or Verbosity.Message
+    end
     self.buffer = ""
 end
 
@@ -526,7 +530,7 @@ function HeroPreset:Spawn(owner, x, y, facing)
     hero:SetBasicStats(self.basicStats)
 
     hero.abilities = Trigger()
-    hero.abilities:RegisterUnitSpellFinish(hero)
+    hero.abilities:RegisterUnitSpellEffect(hero)
     hero.abilities:AddAction(function() self:Cast(hero) end)
 
     for _, ability in pairs(self.abilities) do
@@ -1296,6 +1300,7 @@ local Log = Require("Log")
 local WCPlayer = Require("WC3.Player")
 local DuskKnight = Require("Heroes.DuskKnight")
 local WaveObserver = Require("Core.WaveObserver")
+
 local testHeroPreset = DuskKnight()
 local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 0, 0)
 
@@ -1507,8 +1512,8 @@ function Trigger:RegisterUnitDeath(unit)
     return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_DEATH)
 end
 
-function Trigger:RegisterUnitSpellFinish(unit)
-    return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SPELL_FINISH)
+function Trigger:RegisterUnitSpellEffect(unit)
+    return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SPELL_EFFECT)
 end
 
 function Trigger:RegisterEnterRegion(region, filter)
