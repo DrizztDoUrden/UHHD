@@ -1,14 +1,41 @@
 local Class = Require("Class")
 local Stats = Require("Core.Stats")
 local UHDUnit = Require("Core.UHDUnit")
+local Trigger = Require("WC3.Trigger")
+local Unit = Require("WC3.Unit")
 
 local Hero = Class(UHDUnit)
+
+local statsHelperId = FourCC("__SU")
 
 function Hero:ctor(...)
     UHDUnit.ctor(self, ...)
     self.basicStats = Stats.Basic()
     self.baseSecondaryStats = Stats.Secondary()
     self.bonusSecondaryStats = Stats.Secondary()
+
+    self.leveling = Trigger()
+    self.leveling:RegisterHeroLevel(self)
+    self.leveling:AddAction(function() self:OnLevel() end)
+
+    self.abilities = Trigger()
+    self.abilities:RegisterUnitSpellEffect(self)
+
+    self.statUpgrades = {}
+    self.skillUpgrades = {}
+end
+
+function Hero:Destroy()
+    UHDUnit.Destroy(self)
+    self.leveling:Destroy()
+    self.abilities:Destroy()
+    for u in pairs(self.statUpgrades) do u:Destroy() end
+    for u in pairs(self.skillUpgrades) do u:Destroy() end
+end
+
+function Hero:OnLevel()
+    local statHelper = Unit(self:GetOwner(), statsHelperId, 0, 0, 0)
+    self.statUpgrades[statHelper] = true
 end
 
 local function BonusBeforePow(base, pow, stat, bonus)

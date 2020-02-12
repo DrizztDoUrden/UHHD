@@ -160,3 +160,117 @@ STRING 38
 Hero charges up to 300 distance to a point in up to 0.5 seconds. Every creep on the way gets |cffff606020|r damage and is pushed 100 aside.|nCooldown: 12 seconds.
 }
 
+STRING 40
+// Units: __SU (Stat Upgrade), Name (Name)
+{
+Stat Upgrade
+}
+
+STRING 41
+// Abilities: SU_0 (Upgrade strength), Name (Name)
+{
+Upgrade strength
+}
+
+STRING 42
+// Abilities: SU_0 (Upgrade strength), Tip (Tooltip - Normal)
+{
+Upgrade |cffff2222strength|r
+}
+
+STRING 43
+// Abilities: SU_0 (Upgrade strength), Ubertip (Tooltip - Normal - Extended)
+{
++2% physical damage
+}
+
+STRING 44
+// Abilities: SU_1 (Upgrade agility), Name (Name)
+{
+Upgrade agility
+}
+
+STRING 45
+// Abilities: SU_1 (Upgrade agility), Tip (Tooltip - Normal)
+{
+Upgrade |cff00ff00agility|r
+}
+
+STRING 46
+// Abilities: SU_1 (Upgrade agility), Ubertip (Tooltip - Normal - Extended)
+{
++2% attack speed|n+2% evasion
+}
+
+STRING 47
+// Abilities: SU_2 (Upgrade intellect), Name (Name)
+{
+Upgrade intellect
+}
+
+STRING 48
+// Abilities: SU_2 (Upgrade intellect), Tip (Tooltip - Normal)
+{
+Upgrade |cff4444ffintellect|r
+}
+
+STRING 49
+// Abilities: SU_2 (Upgrade intellect), Ubertip (Tooltip - Normal - Extended)
+{
++2% spell damage
+}
+
+STRING 50
+// Abilities: SU_3 (Upgrade constitution), Name (Name)
+{
+Upgrade constitution
+}
+
+STRING 51
+// Abilities: SU_3 (Upgrade constitution), Tip (Tooltip - Normal)
+{
+Upgrade |cffbbbb55constitution|r
+}
+
+STRING 52
+// Abilities: SU_3 (Upgrade constitution), Ubertip (Tooltip - Normal - Extended)
+{
++2% health|n+2% health regeneration
+}
+
+STRING 53
+// Abilities: SU_4 (Upgrade endurance), Name (Name)
+{
+Upgrade endurance
+}
+
+STRING 54
+// Abilities: SU_4 (Upgrade endurance), Tip (Tooltip - Normal)
+{
+Upgrade |cffbb33bbendurance|r
+}
+
+STRING 55
+// Abilities: SU_4 (Upgrade endurance), Ubertip (Tooltip - Normal - Extended)
+{
++2% stamina|n+2% stamina regen
+}
+
+STRING 56
+// Abilities: SU_5 (Upgrade willpower), Name (Name)
+{
+Upgrade willpower
+}
+
+STRING 57
+// Abilities: SU_5 (Upgrade willpower), Tip (Tooltip - Normal)
+{
+Upgrade |cffdd5522willpower|r
+}
+
+STRING 58
+// Abilities: SU_5 (Upgrade willpower), Ubertip (Tooltip - Normal - Extended)
+{
++2% control resist|n+2% spell damage resist
+}
+

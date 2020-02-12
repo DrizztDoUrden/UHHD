@@ -26,6 +26,10 @@ function Unit.GetEntering()
     return Get(GetEnteringUnit())
 end
 
+function Unit.GetLeveling()
+    return Get(GetLevelingUnit())
+end
+
 function Unit.EnumInRange(x, y, radius, handler)
     local group = CreateGroup()
     GroupEnumUnitsInRange(group, x, y, radius, Filter(function()

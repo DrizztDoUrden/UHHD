@@ -37,8 +37,6 @@ function HeroPreset:Spawn(owner, x, y, facing)
     hero.baseSecondaryStats = self.secondaryStats
     hero:SetBasicStats(self.basicStats)
 
-    hero.abilities = Trigger()
-    hero.abilities:RegisterUnitSpellEffect(hero)
     hero.abilities:AddAction(function() self:Cast(hero) end)
 
     for _, ability in pairs(self.abilities) do

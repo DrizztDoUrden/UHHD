@@ -34,6 +34,10 @@ function Trigger:RegisterUnitSpellEffect(unit)
     return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SPELL_EFFECT)
 end
 
+function Trigger:RegisterHeroLevel(unit)
+    return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_HERO_LEVEL)
+end
+
 function Trigger:RegisterEnterRegion(region, filter)
     if filter then
         filter = function ()

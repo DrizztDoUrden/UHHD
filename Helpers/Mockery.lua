@@ -28,6 +28,8 @@ ExtensiveLog = false
 EVENT_UNIT_SPELL_EFFECT = {}
 EVENT_UNIT_SPELL_FINISH = {}
 EVENT_UNIT_DEATH = {}
+EVENT_UNIT_HERO_LEVEL = {}
+
 EVENT_PLAYER_UNIT_DEATH = {}
 
 EVENT_PLAYER_UNIT_SPELL_FINISH = {}
@@ -299,6 +301,8 @@ function GroupEnumUnitsInRange(whichGroup, x, y, radius, filter) end
 function GetFilterUnit() end
 ---@return unit
 function GetEnteringUnit() end
+---@return unit
+function GetLevelingUnit() end
 ---@return region
 function GetTriggeringRegion() end
 
