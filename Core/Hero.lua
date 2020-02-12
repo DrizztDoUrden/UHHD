@@ -20,6 +20,8 @@ local statUpgrades = {
 
 local Hero = Class(UHDUnit)
 
+local statsX = 0
+local statsY = -1000
 Hero.StatsPerLevel = 5
 
 function Hero:ctor(...)
@@ -54,7 +56,7 @@ function Hero:OnLevel()
 end
 
 function Hero:AddStatPoint()
-    local statHelper = Unit(self:GetOwner(), statsHelperId, 0, 0, 0)
+    local statHelper = Unit(self:GetOwner(), statsHelperId, statsX, statsY, 0)
     self.statUpgrades[statHelper] = true
 
     for _, id in pairs(statUpgrades) do
