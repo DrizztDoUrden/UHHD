@@ -1,13 +1,13 @@
 local Class = Require("Class")
 
 local Verbosity = {
-    Fatal = 0,
-    Critical = 1,
-    Error = 2,
-    Warning = 3,
-    Message = 4,
-    Info = 5,
-    Trace = 6,
+    Fatal = 1,
+    Critical = 2,
+    Error = 3,
+    Warning = 4,
+    Message = 5,
+    Info = 6,
+    Trace = 7,
 }
 
 local verbosityNames = {
@@ -23,7 +23,7 @@ local verbosityNames = {
 local function LogInternal(category, verbosity, ...)
     if verbosity <= math.max(category.printVerbosity, category.fileVerbosity) then
         if verbosity <= category.printVerbosity then
-            print("[" .. verbosityNames[verbosity] .. "]" .. category.name .. ": ", ...)
+            print("[" .. verbosityNames[verbosity] .. "] " .. category.name .. ": ", ...)
         end
         if verbosity <= category.fileVerbosity then
             category.buffer = category.buffer .. "\n[" .. verbosityNames[verbosity] .. "]"
