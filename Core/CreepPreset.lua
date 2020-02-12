@@ -14,7 +14,7 @@ function CreepPreset:ctor()
     self.secondaryStats.manaRegen = 1
 
     self.secondaryStats.weaponDamage = 15
-    self.secondaryStats.attackSpeed = 2
+    self.secondaryStats.attackSpeed = 0.5
     self.secondaryStats.physicalDamage = 1
     self.secondaryStats.spellDamage = 1
 
