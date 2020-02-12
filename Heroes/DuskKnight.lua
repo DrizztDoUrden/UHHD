@@ -52,7 +52,7 @@ function DuskKnight:ctor()
             period = function(_) return 0.05 end,
             duration = function(_) return 0.5 end,
             distance = function(_) return 300 end,
-            baseDamage = function(_, caster) return 20 * caster.secondaryStats.physicalDamage end,
+            baseDamage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
             push = function(_) return 100 end,
             pushDuration = function(_) return 0.5 end,
         },
