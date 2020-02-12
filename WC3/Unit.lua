@@ -136,6 +136,18 @@ function Unit:Destroy()
     end
 end
 
+function Unit:ChangeSelection(value)
+    SelectUnit(self.handle, value)
+end
+
+function Unit:Select()
+    self:ChangeSelection(true)
+end
+
+function Unit:Deselect()
+    self:ChangeSelection(false)
+end
+
 function Unit:SetInt(value, permanent)
     if math.type(value) then
         SetHeroInt(self.handle, math.floor(value), permanent)

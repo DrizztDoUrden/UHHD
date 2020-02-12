@@ -24,4 +24,6 @@ function WCPlayer:IsEnemy(other)
     return IsPlayerEnemy(self.handle, other.handle)
 end
 
+WCPlayer.Local = WCPlayer.Get(GetLocalPlayer())
+
 return WCPlayer

@@ -3,18 +3,24 @@ local Stats = Require("Core.Stats")
 local UHDUnit = Require("Core.UHDUnit")
 local Trigger = Require("WC3.Trigger")
 local Unit = Require("WC3.Unit")
+local Log = Require("Log")
+local WCPlayer = Require("WC3.Player")
 
-local Hero = Class(UHDUnit)
+local logHero = Log.Category("Core\\Hero")
 
 local statsHelperId = FourCC("__SU")
 local statUpgrades = {
-    FourCC("SU_0"),
-    FourCC("SU_1"),
-    FourCC("SU_2"),
-    FourCC("SU_3"),
-    FourCC("SU_4"),
-    FourCC("SU_5"),
+    strength = FourCC("SU_0"),
+    agility = FourCC("SU_1"),
+    intellect = FourCC("SU_2"),
+    constitution = FourCC("SU_3"),
+    endurance = FourCC("SU_4"),
+    willpower = FourCC("SU_5"),
 }
+
+local Hero = Class(UHDUnit)
+
+Hero.StatsPerLevel = 5
 
 function Hero:ctor(...)
     UHDUnit.ctor(self, ...)
@@ -42,13 +48,47 @@ function Hero:Destroy()
 end
 
 function Hero:OnLevel()
+    for _ = 1,Hero.StatsPerLevel do
+        self:AddStatPoint()
+    end
+end
+
+function Hero:AddStatPoint()
     local statHelper = Unit(self:GetOwner(), statsHelperId, 0, 0, 0)
     self.statUpgrades[statHelper] = true
-    local trigger = Trigger()
-    statHelper.toDestroy[trigger] = true
 
     for _, id in pairs(statUpgrades) do
         statHelper:AddAbility(id)
+    end
+
+    local trigger = Trigger()
+    statHelper.toDestroy[trigger] = true
+
+    trigger:RegisterUnitSpellEffect(statHelper)
+    trigger:AddAction(function()
+        self.statUpgrades[statHelper] = nil
+        statHelper:Destroy()
+        self:SelectNextStatHelper()
+        local spellId = GetSpellAbilityId()
+        for stat, id in pairs(statUpgrades) do
+            if id == spellId then
+                self.basicStats[stat] = self.basicStats[stat] + 1
+                self:UpdateSecondaryStats()
+                self:ApplyStats()
+                return
+            end
+        end
+        logHero:Error("Invalid spell in stat upgrades: " .. spellId)
+    end)
+end
+
+function Hero:SelectNextStatHelper()
+    if self:GetOwner() == WCPlayer.Local then
+        for helper in pairs(self.statUpgrades) do
+            helper:Select()
+            return
+        end
+        self:Select()
     end
 end
 
@@ -65,14 +105,14 @@ local function ProbabilityBased(base, pow, stat, bonus)
 end
 
 function Hero:UpdateSecondaryStats()
-    local gtoBase = 1.02
-    local ltoBase = 0.98
+    local gtoBase = 1.05
+    local ltoBase = 0.95
 
     self.secondaryStats.physicalDamage = BonusMul(self.baseSecondaryStats.physicalDamage, gtoBase, self.basicStats.strength, self.bonusSecondaryStats.physicalDamage)
     self.secondaryStats.weaponDamage = (self.baseSecondaryStats.weaponDamage + self.bonusSecondaryStats.weaponDamage) * self.secondaryStats.physicalDamage
 
-    self.secondaryStats.evasion = ProbabilityBased(self.baseSecondaryStats.evasion, ltoBase, self.basicStats.agility, self.bonusSecondaryStats.evasion)
-    self.secondaryStats.attackSpeed = BonusMul(self.baseSecondaryStats.attackSpeed, gtoBase, self.basicStats.agility, self.bonusSecondaryStats.attackSpeed)
+    self.secondaryStats.evasion = ProbabilityBased(self.baseSecondaryStats.evasion, math.sqrt(ltoBase), self.basicStats.agility, self.bonusSecondaryStats.evasion)
+    self.secondaryStats.attackSpeed = BonusMul(self.baseSecondaryStats.attackSpeed, math.sqrt(gtoBase), self.basicStats.agility, self.bonusSecondaryStats.attackSpeed)
 
     self.secondaryStats.spellDamage = BonusMul(self.baseSecondaryStats.spellDamage, gtoBase, self.basicStats.intellect, self.bonusSecondaryStats.spellDamage)
 

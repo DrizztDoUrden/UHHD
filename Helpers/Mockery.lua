@@ -79,6 +79,8 @@ function DisplayTextToPlayer(player, x, y, message) end
 ---@param time number
 ---@param message string
 function DisplayTimedTextToPlayer(player, x, y, time, message) end
+---@return player
+function GetLocalPlayer() end
 
 ---@param player player
 ---@param id id
@@ -190,6 +192,9 @@ function SetUnitX(unit, value) end
 ---@param unit unit
 ---@param value number
 function SetUnitY(unit, value) end
+---@param unit unit
+---@param value boolean
+function SelectUnit(unit, value) end
 
 function RemoveUnit(whichUnit) end
 

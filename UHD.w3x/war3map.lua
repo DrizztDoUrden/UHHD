@@ -263,13 +263,13 @@ Module("Log", function()
 local Class = Require("Class")
 
 local Verbosity = {
-    Fatal = 1,
-    Critical = 2,
-    Error = 3,
-    Warning = 4,
-    Message = 5,
-    Info = 6,
-    Trace = 7,
+    Fatal = 0,
+    Critical = 1,
+    Error = 2,
+    Warning = 3,
+    Message = 4,
+    Info = 5,
+    Trace = 6,
 }
 
 local verbosityNames = {
@@ -285,7 +285,7 @@ local verbosityNames = {
 local function LogInternal(category, verbosity, ...)
     if verbosity <= math.max(category.printVerbosity, category.fileVerbosity) then
         if verbosity <= category.printVerbosity then
-            print("[" .. verbosityNames[verbosity] .. "] " .. category.name .. ": ", ...)
+            print("[" .. verbosityNames[verbosity] .. "]" .. category.name .. ": ", ...)
         end
         if verbosity <= category.fileVerbosity then
             category.buffer = category.buffer .. "\n[" .. verbosityNames[verbosity] .. "]"
@@ -437,14 +437,6 @@ local Unit = Require("WC3.Unit")
 local Hero = Class(UHDUnit)
 
 local statsHelperId = FourCC("__SU")
-local statUpgrades = {
-    FourCC("SU_0"),
-    FourCC("SU_1"),
-    FourCC("SU_2"),
-    FourCC("SU_3"),
-    FourCC("SU_4"),
-    FourCC("SU_5"),
-}
 
 function Hero:ctor(...)
     UHDUnit.ctor(self, ...)
@@ -474,10 +466,6 @@ end
 function Hero:OnLevel()
     local statHelper = Unit(self:GetOwner(), statsHelperId, 0, 0, 0)
     self.statUpgrades[statHelper] = true
-
-    for _, id in pairs(statUpgrades) do
-        statHelper:AddAbility(id)
-    end
 end
 
 local function BonusBeforePow(base, pow, stat, bonus)
@@ -1009,6 +997,7 @@ local Class = Require("Class")
 local Timer = Require("WC3.Timer")
 local Trigger = Require("WC3.Trigger")
 local Unit = Require("WC3.Unit")
+local Location = Require("WC3.Location")
 local HeroPreset = Require("Core.HeroPreset")
 local UHDUnit = Require("Core.UHDUnit")
 local Log = Require("Log")
@@ -1227,11 +1216,15 @@ function ShadowLeap:Cast()
     local timeLeft = self.duration
     local affected = {}
     local pushTicks = math.floor(self.pushDuration / self.period);
-    local targetX = GetSpellTargetX()
-    local targetY = GetSpellTargetY()
+    local target = Location.SpellTarget()
+    local targetX = target.x
+    local targetY = target.y
     local targetDistance = math.sqrt((targetX - self.caster:GetX())^2 + (targetY - self.caster:GetY())^2)
     local selfPush = math.min(targetDistance, self.distance) / math.floor(self.duration / self.period)
     local castAngle = math.atan(targetY - self.caster:GetY(), targetX - self.caster:GetX())
+
+    logDuskKnight:Info(targetX, targetY)
+    logDuskKnight:Info(GetSpellTargetX(), GetSpellTargetY())
 
     local selfPushX = selfPush * math.cos(castAngle)
     local selfPushY = selfPush * math.sin(castAngle)
