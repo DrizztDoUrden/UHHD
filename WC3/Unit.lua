@@ -50,6 +50,7 @@ function Unit:ctor(...)
         self.handle = CreateUnit(player.handle, unitid, x, y, facing)
     end
     self:Register()
+    self.toDestroy = {}
 end
 
 function Unit:Register()
@@ -130,6 +131,9 @@ end
 function Unit:Destroy()
     units[self.handle] = nil
     RemoveUnit(self.handle)
+    for item in pairs(self.toDestroy) do
+        item:Destroy()
+    end
 end
 
 function Unit:SetInt(value, permanent)

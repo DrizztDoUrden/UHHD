@@ -129,7 +129,7 @@ function DrainLight:Effect()
     local timer = Timer()
     local trigger = Trigger()
 
-    trigger:RegisterUnitEvent(self.caster, EVENT_UNIT_DEATH)
+    trigger:RegisterUnitDeath(self.caster)
 
     trigger:AddAction(function()
         timer:Destroy()

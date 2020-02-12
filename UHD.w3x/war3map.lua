@@ -437,6 +437,14 @@ local Unit = Require("WC3.Unit")
 local Hero = Class(UHDUnit)
 
 local statsHelperId = FourCC("__SU")
+local statUpgrades = {
+    FourCC("SU_0"),
+    FourCC("SU_1"),
+    FourCC("SU_2"),
+    FourCC("SU_3"),
+    FourCC("SU_4"),
+    FourCC("SU_5"),
+}
 
 function Hero:ctor(...)
     UHDUnit.ctor(self, ...)
@@ -466,6 +474,10 @@ end
 function Hero:OnLevel()
     local statHelper = Unit(self:GetOwner(), statsHelperId, 0, 0, 0)
     self.statUpgrades[statHelper] = true
+
+    for _, id in pairs(statUpgrades) do
+        statHelper:AddAbility(id)
+    end
 end
 
 local function BonusBeforePow(base, pow, stat, bonus)

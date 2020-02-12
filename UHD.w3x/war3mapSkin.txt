@@ -1,0 +1,3 @@
+[CustomSkin]
+IdlePeon=ReplaceableTextures\CommandButtons\BTNSkillz.blp
+
