@@ -2,7 +2,6 @@ local Class = Require("Class")
 local Timer = Require("WC3.Timer")
 local Trigger = Require("WC3.Trigger")
 local Unit = Require("WC3.Unit")
-local Location = Require("WC3.Location")
 local HeroPreset = Require("Core.HeroPreset")
 local UHDUnit = Require("Core.UHDUnit")
 local Log = Require("Log")
@@ -221,15 +220,11 @@ function ShadowLeap:Cast()
     local timeLeft = self.duration
     local affected = {}
     local pushTicks = math.floor(self.pushDuration / self.period);
-    local target = Location.SpellTarget()
-    local targetX = target.x
-    local targetY = target.y
+    local targetX = GetSpellTargetX()
+    local targetY = GetSpellTargetY()
     local targetDistance = math.sqrt((targetX - self.caster:GetX())^2 + (targetY - self.caster:GetY())^2)
     local selfPush = math.min(targetDistance, self.distance) / math.floor(self.duration / self.period)
     local castAngle = math.atan(targetY - self.caster:GetY(), targetX - self.caster:GetX())
-
-    logDuskKnight:Info(targetX, targetY)
-    logDuskKnight:Info(GetSpellTargetX(), GetSpellTargetY())
 
     local selfPushX = selfPush * math.cos(castAngle)
     local selfPushY = selfPush * math.sin(castAngle)
