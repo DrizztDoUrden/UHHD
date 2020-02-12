@@ -33,14 +33,15 @@ function DuskKnight:ctor()
             period = function(_) return 0.1 end,
             effectDuration = function(_) return 10 end,
             armorRemoved = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
+            gainLimit = function(_, caster) return 30 * caster.secondaryStats.spellDamage end,
             stealPercentage = function(_) return 0.25 end,
         },
         heavySlash = {
             id = FourCC('DK_1'),
             handler = HeavySlash,
             availableFromStart = true,
-            radius = function(_) return 75 end,
-            distance = function(_) return 75 end,
+            radius = function(_) return 125 end,
+            distance = function(_) return 100 end,
             baseDamage = function(_, caster) return 30 * caster.secondaryStats.physicalDamage end,
             baseSlow = function(_) return 0.3 end,
             slowDuration = function(_) return 3 end,
@@ -79,7 +80,7 @@ function DrainLight:ctor(definition, caster)
     self.caster = caster
     self.affected = {}
     self.bonus = 0
-    self.bonusLimit = 30
+    self.bonusLimit = definition:gainLimit(caster)
     self.duration = definition:effectDuration(caster)
     self.toSteal = definition:armorRemoved(caster)
     self.radius = definition:radius(caster)
@@ -235,7 +236,7 @@ function ShadowLeap:Cast()
         if timeLeft > 0 then
             self.caster:SetX(self.caster:GetX() + selfPushX)
             self.caster:SetY(self.caster:GetY() + selfPushY)
-            Unit.EnumInRange(self.caster:GetX(), self.caster:GetY(), 50, function (unit)
+            Unit.EnumInRange(self.caster:GetX(), self.caster:GetY(), 75, function (unit)
                 if not affected[unit] and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
                     local angle = math.atan(self.caster:GetY() - unit:GetY(), self.caster:GetX() - unit:GetX())
                     affected[unit] = {
