@@ -43,8 +43,16 @@ local Category = Class()
 function Category:ctor(name, options)
     options = options or {}
     self.name = name
-    self.fileVerbosity = options.fileVerbosity or Verbosity.Message
-    self.printVerbosity = options.printVerbosity or Verbosity.Warning
+    if TestBuild then
+        self.printVerbosity = options.printVerbosity or Verbosity.Info
+    else
+        self.printVerbosity = options.printVerbosity or Verbosity.Warning
+    end
+    if TestBuild then
+        self.fileVerbosity = options.fileVerbosity or Verbosity.Trace
+    else
+        self.fileVerbosity = options.fileVerbosity or Verbosity.Message
+    end
     self.buffer = ""
 end
 
