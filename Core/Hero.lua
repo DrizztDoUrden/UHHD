@@ -33,9 +33,11 @@ function Hero:ctor(...)
     self.leveling = Trigger()
     self.leveling:RegisterHeroLevel(self)
     self.leveling:AddAction(function() self:OnLevel() end)
+    self.toDestroy[self.leveling] = true
 
     self.abilities = Trigger()
     self.abilities:RegisterUnitSpellEffect(self)
+    self.toDestroy[self.abilities] = true
 
     self.statUpgrades = {}
     self.skillUpgrades = {}
@@ -43,8 +45,6 @@ end
 
 function Hero:Destroy()
     UHDUnit.Destroy(self)
-    self.leveling:Destroy()
-    self.abilities:Destroy()
     for u in pairs(self.statUpgrades) do u:Destroy() end
     for u in pairs(self.skillUpgrades) do u:Destroy() end
 end
