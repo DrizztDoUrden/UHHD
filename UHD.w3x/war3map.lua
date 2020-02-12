@@ -366,7 +366,7 @@ local Creep = Class(UHDUnit)
 
     function Creep:Destroy()
         local timer = Timer()
-        timer:Start(5, false, function()
+        timer:Start(15, false, function()
             UHDUnit.Destroy(self)
             timer:Destroy()
         end)
@@ -381,6 +381,7 @@ local Class = Require("Class")
 local Log = Require("Log")
 local Stats = Require("Core.Stats")
 local Creep = Require("Core.Creep")
+
 
 local CreepPreset = Class()
 
@@ -407,8 +408,6 @@ function CreepPreset:ctor()
 end
 
 function CreepPreset:Spawn(owner, x, y, facing)
-    Log(" CreepPreset:Spawn")
-    Log(" id="..self.unitid)
     local creep = Creep(owner, self.unitid, x, y, facing);
     creep.secondaryStats = self.secondaryStats
     creep:ApplyStats()
@@ -717,8 +716,8 @@ local PathNode = Require("Core.Node.PathNode")
 local CreepSpawner = Require("Core.Node.CreepSpawner")
 
 local logWaveObserver = Log.Category("WaveObserver\\WaveObserver", {
-    printVerbosity = Log.Verbosity.Trace,
-    fileVerbosity = Log.Verbosity.Trace,
+    -- printVerbosity = Log.Verbosity.Trace,
+    -- fileVerbosity = Log.Verbosity.Trace,
     })
 
 
@@ -730,7 +729,6 @@ function WaveObserver:ctor(owner)
     local creepSpawner1 = CreepSpawner(700, 700, node1)
     local creepSpawner2 = CreepSpawner(-700, 700, node1)
     local trigger = Trigger()
-    local triggercheckalldead = nil
     self.needtokillallcreep = false
     local creepcount = 0
     trigger:RegisterPlayerUnitEvent(owner, EVENT_PLAYER_UNIT_DEATH, nil)
@@ -751,15 +749,11 @@ function WaveObserver:ctor(owner)
 
     Log(" Create Timer")
     
-    wavetimer:Start(5, true, function()
-        Log(" Try strart new wave")
+    wavetimer:Start(25, true, function()
         if creepSpawner1:IsANextWave() then
-            Log("Spaw from crSp1")
             creepcount = creepcount + creepSpawner1:SpawnNewWave(owner, 0)
-            Log("Spaw from crSp2")
             creepcount = creepcount + creepSpawner2:SpawnNewWave(owner, 0)
         else
-            Log("No waves")
             self.needtokillallcreep = true
             wavetimer:Destroy()
         end
@@ -780,7 +774,7 @@ local levelCreepCompositon = {
     {"MagicDragon"},
     {"MagicDragon"},}
     local nComposition = {
-        {1},
+        {3},
         {1},
         {1},
         {1},
@@ -807,7 +801,6 @@ local Log = Require("Log")
 local MagicDragon = Class(CreepPreset)
 
 function MagicDragon:ctor()
-    Log("Construct Magic Dragon")
     CreepPreset.ctor(self)
     self.secondaryStats.health = 15
     self.secondaryStats.mana = 5
@@ -824,11 +817,11 @@ end)
 Module("Core.Node.CreepSpawner", function()
 local Log = Require("Log")
 local Class = Require("Class")
-local PathNode = Require("Core.Node.PathNode")
+local Node = Require("Core.Node.Node")
 local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
 local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
 
-local CreepSpawner = Class(PathNode)
+local CreepSpawner = Class(Node)
 
 local logCreepSpawner= Log.Category("CreepSpawner\\CreepSpawnerr", {
     printVerbosity = Log.Verbosity.Trace,
@@ -836,7 +829,7 @@ local logCreepSpawner= Log.Category("CreepSpawner\\CreepSpawnerr", {
     })
 
 function CreepSpawner:ctor(x, y, prevnode)
-    PathNode.ctor(self, x, y, prevnode)
+    Node.ctor(self, x, y, prevnode)
     Log("Construct CreepSpawner")
     self.level = 0
     self.levelCreepsComopsion = levelCreepsComopsion
@@ -863,15 +856,16 @@ function CreepSpawner:IsANextWave()
 end
 
 function CreepSpawner:SpawnNewWave(owner, facing)
-    logCreepSpawner:Info("WAVE "..self.level + 1)
+    -- logCreepSpawner:Info("WAVE "..self.level + 1)
     local CreepsComposition, nComposion, aComposition = self:GetNextWaveSpecification()
     local acc = 0
     for i, CreepName in pairs(CreepsComposition) do
-        Log(CreepName)
         for j = 1, nComposion[i] do
             local creepPresetClass = CreepClasses[CreepName]
             local creepPreset = creepPresetClass()
             local creep = creepPreset:Spawn(owner, self.x, self.y, facing)
+            local x, y = self.prev:GetCenter()
+            creep:IssueAttackPoint(x, y)
             acc = acc + 1
         end
     end

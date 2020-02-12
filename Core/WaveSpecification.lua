@@ -7,7 +7,7 @@ local levelCreepCompositon = {
     {"MagicDragon"},
     {"MagicDragon"},}
     local nComposition = {
-        {1},
+        {3},
         {1},
         {1},
         {1},

@@ -3,6 +3,7 @@ local Log = Require("Log")
 local Stats = Require("Core.Stats")
 local Creep = Require("Core.Creep")
 
+
 local CreepPreset = Class()
 
 function CreepPreset:ctor()
@@ -28,8 +29,6 @@ function CreepPreset:ctor()
 end
 
 function CreepPreset:Spawn(owner, x, y, facing)
-    Log(" CreepPreset:Spawn")
-    Log(" id="..self.unitid)
     local creep = Creep(owner, self.unitid, x, y, facing);
     creep.secondaryStats = self.secondaryStats
     creep:ApplyStats()

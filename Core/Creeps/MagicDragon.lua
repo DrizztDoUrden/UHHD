@@ -5,7 +5,6 @@ local Log = Require("Log")
 local MagicDragon = Class(CreepPreset)
 
 function MagicDragon:ctor()
-    Log("Construct Magic Dragon")
     CreepPreset.ctor(self)
     self.secondaryStats.health = 15
     self.secondaryStats.mana = 5

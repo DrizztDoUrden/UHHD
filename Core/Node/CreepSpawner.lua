@@ -1,10 +1,10 @@
 local Log = Require("Log")
 local Class = Require("Class")
-local PathNode = Require("Core.Node.PathNode")
+local Node = Require("Core.Node.Node")
 local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
 local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
 
-local CreepSpawner = Class(PathNode)
+local CreepSpawner = Class(Node)
 
 local logCreepSpawner= Log.Category("CreepSpawner\\CreepSpawnerr", {
     printVerbosity = Log.Verbosity.Trace,
@@ -12,7 +12,7 @@ local logCreepSpawner= Log.Category("CreepSpawner\\CreepSpawnerr", {
     })
 
 function CreepSpawner:ctor(x, y, prevnode)
-    PathNode.ctor(self, x, y, prevnode)
+    Node.ctor(self, x, y, prevnode)
     Log("Construct CreepSpawner")
     self.level = 0
     self.levelCreepsComopsion = levelCreepsComopsion
@@ -39,15 +39,16 @@ function CreepSpawner:IsANextWave()
 end
 
 function CreepSpawner:SpawnNewWave(owner, facing)
-    logCreepSpawner:Info("WAVE "..self.level + 1)
+    -- logCreepSpawner:Info("WAVE "..self.level + 1)
     local CreepsComposition, nComposion, aComposition = self:GetNextWaveSpecification()
     local acc = 0
     for i, CreepName in pairs(CreepsComposition) do
-        Log(CreepName)
         for j = 1, nComposion[i] do
             local creepPresetClass = CreepClasses[CreepName]
             local creepPreset = creepPresetClass()
             local creep = creepPreset:Spawn(owner, self.x, self.y, facing)
+            local x, y = self.prev:GetCenter()
+            creep:IssueAttackPoint(x, y)
             acc = acc + 1
         end
     end
