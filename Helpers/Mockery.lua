@@ -30,6 +30,9 @@ EVENT_UNIT_SPELL_FINISH = {}
 EVENT_UNIT_DEATH = {}
 EVENT_UNIT_HERO_LEVEL = {}
 
+PLAYER_GAME_RESULT_VICTORY = {}
+
+PLAYER_GAME_RESULT_DEFEAT = {}
 EVENT_PLAYER_UNIT_DEATH = {}
 
 EVENT_PLAYER_UNIT_SPELL_FINISH = {}
@@ -342,3 +345,8 @@ function GetLocationY(loc) end
 function GetLocationZ(loc) end
 ---@param loc location
 function RemoveLocation(loc) end
+
+
+function RemovePlayer(whichPlayer, PLAYER_GAME_RESULT) end
+
+function EndGame(isShowScore) end

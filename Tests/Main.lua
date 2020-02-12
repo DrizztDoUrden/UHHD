@@ -6,6 +6,6 @@ local WaveObserver = Require("Core.WaveObserver")
 local testHeroPreset = DuskKnight()
 local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 0, 0)
 
-local testWaveObserver = WaveObserver(WCPlayer.Get(12))
+local testWaveObserver = WaveObserver(WCPlayer.Get(12), WCPlayer.Get(0))
 
 Log("Game initialized successfully")

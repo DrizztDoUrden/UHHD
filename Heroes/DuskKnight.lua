@@ -7,8 +7,8 @@ local UHDUnit = Require("Core.UHDUnit")
 local Log = Require("Log")
 
 local logDuskKnight = Log.Category("Heroes\\Dusk Knight", {
---    printVerbosity = Log.Verbosity.Trace,
---    fileVerbosity = Log.Verbosity.Trace,
+    printVerbosity = Log.Verbosity.Trace,
+    fileVerbosity = Log.Verbosity.Trace,
 })
 
 local DuskKnight = Class(HeroPreset)
