@@ -16,10 +16,10 @@ local logWaveObserver = Log.Category("WaveObserver\\WaveObserver", {
 local WaveObserver = Class()
 
 function WaveObserver:ctor(owner)
-    local node = PathNode(0, 0, nil)
-    local node1 = PathNode(0, 700, node)
-    local creepSpawner1 = CreepSpawner(owner, 700, 700, node1, 0)
-    local creepSpawner2 = CreepSpawner(owner, -700, 700, node1, 0)
+    local node = PathNode(0, -1800, nil)
+    local node1 = PathNode(0, 0, node)
+    local creepSpawner1 = CreepSpawner(owner, 1600, 0, node1, 0)
+    local creepSpawner2 = CreepSpawner(owner, -1600, 0, node1, 0)
     local trigger = Trigger()
     self.needtokillallcreep = false
     local creepcount = 0

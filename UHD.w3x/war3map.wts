@@ -23,11 +23,6 @@ STRING 5
 Player 1
 }
 
-STRING 6
-{
-Force 1
-}
-
 STRING 7
 // Units: H_DK (Dusk Knight), Name (Name)
 {
@@ -326,5 +321,60 @@ STRING 78
 // Abilities: T030 (Survival Instinct), EditorSuffix (Editor Suffix)
 {
 (Dusk Knight)
+}
+
+STRING 79
+{
+Player 2
+}
+
+STRING 80
+{
+Player 3
+}
+
+STRING 81
+{
+Player 4
+}
+
+STRING 82
+{
+Player 5
+}
+
+STRING 83
+{
+Player 6
+}
+
+STRING 84
+{
+Player 7
+}
+
+STRING 85
+{
+Player 8
+}
+
+STRING 86
+{
+Player 9
+}
+
+STRING 87
+{
+Player 10
+}
+
+STRING 88
+{
+Defenders
+}
+
+STRING 89
+{
+Force 2
 }
 
