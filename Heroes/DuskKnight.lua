@@ -42,9 +42,21 @@ function DuskKnight:ctor()
             availableFromStart = true,
             radius = function(_) return 125 end,
             distance = function(_) return 100 end,
-            baseDamage = function(_, caster) return 30 * caster.secondaryStats.physicalDamage end,
+            baseDamage = function(_, caster)
+                local value = 20
+                if caster:HasTalent("T011") then value = value + 15 end
+                return value * caster.secondaryStats.physicalDamage
+            end,
             baseSlow = function(_) return 0.3 end,
             slowDuration = function(_) return 3 end,
+            manaBurn = function(_, caster)
+                if caster:HasTalent("T010") then return 20 end
+                return 0
+            end,
+            vampirism = function(_, caster)
+                if caster:HasTalent("T012") then return 0.15 end
+                return 0
+            end,
         },
         shadowLeap = {
             id = FourCC('DK_2'),
@@ -62,34 +74,24 @@ function DuskKnight:ctor()
             handler = DarkMend,
             availableFromStart = true,
             baseHeal = function(_, caster)
-                if caster.talents[FourCC("T030")].learned then
-                    return 20 * caster.secondaryStats.spellDamage * 0.75
-                else
-                    return 20 * caster.secondaryStats.spellDamage
-                end
+                local value = 20
+                if caster:HasTalent("T030") then value = value * 0.75 end
+                return value * caster.secondaryStats.spellDamage
             end,
             duration = function(_) return 4 end,
             percentHeal = function(_, caster)
-                if caster.talents[FourCC("T030")].learned then
-                    return 0,1 * 0.75
-                else
-                    return 0,1
-                end
+                local value = 0.1
+                if caster:HasTalent("T030") then value = value * 0.75 end
+                return value
             end,
             period = function(_) return 0.1 end,
             instantHeal = function(_, caster)
-                if caster.talents[FourCC("T030")].learned then
-                    return 0.5
-                else
-                    return 0
-                end
+                if caster:HasTalent("T030") then return 0.5 end
+                return 0
             end,
             healOverTime = function(_, caster)
-                if caster.talents[FourCC("T030")].learned then
-                    return 0.75
-                else
-                    return 1
-                end
+                if caster:HasTalent("T030") then return 0.75 end
+                return 1
             end,
         },
     }
@@ -218,6 +220,8 @@ function HeavySlash:ctor(definition, caster)
     self.baseDamage = definition:baseDamage(caster)
     self.baseSlow = definition:baseSlow(caster)
     self.slowDuration = definition:slowDuration(caster)
+    self.manaBurn = definition:manaBurn(caster)
+    self.vampirism = definition:vampirism(caster)
     self:Cast()
 end
 
@@ -230,6 +234,8 @@ function HeavySlash:Cast()
     Unit.EnumInRange(x, y, self.radius, function(unit)
         if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DamageTarget(unit, self.baseDamage, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_METAL_MEDIUM_SLICE)
+            if self.manaBurn > 0 then unit:SetMana(math.max(0, unit:GetMana() - self.manaBurn)) end
+            if self.vampirism > 0 then self.caster:SetHP(math.min(self.caster.GetMaxHP(), self.vampirism * self.baseDamage)) end
 
             if unit:IsA(UHDUnit) then
                 affected[unit] = true

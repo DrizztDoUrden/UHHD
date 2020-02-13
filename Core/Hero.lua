@@ -176,4 +176,8 @@ function Hero:ApplyStats()
     UHDUnit.ApplyStats(self)
 end
 
+function Hero:HasTalent(id)
+    return self.talents[FourCC(id)].learned
+end
+
 return Hero
