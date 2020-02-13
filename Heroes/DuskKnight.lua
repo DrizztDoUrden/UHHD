@@ -40,7 +40,11 @@ function DuskKnight:ctor()
             id = FourCC('DK_1'),
             handler = HeavySlash,
             availableFromStart = true,
-            radius = function(_) return 125 end,
+            radius = function(_, caster)
+                local value = 125
+                if caster:HasTalent("T010") then value = value + 50 end
+                return value
+            end,
             distance = function(_) return 100 end,
             baseDamage = function(_, caster)
                 local value = 20
