@@ -475,9 +475,6 @@ function Hero:ctor(...)
     self.skillUpgrades = {}
     self.talentBooks = {}
     self.talents = {}
-
-    self:AddTalentPoint()
-    self:AddTalentPoint()
 end
 
 function Hero:Destroy()
@@ -528,10 +525,10 @@ function Hero:AddStatPoint()
 end
 
 function Hero:AddTalentPoint()
-    local talentHelper = Unit(self:GetOwner(), statsHelperId, statsX, statsY, 0)
+    local talentHelper = Unit(self:GetOwner(), talentsHelperId, statsX, statsY, 0)
     self.skillUpgrades[talentHelper] = true
 
-    for id in pairs(self.talentBooks) do
+    for _, id in pairs(self.talentBooks) do
         talentHelper:AddAbility(id)
     end
 
@@ -620,13 +617,15 @@ local Class = Require("Class")
 local Trigger = Require("WC3.Trigger")
 local Stats = Require("Core.Stats")
 local Hero = Require("Core.Hero")
+local Log = Require("Log")
 
 local HeroPreset = Class()
+
+local logHeroPreset = Log.Category("Core\\HeroPreset")
 
 function HeroPreset:ctor()
     self.basicStats = Stats.Basic()
     self.secondaryStats = Stats.Secondary()
-    self.unitid = FourCC('0000')
 
     self.abilities = {}
 
@@ -654,11 +653,10 @@ function HeroPreset:Spawn(owner, x, y, facing)
 
     hero.baseSecondaryStats = self.secondaryStats
     hero:SetBasicStats(self.basicStats)
-    hero.talentBooks = self.talentBooks
     hero.talents = {}
-    for k, v in pairs(self.talents) do
-        hero.talents[k] = v
-    end
+    hero.talentBooks = {}
+    for k, v in pairs(self.talents) do hero.talents[k] = v end
+    for k, v in pairs(self.talentBooks) do hero.talentBooks[k] = v end
 
     hero.abilities:AddAction(function() self:Cast(hero) end)
 
@@ -668,6 +666,9 @@ function HeroPreset:Spawn(owner, x, y, facing)
             hero:SetAbilityLevel(ability.id, 1)
         end
     end
+
+    hero:AddTalentPoint()
+    hero:AddTalentPoint()
 
     return hero
 end

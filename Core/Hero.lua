@@ -45,9 +45,6 @@ function Hero:ctor(...)
     self.skillUpgrades = {}
     self.talentBooks = {}
     self.talents = {}
-
-    self:AddTalentPoint()
-    self:AddTalentPoint()
 end
 
 function Hero:Destroy()
@@ -101,7 +98,7 @@ function Hero:AddTalentPoint()
     local talentHelper = Unit(self:GetOwner(), talentsHelperId, statsX, statsY, 0)
     self.skillUpgrades[talentHelper] = true
 
-    for id in pairs(self.talentBooks) do
+    for _, id in pairs(self.talentBooks) do
         talentHelper:AddAbility(id)
     end
 
