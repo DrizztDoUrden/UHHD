@@ -57,8 +57,10 @@ function HeroPreset:Spawn(owner, x, y, facing)
         end
     end
 
-    hero:AddTalentPoint()
-    hero:AddTalentPoint()
+    if TestBuild then
+        hero:AddTalentPoint()
+        hero:AddTalentPoint()
+    end
 
     return hero
 end

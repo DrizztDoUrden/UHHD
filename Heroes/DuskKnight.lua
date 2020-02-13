@@ -61,10 +61,36 @@ function DuskKnight:ctor()
             id = FourCC('DK_3'),
             handler = DarkMend,
             availableFromStart = true,
-            baseHeal = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
+            baseHeal = function(_, caster)
+                if caster.talents[FourCC("T030")].learned then
+                    return 20 * caster.secondaryStats.spellDamage * 0.75
+                else
+                    return 20 * caster.secondaryStats.spellDamage
+                end
+            end,
             duration = function(_) return 4 end,
-            percentHeal = function(_) return 0.1 end,
+            percentHeal = function(_, caster)
+                if caster.talents[FourCC("T030")].learned then
+                    return 0,1 * 0.75
+                else
+                    return 0,1
+                end
+            end,
             period = function(_) return 0.1 end,
+            instantHeal = function(_, caster)
+                if caster.talents[FourCC("T030")].learned then
+                    return 0.5
+                else
+                    return 0
+                end
+            end,
+            healOverTime = function(_, caster)
+                if caster.talents[FourCC("T030")].learned then
+                    return 0.75
+                else
+                    return 1
+                end
+            end,
         },
     }
 
@@ -276,12 +302,16 @@ function DarkMend:ctor(definition, caster)
     self.duration = definition:duration(caster)
     self.percentHeal = definition:percentHeal(caster)
     self.period = definition:period(caster)
+    self.instantHeal = definition:instantHeal(caster)
+    self.healOverTime = definition:healOverTime(caster)
     self:Cast()
 end
 
 function DarkMend:Cast()
     local timer = Timer()
     local timeLeft = self.duration
+    local curHp = self.caster:GetHP();
+    self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * self.instantHeal)
     timer:Start(self.period, true, function()
         local curHp = self.caster:GetHP();
         if curHp <= 0 then
@@ -290,7 +320,7 @@ function DarkMend:Cast()
         end
         timeLeft = timeLeft - self.period
         local part = self.period / self.duration
-        self.caster:SetHP(curHp + (self.caster:GetHP() * self.percentHeal + self.baseHeal) * part)
+        self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime)
         if timeLeft <= 0 then
             timer:Destroy()
         end
