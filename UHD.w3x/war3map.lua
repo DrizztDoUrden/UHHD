@@ -515,9 +515,9 @@ function Hero:OnLevel()
     for _ = 1,Hero.StatsPerLevel do
         self:AddStatPoint()
     end
-    if self:GetLevel() % Hero.LevelsForTalent == 0 then
+    -- if self:GetLevel() Hero.LevelsForTalent == 0 then
         self:AddTalentPoint()
-    end
+    -- end
 end
 
 function Hero:AddStatPoint()
@@ -961,11 +961,11 @@ local levelCreepCompositon = {
     {"MagicDragon"},
     {"MagicDragon"},}
     local nComposition = {
-        {1},
-        {1},
-        {1},
-        {1},
-        {1}
+        {5},
+        {5},
+        {5},
+        {5},
+        {5},
     }
     local aComposition = {
         {nil},
@@ -1271,7 +1271,7 @@ function DuskKnight:ctor()
     self:AddTalent("022")
 
     self:AddTalent("030")
-    self:AddTalent("031").onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id) - 3) end
+    self:AddTalent("031").onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
     self:AddTalent("032")
 
     self.basicStats.strength = 12
@@ -1406,7 +1406,7 @@ function HeavySlash:Cast()
         if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DamageTarget(unit, self.baseDamage, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_METAL_MEDIUM_SLICE)
             if self.manaBurn > 0 then unit:SetMana(math.max(0, unit:GetMana() - self.manaBurn)) end
-            if self.vampirism > 0 then self.caster:SetHP(math.min(self.caster.GetMaxHP(), self.vampirism * self.baseDamage)) end
+            if self.vampirism > 0 then self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.vampirism * self.baseDamage)) end
 
             if unit:IsA(UHDUnit) then
                 affected[unit] = true
@@ -1561,7 +1561,10 @@ local Core = Require("Core.Core")
 
 local testHeroPreset = DuskKnight()
 local core = Core(WCPlayer.Get(8), 0, -1800, 0)
-local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, -1600, 0)
+
+for i = 0,1 do
+    testHeroPreset:Spawn(WCPlayer.Get(i), 0, -1600, 0)
+end
 
 local testWaveObserver = WaveObserver(WCPlayer.Get(9))
 

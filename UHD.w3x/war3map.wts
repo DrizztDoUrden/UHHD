@@ -1,11 +1,11 @@
 ﻿STRING 1
 {
-Map
+Ultimate Hero Defence
 }
 
 STRING 2
 {
-Any
+4-8
 }
 
 STRING 3
@@ -15,7 +15,7 @@ Nondescript
 
 STRING 4
 {
-Unknown
+Porgy and Andronet
 }
 
 STRING 5
@@ -652,5 +652,83 @@ STRING 135
 // Upgrades: U032 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
+}
+
+STRING 136
+// Upgrades: U030 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
+{
+030
+}
+
+STRING 137
+// Upgrades: U000 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
+{
+000
+}
+
+STRING 138
+// Upgrades: U001 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
+{
+001
+}
+
+STRING 139
+// Upgrades: U002 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
+{
+002
+}
+
+STRING 140
+// Upgrades: U010 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
+{
+010
+}
+
+STRING 141
+// Upgrades: U011 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
+{
+011
+}
+
+STRING 142
+// Upgrades: U012 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
+{
+012
+}
+
+STRING 143
+// Upgrades: U020 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
+{
+020
+}
+
+STRING 144
+// Upgrades: U021 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
+{
+021
+}
+
+STRING 145
+// Upgrades: U022 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
+{
+022
+}
+
+STRING 146
+// Upgrades: U023 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
+{
+023
+}
+
+STRING 147
+// Upgrades: U031 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
+{
+031
+}
+
+STRING 148
+// Upgrades: U032 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
+{
+032
 }
 
