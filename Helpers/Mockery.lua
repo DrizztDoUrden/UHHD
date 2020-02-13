@@ -25,6 +25,9 @@ ExtensiveLog = false
 ---@class rect
 ---@class location
 
+DAMAGE_TYPE_MAGIC = {}
+WEAPON_TYPE_WHOKNOWS = {}
+
 EVENT_UNIT_SPELL_EFFECT = {}
 EVENT_UNIT_SPELL_FINISH = {}
 EVENT_UNIT_DEATH = {}

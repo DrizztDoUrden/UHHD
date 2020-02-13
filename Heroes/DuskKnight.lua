@@ -35,6 +35,11 @@ function DuskKnight:ctor()
             armorRemoved = function(_) return 10 end,
             gainLimit = function(_) return 30 end,
             stealPercentage = function(_) return 0.25 end,
+            damage = function(_, caster)
+                if caster:HasTalent("T001") then return 5 * caster.secondaryStats.spellDamage end
+                return 0
+            end,
+            healLimit = function(_, caster) return 10 * caster.secondaryStats.spellDamage end
         },
         heavySlash = {
             id = FourCC('DK_1'),
@@ -139,6 +144,8 @@ function DrainLight:ctor(definition, caster)
     self.stealTimeLeft = definition:duration(caster)
     self.period = definition:period(caster)
     self.toBonus = definition:stealPercentage(caster)
+    self.damage = definition:damage(caster)
+    self.healLimit = definition:healLimit(caster)
 
     self:Cast()
 end
@@ -166,6 +173,7 @@ function DrainLight:Cast()
         end
 
         self.stealTimeLeft = self.stealTimeLeft - self.period
+        self.healed = 0
 
         for _, target in pairs(self.affected) do
             self:Drain(target)
@@ -205,7 +213,8 @@ function DrainLight:End()
 end
 
 function DrainLight:Drain(target)
-    local toStealNow = (target.toSteal - target.stolen) * self.period / self.stealTimeLeft
+    local parts = math.floor(self.stealTimeLeft / self.period)
+    local toStealNow = (target.toSteal - target.stolen) / parts
     target.unit:SetArmor(target.unit:GetArmor() + target.stolen)
     target.stolen = target.stolen + toStealNow
     target.unit:SetArmor(target.unit:GetArmor() - target.stolen)
@@ -214,6 +223,15 @@ function DrainLight:Drain(target)
         self.caster:SetArmor(self.caster:GetArmor() - self.bonus)
         self.bonus = self.bonus + toBonus
         self.caster:SetArmor(self.caster:GetArmor() + self.bonus)
+    end
+    if self.damage > 0 then
+        local damagePerTick = self.period * self.damage
+        self.caster:DamageTarget(target.unit, damagePerTick, false, true, ATTACK_TYPE_HERO, DAMAGE_TYPE_MAGIC, WEAPON_TYPE_WHOKNOWS)
+        if self.healed < self.healLimit then
+            local toHeal = math.min(self.healLimit - self.healed, self.toSteal * damagePerTick)
+            self.healed = self.healed + toHeal
+            self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.caster:GetHP() + toHeal))
+        end
     end
 end
 
@@ -332,7 +350,7 @@ function DarkMend:Cast()
     local timeLeft = self.duration
     local curHp = self.caster:GetHP();
     local part = 1 / math.floor(self.period / self.duration)
-    self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * self.instantHeal)
+    self.caster:SetHP(math.min(self.caster:GetMaxHP(), curHp + (curHp * self.percentHeal + self.baseHeal) * self.instantHeal))
     timer:Start(self.period, true, function()
         local curHp = self.caster:GetHP();
         if curHp <= 0 then
@@ -340,7 +358,7 @@ function DarkMend:Cast()
             return
         end
         timeLeft = timeLeft - self.period
-        self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime)
+        self.caster:SetHP(math.min(self.caster:GetMaxHP(), curHp + (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime))
         if timeLeft <= 0 then
             timer:Destroy()
         end
