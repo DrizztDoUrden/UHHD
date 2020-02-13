@@ -310,3 +310,21 @@ STRING 75
 Already Learned
 }
 
+STRING 76
+// Abilities: DKT0 (Dark Mend Talents), Tip (Tooltip - Normal)
+{
+Dark Mend Talents
+}
+
+STRING 77
+// Abilities: DKT0 (Dark Mend Talents), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
+}
+
+STRING 78
+// Abilities: T030 (Survival Instinct), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
+}
+
