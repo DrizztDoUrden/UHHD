@@ -98,6 +98,9 @@ function DuskKnight:ctor()
 
     self.talentBooks = {
         FourCC("DKT0"),
+        FourCC("DKT1"),
+        -- FourCC("DKT2"),
+        FourCC("DKT3"),
     }
 
     self:AddTalent("000")
@@ -210,6 +213,15 @@ function DrainLight:Drain(target)
         self.caster:SetArmor(self.caster:GetArmor() - self.bonus)
         self.bonus = self.bonus + toBonus
         self.caster:SetArmor(self.caster:GetArmor() + self.bonus)
+    end
+    if self.damage > 0 then
+        local damagePerTick = self.period * self.damage
+        self.caster:DamageTarget(target.unit, damagePerTick, false, true, ATTACK_TYPE_HERO, DAMAGE_TYPE_MAGIC, WEAPON_TYPE_WHOKNOWS)
+        if self.healed < self.healLimit * self.period then
+            local toHeal = math.min(self.healLimit * self.period - self.healed, self.toSteal * damagePerTick)
+            self.healed = self.healed + toHeal
+            self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.caster:GetHP() + toHeal))
+        end
     end
 end
 

@@ -276,7 +276,7 @@ Talent Upgrades
 }
 
 STRING 71
-// Abilities: DKT0 (Dark Mend Talents), Name (Name)
+// Abilities: DKT3 (Dark Mend Talents), Name (Name)
 {
 Dark Mend Talents
 }
@@ -300,25 +300,25 @@ Dark Mend heals 50% instantly and 75% over time.
 }
 
 STRING 75
-// Upgrades: U030 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U030 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 76
-// Abilities: DKT0 (Dark Mend Talents), Tip (Tooltip - Normal)
+// Abilities: DKT3 (Dark Mend Talents), Tip (Tooltip - Normal)
 {
 Dark Mend Talents
 }
 
 STRING 77
-// Abilities: DKT0 (Dark Mend Talents), EditorSuffix (Editor Suffix)
+// Abilities: T030 (Survival Instinct), EditorSuffix (Editor Suffix)
 {
 (Dusk Knight)
 }
 
 STRING 78
-// Abilities: T030 (Survival Instinct), EditorSuffix (Editor Suffix)
+// Abilities: T000 (Ward Drain), EditorSuffix (Editor Suffix)
 {
 (Dusk Knight)
 }
@@ -376,5 +376,281 @@ Defenders
 STRING 89
 {
 Force 2
+}
+
+STRING 90
+// Abilities: T000 (Ward Drain), Name (Name)
+{
+Ward Drain
+}
+
+STRING 91
+// Abilities: T000 (Ward Drain), Tip (Tooltip - Normal)
+{
+Ward Drain (Not implented)
+}
+
+STRING 92
+// Abilities: T000 (Ward Drain), Ubertip (Tooltip - Normal - Extended)
+{
+Dark mend also reduces spell resist, but both with 75% efficiency
+}
+
+STRING 93
+// Abilities: T001 (Drain Hope), Name (Name)
+{
+Drain Hope
+}
+
+STRING 94
+// Abilities: T001 (Drain Hope), Tip (Tooltip - Normal)
+{
+Drain Hope
+}
+
+STRING 95
+// Abilities: T001 (Drain Hope), Ubertip (Tooltip - Normal - Extended)
+{
+Drain Light deals 5 dps while charging, healing up to 10 per second
+}
+
+STRING 96
+// Abilities: T001 (Drain Hope), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
+}
+
+STRING 97
+// Abilities: T011 (Great Sword), Name (Name)
+{
+Great Sword
+}
+
+STRING 98
+// Abilities: T011 (Great Sword), Tip (Tooltip - Normal)
+{
+Great Sword
+}
+
+STRING 99
+// Abilities: T011 (Great Sword), Ubertip (Tooltip - Normal - Extended)
+{
+Heavy slash deals 15 more damage
+}
+
+STRING 100
+// Abilities: T011 (Great Sword), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
+}
+
+STRING 101
+// Abilities: T010 (Shadow Slash), Name (Name)
+{
+Shadow Slash
+}
+
+STRING 102
+// Abilities: T010 (Shadow Slash), Tip (Tooltip - Normal)
+{
+Shadow Slash
+}
+
+STRING 103
+// Abilities: T010 (Shadow Slash), Ubertip (Tooltip - Normal - Extended)
+{
+Heavy slash also burns 20 mana from targets and has 200 range instead of 125
+}
+
+STRING 104
+// Abilities: T010 (Shadow Slash), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
+}
+
+STRING 105
+// Abilities: T002 (Drain of Will), Name (Name)
+{
+Drain of Will
+}
+
+STRING 106
+// Abilities: T002 (Drain of Will), Tip (Tooltip - Normal)
+{
+Drain of Will (Not implemented)
+}
+
+STRING 107
+// Abilities: T002 (Drain of Will), Ubertip (Tooltip - Normal - Extended)
+{
+Drain Light also steals 15% damage buffing up to 15%
+}
+
+STRING 108
+// Abilities: T002 (Drain of Will), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
+}
+
+STRING 109
+// Abilities: T012 (Cannibalism), Name (Name)
+{
+Cannibalism
+}
+
+STRING 110
+// Abilities: T012 (Cannibalism), Tip (Tooltip - Normal)
+{
+Cannibalism
+}
+
+STRING 111
+// Abilities: T012 (Cannibalism), Ubertip (Tooltip - Normal - Extended)
+{
+Heavy slash heals for 15% of its base damage
+}
+
+STRING 112
+// Abilities: T012 (Cannibalism), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
+}
+
+STRING 113
+// Abilities: T031 (Arcane healing), Name (Name)
+{
+Arcane healing
+}
+
+STRING 114
+// Abilities: T031 (Arcane healing), Tip (Tooltip - Normal)
+{
+Arcane healing
+}
+
+STRING 115
+// Abilities: T031 (Arcane healing), Ubertip (Tooltip - Normal - Extended)
+{
+Dark Mend has 3 sec reduces cd and no mana cost
+}
+
+STRING 116
+// Abilities: T031 (Arcane healing), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
+}
+
+STRING 117
+// Abilities: DKT1 (Heavy Slash Talents), Name (Name)
+{
+Heavy Slash Talents
+}
+
+STRING 118
+// Abilities: DKT1 (Heavy Slash Talents), Tip (Tooltip - Normal)
+{
+Heavy Slash Talents
+}
+
+STRING 119
+// Abilities: DKT1 (Heavy Slash Talents), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
+}
+
+STRING 120
+// Abilities: DKT3 (Dark Mend Talents), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
+}
+
+STRING 121
+// Abilities: DKT0 (Drain Light Talents), Name (Name)
+{
+Drain Light Talents
+}
+
+STRING 122
+// Abilities: DKT0 (Drain Light Talents), Tip (Tooltip - Normal)
+{
+Drain Light Talents
+}
+
+STRING 123
+// Abilities: DKT0 (Drain Light Talents), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
+}
+
+STRING 124
+// Upgrades: U000 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Already Learned
+}
+
+STRING 125
+// Upgrades: U001 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Already Learned
+}
+
+STRING 126
+// Upgrades: U002 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Already Learned
+}
+
+STRING 127
+// Upgrades: U010 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Already Learned
+}
+
+STRING 128
+// Upgrades: U011 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Already Learned
+}
+
+STRING 129
+// Upgrades: U012 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Already Learned
+}
+
+STRING 130
+// Upgrades: U020 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Already Learned
+}
+
+STRING 131
+// Upgrades: U021 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Already Learned
+}
+
+STRING 132
+// Upgrades: U022 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Already Learned
+}
+
+STRING 133
+// Upgrades: U023 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Already Learned
+}
+
+STRING 134
+// Upgrades: U031 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Already Learned
+}
+
+STRING 135
+// Upgrades: U032 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Already Learned
 }
 
