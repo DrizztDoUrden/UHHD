@@ -57,9 +57,9 @@ function Hero:OnLevel()
     for _ = 1,Hero.StatsPerLevel do
         self:AddStatPoint()
     end
-    if self:GetLevel() % Hero.LevelsForTalent == 0 then
+    -- if self:GetLevel() % Hero.LevelsForTalent == 0 then
         self:AddTalentPoint()
-    end
+    -- end
 end
 
 function Hero:AddStatPoint()
