@@ -100,6 +100,12 @@ STRING 27
 W
 }
 
+STRING 29
+// Abilities: DK_0 (Drain Light), Ubertip (Tooltip - Normal - Extended)
+{
+Steals |cffff606010|r |cff808080armor|r from enemies in 300 range in 2 seconds for 10 seconds.|nHero |cff8080ff25%|r of stolen amount (up to |cff8080ff30|r) as |cff808080armor|r for 10 seconds. Bosses get |cffff6060200%|r effect and provide |cff8080ff100%|r of it as |cff808080armor|r for hero.|nCooldown: 20 seconds.
+}
+
 STRING 31
 // Abilities: DK_1 (Heavy Slash), Name (Name)
 {
@@ -212,12 +218,6 @@ STRING 57
 // Abilities: SU_5 (Upgrade willpower), Tip (Tooltip - Normal)
 {
 Upgrade |cffdd5522willpower|r
-}
-
-STRING 59
-// Abilities: DK_0 (Drain Light), Ubertip (Tooltip - Normal - Extended)
-{
-Steals |cffff606010|r |cff808080armor|r from enemies in 300 range in 2 seconds for 10 seconds.|nHero |cff8080ff25%|r of stolen amount (up to |cff8080ff30|r) as |cff808080armor|r for 10 seconds. Bosses get |cffff6060200%|r effect and provide |cff8080ff100%|r of it as |cff808080armor|r for hero.|nCooldown: 20 seconds. |nAffected by spell power
 }
 
 STRING 60

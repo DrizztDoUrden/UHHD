@@ -1083,8 +1083,8 @@ function DuskKnight:ctor()
             duration = function(_) return 2 end,
             period = function(_) return 0.1 end,
             effectDuration = function(_) return 10 end,
-            armorRemoved = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
-            gainLimit = function(_, caster) return 30 * caster.secondaryStats.spellDamage end,
+            armorRemoved = function(_) return 10 end,
+            gainLimit = function(_) return 30 end,
             stealPercentage = function(_) return 0.25 end,
         },
         heavySlash = {
