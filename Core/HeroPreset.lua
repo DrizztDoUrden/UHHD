@@ -31,6 +31,8 @@ function HeroPreset:ctor()
     self.secondaryStats.spellResist = 0
 
     self.secondaryStats.movementSpeed = 1
+
+    self.talents = {}
 end
 
 function HeroPreset:Spawn(owner, x, y, facing)
@@ -40,8 +42,13 @@ function HeroPreset:Spawn(owner, x, y, facing)
     hero:SetBasicStats(self.basicStats)
     hero.talents = {}
     hero.talentBooks = {}
-    for k, v in pairs(self.talents) do hero.talents[k] = v end
+
     for k, v in pairs(self.talentBooks) do hero.talentBooks[k] = v end
+
+    for id, talent in pairs(self.talents) do
+        hero.talents[id] = talent
+        owner:SetTechLevel(talent.tech, 1)
+    end
 
     hero.abilities:AddAction(function() self:Cast(hero) end)
 
@@ -52,10 +59,18 @@ function HeroPreset:Spawn(owner, x, y, facing)
         end
     end
 
-    hero:AddTalentPoint()
-    hero:AddTalentPoint()
+    if TestBuild then
+        hero:AddTalentPoint()
+        hero:AddTalentPoint()
+    end
 
     return hero
+end
+
+function HeroPreset:AddTalent(id)
+    local talent = { tech = FourCC("U" .. id), }
+    self.talents[FourCC("T" .. id)] = talent
+    return talent
 end
 
 function HeroPreset:Cast(hero)

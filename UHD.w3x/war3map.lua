@@ -37,9 +37,6 @@ do
             return table.unpack(coroutine.yield(resume, id))
         end
 
-        local oldClassicReqire = require
-        require = Require
-
         while #modules > 0 do
             local anyFound = false
             for moduleId, module in pairs(modules) do
@@ -95,11 +92,9 @@ do
                 break
             end
         end
-
         modules = nil
         readyModules = nil
         Require = oldRequire
-        require = oldClassicReqire
         Module = function (id, definition)
             Log("Module loading has already finished. Can't load " .. id)
         end
@@ -514,9 +509,6 @@ function Hero:Destroy()
     UHDUnit.Destroy(self)
     for u in pairs(self.statUpgrades) do u:Destroy() end
     for u in pairs(self.skillUpgrades) do u:Destroy() end
-    for _, talent in pairs(self.talents) do
-        self:GetOwner():SetTechLevel(talent.tech, 1)
-    end
 end
 
 function Hero:OnLevel()
@@ -574,8 +566,10 @@ function Hero:AddTalentPoint()
         talentHelper:Destroy()
         local spellId = GetSpellAbilityId()
         self:SelectNextHelper(false)
+        logHero:Info(FourCC("T030"), spellId)
         local talent = self.talents[spellId]
         talent.learned = true
+        if talent.onTaken then talent:onTaken(self) end
         self:GetOwner():SetTechLevel(talent.tech, 0)
     end)
 end
@@ -640,6 +634,10 @@ function Hero:ApplyStats()
     UHDUnit.ApplyStats(self)
 end
 
+function Hero:HasTalent(id)
+    return self.talents[FourCC(id)].learned
+end
+
 return Hero
 
 end)
@@ -679,6 +677,8 @@ function HeroPreset:ctor()
     self.secondaryStats.spellResist = 0
 
     self.secondaryStats.movementSpeed = 1
+
+    self.talents = {}
 end
 
 function HeroPreset:Spawn(owner, x, y, facing)
@@ -688,8 +688,13 @@ function HeroPreset:Spawn(owner, x, y, facing)
     hero:SetBasicStats(self.basicStats)
     hero.talents = {}
     hero.talentBooks = {}
-    for k, v in pairs(self.talents) do hero.talents[k] = v end
+
     for k, v in pairs(self.talentBooks) do hero.talentBooks[k] = v end
+
+    for id, talent in pairs(self.talents) do
+        hero.talents[id] = talent
+        owner:SetTechLevel(talent.tech, 1)
+    end
 
     hero.abilities:AddAction(function() self:Cast(hero) end)
 
@@ -700,10 +705,18 @@ function HeroPreset:Spawn(owner, x, y, facing)
         end
     end
 
-    hero:AddTalentPoint()
-    hero:AddTalentPoint()
+    if TestBuild then
+        hero:AddTalentPoint()
+        hero:AddTalentPoint()
+    end
 
     return hero
+end
+
+function HeroPreset:AddTalent(id)
+    local talent = { tech = FourCC("U" .. id), }
+    self.talents[FourCC("T" .. id)] = talent
+    return talent
 end
 
 function HeroPreset:Cast(hero)
@@ -1176,9 +1189,21 @@ function DuskKnight:ctor()
             availableFromStart = true,
             radius = function(_) return 125 end,
             distance = function(_) return 100 end,
-            baseDamage = function(_, caster) return 30 * caster.secondaryStats.physicalDamage end,
+            baseDamage = function(_, caster)
+                local value = 20
+                if caster:HasTalent("T011") then value = value + 15 end
+                return value * caster.secondaryStats.physicalDamage
+            end,
             baseSlow = function(_) return 0.3 end,
             slowDuration = function(_) return 3 end,
+            manaBurn = function(_, caster)
+                if caster:HasTalent("T010") then return 20 end
+                return 0
+            end,
+            vampirism = function(_, caster)
+                if caster:HasTalent("T012") then return 0.15 end
+                return 0
+            end,
         },
         shadowLeap = {
             id = FourCC('DK_2'),
@@ -1195,10 +1220,26 @@ function DuskKnight:ctor()
             id = FourCC('DK_3'),
             handler = DarkMend,
             availableFromStart = true,
-            baseHeal = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
+            baseHeal = function(_, caster)
+                local value = 20
+                if caster:HasTalent("T030") then value = value * 0.75 end
+                return value * caster.secondaryStats.spellDamage
+            end,
             duration = function(_) return 4 end,
-            percentHeal = function(_) return 0.1 end,
+            percentHeal = function(_, caster)
+                local value = 0.1
+                if caster:HasTalent("T030") then value = value * 0.75 end
+                return value
+            end,
             period = function(_) return 0.1 end,
+            instantHeal = function(_, caster)
+                if caster:HasTalent("T030") then return 0.5 end
+                return 0
+            end,
+            healOverTime = function(_, caster)
+                if caster:HasTalent("T030") then return 0.75 end
+                return 1
+            end,
         },
     }
 
@@ -1206,11 +1247,21 @@ function DuskKnight:ctor()
         FourCC("DKT0"),
     }
 
-    self.talents = {
-        [FourCC("T030")] = {
-            tech = FourCC("U030"),
-        },
-    }
+    self:AddTalent("000")
+    self:AddTalent("001")
+    self:AddTalent("002")
+
+    self:AddTalent("010")
+    self:AddTalent("011")
+    self:AddTalent("012")
+
+    self:AddTalent("020")
+    self:AddTalent("021")
+    self:AddTalent("022")
+
+    self:AddTalent("030")
+    self:AddTalent("031").onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id) - 3) end
+    self:AddTalent("032")
 
     self.basicStats.strength = 12
     self.basicStats.agility = 6
@@ -1316,6 +1367,8 @@ function HeavySlash:ctor(definition, caster)
     self.baseDamage = definition:baseDamage(caster)
     self.baseSlow = definition:baseSlow(caster)
     self.slowDuration = definition:slowDuration(caster)
+    self.manaBurn = definition:manaBurn(caster)
+    self.vampirism = definition:vampirism(caster)
     self:Cast()
 end
 
@@ -1328,6 +1381,8 @@ function HeavySlash:Cast()
     Unit.EnumInRange(x, y, self.radius, function(unit)
         if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DamageTarget(unit, self.baseDamage, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_METAL_MEDIUM_SLICE)
+            if self.manaBurn > 0 then unit:SetMana(math.max(0, unit:GetMana() - self.manaBurn)) end
+            if self.vampirism > 0 then self.caster:SetHP(math.min(self.caster.GetMaxHP(), self.vampirism * self.baseDamage)) end
 
             if unit:IsA(UHDUnit) then
                 affected[unit] = true
@@ -1410,12 +1465,17 @@ function DarkMend:ctor(definition, caster)
     self.duration = definition:duration(caster)
     self.percentHeal = definition:percentHeal(caster)
     self.period = definition:period(caster)
+    self.instantHeal = definition:instantHeal(caster)
+    self.healOverTime = definition:healOverTime(caster)
     self:Cast()
 end
 
 function DarkMend:Cast()
     local timer = Timer()
     local timeLeft = self.duration
+    local curHp = self.caster:GetHP();
+    local part = 1 / math.floor(self.period / self.duration)
+    self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * self.instantHeal)
     timer:Start(self.period, true, function()
         local curHp = self.caster:GetHP();
         if curHp <= 0 then
@@ -1423,8 +1483,7 @@ function DarkMend:Cast()
             return
         end
         timeLeft = timeLeft - self.period
-        local part = self.period / self.duration
-        self.caster:SetHP(curHp + (self.caster:GetHP() * self.percentHeal + self.baseHeal) * part)
+        self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime)
         if timeLeft <= 0 then
             timer:Destroy()
         end
@@ -1539,8 +1598,6 @@ local Timer = Require("WC3.Timer")
 
 local WCPlayer = Class()
 local players = {}
-local playersCount = 12
-local isEnd = false
 
 function WCPlayer.Get(player)
     if math.type(player) == "integer" then
@@ -1571,31 +1628,30 @@ function WCPlayer.PlayersRemoweWithResult(isAVictory)
     EndGame(true)
 end
 
-function WCPlayer.PlayersEndGame(isAVictory)
-    local timer = Timer()
-    if not isEnd then
-        isEnd = true
-        if isAVictory then
-            WCPlayer.DisplayTextToAll("VICTORY")
-        else
-            WCPlayer.DisplayTextToAll("DEFEAT")
-        end
-        timer:Start(10, false, function()
-            EndGame()
-        end)
+
+function WCPlayer.PlayersWin(playersCount)
+    local tplayer = {}
+    for id = 1, playersCount, 1  do
+        local player = WCPlayer.Get(id)
+        tplayer[id] = player
     end
-end
-
-function  WCPlayer.DisplayTextToAll(text)
-    for id = 0, 23, 1 do
-        DisplayTextToPlayer(WCPlayer.Get(id).handle, 0, 0, text)
+    for id = 1, playersCount, 1  do
+        tplayer[id]:RemovePlayer(PLAYER_GAME_RESULT_VICTORY)
     end
+    EndGame()
 end
 
-function WCPlayer:DisplayText(text)
-    DisplayTextToPlayer(self.handle, 0, 0, text)
+function WCPlayer.PlayersDefeat(playersCount)
+    local tplayer = {}
+    for id = 1, playersCount, 1 do
+        local player = WCPlayer.Get(id)
+        tplayer[id] = player
+    end
+    for id = 1, playersCount, 1 do
+        tplayer[id]:RemovePlayer(PLAYER_GAME_RESULT_DEFEAT)
+    end
+    EndGame()
 end
-
 
 
 function  WCPlayer:RemovePlayer(playerGameResult)
@@ -1994,6 +2050,22 @@ end
 
 function Unit:SetY(value)
     SetUnitY(self.handle, value)
+end
+
+function Unit:GetManaCost(abilityId, level)
+    return BlzGetUnitAbilityManaCost(self.handle, abilityId, level)
+end
+
+function Unit:SetManaCost(abilityId, level, value)
+    return BlzSetUnitAbilityManaCost(self.handle, abilityId, level, value)
+end
+
+function Unit:GetCooldown(abilityId, level)
+    return BlzGetUnitAbilityCooldown(self.handle, abilityId, level)
+end
+
+function Unit:SetCooldown(abilityId, level, value)
+    return BlzSetUnitAbilityCooldown(self.handle, abilityId, level, value)
 end
 
 function Unit:GetName() return GetUnitName(self.handle) end

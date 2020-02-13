@@ -51,9 +51,6 @@ function Hero:Destroy()
     UHDUnit.Destroy(self)
     for u in pairs(self.statUpgrades) do u:Destroy() end
     for u in pairs(self.skillUpgrades) do u:Destroy() end
-    for _, talent in pairs(self.talents) do
-        self:GetOwner():SetTechLevel(talent.tech, 1)
-    end
 end
 
 function Hero:OnLevel()
@@ -111,8 +108,10 @@ function Hero:AddTalentPoint()
         talentHelper:Destroy()
         local spellId = GetSpellAbilityId()
         self:SelectNextHelper(false)
+        logHero:Info(FourCC("T030"), spellId)
         local talent = self.talents[spellId]
         talent.learned = true
+        if talent.onTaken then talent:onTaken(self) end
         self:GetOwner():SetTechLevel(talent.tech, 0)
     end)
 end
@@ -175,6 +174,10 @@ function Hero:ApplyStats()
     self:SetAgi(self.basicStats.agility, true)
     self:SetInt(self.basicStats.intellect, true)
     UHDUnit.ApplyStats(self)
+end
+
+function Hero:HasTalent(id)
+    return self.talents[FourCC(id)].learned
 end
 
 return Hero
