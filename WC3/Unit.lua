@@ -136,6 +136,18 @@ function Unit:Destroy()
     end
 end
 
+function Unit:ChangeSelection(value)
+    SelectUnit(self.handle, value)
+end
+
+function Unit:Select()
+    self:ChangeSelection(true)
+end
+
+function Unit:Deselect()
+    self:ChangeSelection(false)
+end
+
 function Unit:SetInt(value, permanent)
     if math.type(value) then
         SetHeroInt(self.handle, math.floor(value), permanent)
@@ -213,5 +225,6 @@ function Unit:GetOwner() return WCPlayer.Get(GetOwningPlayer(self.handle)) end
 function Unit:GetArmor() return BlzGetUnitArmor(self.handle) end
 function Unit:GetFacing() return GetUnitFacing(self.handle) end
 function Unit:GetAbility(id) return BlzGetUnitAbility(self.handle, id) end
+function Unit:GetLevel() return GetHeroLevel(self.handle) end
 
 return Unit

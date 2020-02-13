@@ -106,12 +106,6 @@ STRING 29
 Steals |cffff606010|r |cff808080armor|r from enemies in 300 range in 2 seconds for 10 seconds.|nHero |cff8080ff25%|r of stolen amount (up to |cff8080ff30|r) as |cff808080armor|r for 10 seconds. Bosses get |cffff6060200%|r effect and provide |cff8080ff100%|r of it as |cff808080armor|r for hero.|nCooldown: 20 seconds.
 }
 
-STRING 30
-// Abilities: DK_1 (Heavy Slash), Ubertip (Tooltip - Normal - Extended)
-{
-Deals |cffff606030|r damage to enemies in front of you slowing them by |cffd4a63030%|r.|nCooldown: 7 seconds.
-}
-
 STRING 31
 // Abilities: DK_1 (Heavy Slash), Name (Name)
 {
@@ -136,12 +130,6 @@ STRING 34
 Dark Mend
 }
 
-STRING 35
-// Abilities: DK_3 (Dark Mend), Ubertip (Tooltip - Normal - Extended)
-{
-Heals the caster by |cff3cff3c20 + 10%|r of current HP over 4 seconds.|nCooldown: 15 seconds
-}
-
 STRING 36
 // Units: C_MD (MagicDragon), Name (Name)
 {
@@ -152,18 +140,6 @@ STRING 37
 // Abilities: DK_2 (Shadow Leap), Tip (Tooltip - Normal)
 {
 Shadow Leap
-}
-
-STRING 38
-// Abilities: DK_2 (Shadow Leap), Ubertip (Tooltip - Normal - Extended)
-{
-Hero charges up to 300 distance to a point in up to 0.5 seconds. Every creep on the way gets |cffff606020|r damage and is pushed 100 aside.|nCooldown: 12 seconds.
-}
-
-STRING 40
-// Units: __SU (Stat Upgrade), Name (Name)
-{
-Stat Upgrade
 }
 
 STRING 41
@@ -178,12 +154,6 @@ STRING 42
 Upgrade |cffff2222strength|r
 }
 
-STRING 43
-// Abilities: SU_0 (Upgrade strength), Ubertip (Tooltip - Normal - Extended)
-{
-+2% physical damage
-}
-
 STRING 44
 // Abilities: SU_1 (Upgrade agility), Name (Name)
 {
@@ -194,12 +164,6 @@ STRING 45
 // Abilities: SU_1 (Upgrade agility), Tip (Tooltip - Normal)
 {
 Upgrade |cff00ff00agility|r
-}
-
-STRING 46
-// Abilities: SU_1 (Upgrade agility), Ubertip (Tooltip - Normal - Extended)
-{
-+2% attack speed|n+2% evasion
 }
 
 STRING 47
@@ -214,12 +178,6 @@ STRING 48
 Upgrade |cff4444ffintellect|r
 }
 
-STRING 49
-// Abilities: SU_2 (Upgrade intellect), Ubertip (Tooltip - Normal - Extended)
-{
-+2% spell damage
-}
-
 STRING 50
 // Abilities: SU_3 (Upgrade constitution), Name (Name)
 {
@@ -230,12 +188,6 @@ STRING 51
 // Abilities: SU_3 (Upgrade constitution), Tip (Tooltip - Normal)
 {
 Upgrade |cffbbbb55constitution|r
-}
-
-STRING 52
-// Abilities: SU_3 (Upgrade constitution), Ubertip (Tooltip - Normal - Extended)
-{
-+2% health|n+2% health regeneration
 }
 
 STRING 53
@@ -250,12 +202,6 @@ STRING 54
 Upgrade |cffbb33bbendurance|r
 }
 
-STRING 55
-// Abilities: SU_4 (Upgrade endurance), Ubertip (Tooltip - Normal - Extended)
-{
-+2% stamina|n+2% stamina regen
-}
-
 STRING 56
 // Abilities: SU_5 (Upgrade willpower), Name (Name)
 {
@@ -268,9 +214,99 @@ STRING 57
 Upgrade |cffdd5522willpower|r
 }
 
-STRING 58
+STRING 60
+// Abilities: DK_1 (Heavy Slash), Ubertip (Tooltip - Normal - Extended)
+{
+Deals |cffff606030|r damage to enemies in front of you slowing them by |cffd4a63030%|r.|nCooldown: 7 seconds.|nAffected by physical damage bonus
+}
+
+STRING 61
+// Abilities: DK_2 (Shadow Leap), Ubertip (Tooltip - Normal - Extended)
+{
+Hero charges up to 300 distance to a point in up to 0.5 seconds. Every creep on the way gets |cffff606020|r damage and is pushed 100 aside.|nCooldown: 12 seconds.|nAffected by spell power
+}
+
+STRING 62
+// Abilities: DK_3 (Dark Mend), Ubertip (Tooltip - Normal - Extended)
+{
+Heals the caster by |cff3cff3c20 + 10%|r of current HP over 4 seconds.|nCooldown: 15 seconds|nAffected by spell power
+}
+
+STRING 63
+// Abilities: SU_0 (Upgrade strength), Ubertip (Tooltip - Normal - Extended)
+{
++5% physical damage
+}
+
+STRING 64
+// Abilities: SU_1 (Upgrade agility), Ubertip (Tooltip - Normal - Extended)
+{
++2.5% attack speed|n+2.5% evasion
+}
+
+STRING 65
+// Abilities: SU_2 (Upgrade intellect), Ubertip (Tooltip - Normal - Extended)
+{
++5% spell damage
+}
+
+STRING 66
+// Abilities: SU_3 (Upgrade constitution), Ubertip (Tooltip - Normal - Extended)
+{
++5% health|n+5% health regeneration
+}
+
+STRING 67
+// Abilities: SU_4 (Upgrade endurance), Ubertip (Tooltip - Normal - Extended)
+{
++5% stamina|n+5% stamina regen
+}
+
+STRING 68
 // Abilities: SU_5 (Upgrade willpower), Ubertip (Tooltip - Normal - Extended)
 {
-+2% control resist|n+2% spell damage resist
++5% control resist|n+5% spell damage resist
+}
+
+STRING 69
+// Units: __SU (Stat Upgrades), Name (Name)
+{
+Stat Upgrades
+}
+
+STRING 70
+// Units: __TU (Talent Upgrades), Name (Name)
+{
+Talent Upgrades
+}
+
+STRING 71
+// Abilities: DKT0 (Dark Mend Talents), Name (Name)
+{
+Dark Mend Talents
+}
+
+STRING 72
+// Abilities: T030 (Survival Instinct), Name (Name)
+{
+Survival Instinct
+}
+
+STRING 73
+// Abilities: T030 (Survival Instinct), Tip (Tooltip - Normal)
+{
+Survival Instinct
+}
+
+STRING 74
+// Abilities: T030 (Survival Instinct), Ubertip (Tooltip - Normal - Extended)
+{
+Dark Mend heals 50% instantly and 75% over time.
+}
+
+STRING 75
+// Upgrades: U030 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Already Learned
 }
 
