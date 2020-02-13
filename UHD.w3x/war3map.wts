@@ -305,8 +305,58 @@ Dark Mend heals 50% instantly and 75% over time.
 }
 
 STRING 75
-// Upgrades: U030 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+// Upgrades: U030 (Улучшенные топоры,Улучшенные пилы), Name (Name)
 {
 Already Learned
+}
+
+STRING 76
+{
+Player 2
+}
+
+STRING 77
+{
+Player 3
+}
+
+STRING 78
+{
+Player 4
+}
+
+STRING 79
+{
+Player 5
+}
+
+STRING 80
+{
+Player 6
+}
+
+STRING 81
+{
+Player 7
+}
+
+STRING 82
+{
+Player 8
+}
+
+STRING 83
+{
+Player 9
+}
+
+STRING 84
+{
+Player 10
+}
+
+STRING 85
+{
+Force 2
 }
 

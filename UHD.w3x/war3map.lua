@@ -370,6 +370,34 @@ local Log = setmetatable({}, mt)
 return Log
 end)
 -- End of file Log.lua
+-- Start of file Core\Core.lua
+Module("Core.Core", function()
+local Class = Require("Class")
+local Unit = Require("WC3.Unit")
+local Trigger = Require("WC3.Trigger")
+local Player = Require("WC3.Player")
+
+local wcplayer = Class(Player)
+local Core = Class(Unit)
+
+function Core:ctor(...)
+    local owner, x, y, facing = ... 
+    self.unitid = FourCC('__HC')
+
+    Unit.ctor(self, owner, self.unitid, x, y, facing)
+
+    self:SetMaxHealth(200)
+    self:SetArmor(0)
+
+    local trigger = Trigger()
+    trigger:RegisterUnitDeath(self)
+    trigger:AddAction(function() wcplayer.PlayersEndGame(false) end)
+end
+
+
+return Core
+end)
+-- End of file Core\Core.lua
 -- Start of file Core\Creep.lua
 Module("Core.Creep", function()
 local Class = Require("Class")
@@ -853,7 +881,7 @@ local Trigger = Require("WC3.Trigger")
 local Creep = Require("Core.Creep")
 local PathNode = Require("Core.Node.PathNode")
 local CreepSpawner = Require("Core.Node.CreepSpawner")
-local WCPlayer = Require("WC3.Player")
+local wcplayer = Require("WC3.Player")
 
 local logWaveObserver = Log.Category("WaveObserver\\WaveObserver", {
      printVerbosity = Log.Verbosity.Trace,
@@ -863,7 +891,7 @@ local logWaveObserver = Log.Category("WaveObserver\\WaveObserver", {
 
 local WaveObserver = Class()
 
-function WaveObserver:ctor(owner, main_player)
+function WaveObserver:ctor(owner)
     local node = PathNode(0, 0, nil)
     local node1 = PathNode(0, 700, node)
     local creepSpawner1 = CreepSpawner(owner, 700, 700, node1, 0)
@@ -884,8 +912,7 @@ function WaveObserver:ctor(owner, main_player)
     triggercheckalldead:RegisterPlayerUnitEvent(owner, EVENT_PLAYER_UNIT_DEATH, nil)
     triggercheckalldead:AddAction(function ()
     if creepcount == 0 and self.needtokillallcreep then
-        logWaveObserver:Info("You should win")
-        WCPlayer.SetPlayerVictorybyId(0)
+        wcplayer.PlayersEndGame(true)
     end
     end)
 
@@ -1447,11 +1474,13 @@ local Log = Require("Log")
 local WCPlayer = Require("WC3.Player")
 local DuskKnight = Require("Heroes.DuskKnight")
 local WaveObserver = Require("Core.WaveObserver")
+local Core = Require("Core.Core")
 
 local testHeroPreset = DuskKnight()
-local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 0, 0, 0)
+local core = Core(WCPlayer.Get(8), 0, 0, 0)
+local testHero = testHeroPreset:Spawn(WCPlayer.Get(0), 200, 0, 0)
 
-local testWaveObserver = WaveObserver(WCPlayer.Get(12), WCPlayer.Get(0))
+local testWaveObserver = WaveObserver(WCPlayer.Get(9))
 
 Log("Game initialized successfully")
 end)
@@ -1506,10 +1535,12 @@ end)
 -- Start of file WC3\Player.lua
 Module("WC3.Player", function()
 local Class = Require("Class")
+local Timer = Require("WC3.Timer")
 
 local WCPlayer = Class()
 local players = {}
-local removedplayers = {}
+local playersCount = 12
+local isEnd = false
 
 function WCPlayer.Get(player)
     if math.type(player) == "integer" then
@@ -1521,27 +1552,55 @@ function WCPlayer.Get(player)
     return players[player]
 end
 
-function WCPlayer.IsActive(player)
-    if math.type(player) == "integer" then
-        player = Player(player)
-    end
-    if players[player] then
-        return true
-    else
-        return false
-    end
-end
 
-function  WCPlayer.SetPlayerVictorybyId(playerid)
-    local player = WCPlayer.Get(playerid)
-    player:RemovePlayer(PLAYER_GAME_RESULT_VICTORY)
+function WCPlayer.PlayersRemoweWithResult(isAVictory)
+    local result = nil
+    if isAVictory then
+        result = PLAYER_GAME_RESULT_VICTORY
+    else
+        result = PLAYER_GAME_RESULT_DEFEAT
+    end
+    local tplayer = {}
+    for id = 0, playersCount, 1  do
+        local player = WCPlayer.Get(id)
+        tplayer[id] = player
+    end
+    for id = 0, playersCount, 1  do
+        tplayer[id]:RemovePlayer(result)
+    end
     EndGame(true)
 end
 
+function WCPlayer.PlayersEndGame(isAVictory)
+    local timer = Timer()
+    if not isEnd then
+        isEnd = true
+        if isAVictory then
+            WCPlayer.DisplayTextToAll("VICTORY")
+        else
+            WCPlayer.DisplayTextToAll("DEFEAT")
+        end
+        timer:Start(10, false, function()
+            EndGame()
+        end)
+    end
+end
+
+function  WCPlayer.DisplayTextToAll(text)
+    for id = 0, 23, 1 do
+        DisplayTextToPlayer(WCPlayer.Get(id).handle, 0, 0, text)
+    end
+end
+
+function WCPlayer:DisplayText(text)
+    DisplayTextToPlayer(self.handle, 0, 0, text)
+end
+
+
 
 function  WCPlayer:RemovePlayer(playerGameResult)
-    players[self.handle] = nil
     RemovePlayer(self.handle, playerGameResult)
+    players[self.handle] = nil
 end
 
 function WCPlayer:ctor(player)
@@ -1957,1158 +2016,6 @@ function Unit:GetLevel() return GetHeroLevel(self.handle) end
 return Unit
 end)
 -- End of file WC3\Unit.lua
--- Start of file Core\CreepPreset.lua
-Module("Core.CreepPreset", function()
-local Class = Require("Class")
-local Log = Require("Log")
-local Stats = Require("Core.Stats")
-local Creep = Require("Core.Creep")
-
-
-local CreepPreset = Class()
-
-function CreepPreset:ctor()
-    self.secondaryStats = Stats.Secondary()
-
-    self.secondaryStats.health = 50
-    self.secondaryStats.mana = 2
-    self.secondaryStats.healthRegen = 1
-    self.secondaryStats.manaRegen = 1
-
-    self.secondaryStats.weaponDamage = 15
-    self.secondaryStats.attackSpeed = 0.5
-    self.secondaryStats.physicalDamage = 1
-    self.secondaryStats.spellDamage = 1
-
-    self.secondaryStats.armor = 5
-    self.secondaryStats.evasion = 30
-    self.secondaryStats.block = 0
-    self.secondaryStats.ccResist = 0
-    self.secondaryStats.spellResist = 30
-
-    self.secondaryStats.movementSpeed = 1
-end
-
-function CreepPreset:Spawn(owner, x, y, facing)
-    local creep = Creep(owner, self.unitid, x, y, facing);
-    creep.secondaryStats = self.secondaryStats
-    creep:ApplyStats()
-    return creep
-end
-
-Log("Creep load succsesfull")
-return CreepPreset
-end)
--- End of file Core\CreepPreset.lua
--- Start of file Core\WaveSpecification.lua
-Module("Core.WaveSpecification", function()
-local Log = Require("Log")
-
-local levelCreepCompositon = {
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},}
-    local nComposition = {
-        {1},
-        {1},
-        {1},
-        {1},
-        {1}
-    }
-    local aComposition = {
-        {nil},
-        {nil},
-        {nil},
-        {nil},
-        {nil}
-    }
-
-Log("WaveSpecification is load")
-return levelCreepCompositon, nComposition, aComposition, 2
-end)
--- End of file Core\WaveSpecification.lua
--- Start of file Core\Creeps\MagicDragon.lua
-Module("Core.Creeps.MagicDragon", function()
-local Class = Require("Class")
-local CreepPreset = Require("Core.CreepPreset")
-local Log = Require("Log")
-
-local MagicDragon = Class(CreepPreset)
-
-function MagicDragon:ctor()
-    CreepPreset.ctor(self)
-    self.secondaryStats.health = 15
-    self.secondaryStats.mana = 5
-    self.secondaryStats.weaponDamage = 3
-
-    self.unitid = FourCC('C_MD')
-end
-Log("MagicDragon load successfull")
-
-return MagicDragon
-end)
--- End of file Core\Creeps\MagicDragon.lua
--- Start of file Core\Node\CreepSpawner.lua
-Module("Core.Node.CreepSpawner", function()
-local Log = Require("Log")
-local Class = Require("Class")
-local Node = Require("Core.Node.Node")
-local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
-local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
-
-local CreepSpawner = Class(Node)
-
-local logCreepSpawner = Log.Category("CreepSpawner\\CreepSpawnerr", {
-    printVerbosity = Log.Verbosity.Trace,
-    fileVerbosity = Log.Verbosity.Trace,
-    })
-
-function CreepSpawner:ctor(owner,  x, y, prevnode, facing)
-    Node.ctor(self, x, y, prevnode)
-    self.owner = owner
-    self.facing = facing
-    Log("Max level: "..maxlevel)
-    self.levelCreepsComopsion = levelCreepsComopsion
-    self.nComposion = nComposion
-    self.maxlevel = maxlevel
-    self.aComposition = aComposition
-end
-
-function CreepSpawner:GetWaveSpecification(level)
-    local result_CreepsComposition = self.levelCreepsComopsion[level]
-    local result_nComposion = self.nComposion[level]
-    local result_aComposion = self.aComposition[level]
-    return result_CreepsComposition, result_nComposion, result_aComposion
-end
-
-function CreepSpawner:IsANextWave(level)
-    if level < self.maxlevel then
-        return true
-    end
-    return false
-end
-
-function CreepSpawner:SpawnNewWave(level)
-    -- logCreepSpawner:Info("WAVE "..self.level + 1)
-    local CreepsComposition, nComposion, aComposition = self:GetWaveSpecification(level)
-    local acc = 0
-    for i, CreepName in pairs(CreepsComposition) do
-        for j = 1, nComposion[i] do
-            local creepPresetClass = CreepClasses[CreepName]
-            local creepPreset = creepPresetClass()
-            local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing)
-            local x, y = self.prev:GetCenter()
-            creep:IssueAttackPoint(x, y)
-            acc = acc + 1
-        end
-    end
-    return acc
-end
-
-Log("CreepSpawner load succsesfull")
-return CreepSpawner
-end)
--- End of file Core\Node\CreepSpawner.lua
--- Start of file Core\CreepPreset.lua
-Module("Core.CreepPreset", function()
-local Class = Require("Class")
-local Log = Require("Log")
-local Stats = Require("Core.Stats")
-local Creep = Require("Core.Creep")
-
-
-local CreepPreset = Class()
-
-function CreepPreset:ctor()
-    self.secondaryStats = Stats.Secondary()
-
-    self.secondaryStats.health = 50
-    self.secondaryStats.mana = 2
-    self.secondaryStats.healthRegen = 1
-    self.secondaryStats.manaRegen = 1
-
-    self.secondaryStats.weaponDamage = 15
-    self.secondaryStats.attackSpeed = 0.5
-    self.secondaryStats.physicalDamage = 1
-    self.secondaryStats.spellDamage = 1
-
-    self.secondaryStats.armor = 5
-    self.secondaryStats.evasion = 30
-    self.secondaryStats.block = 0
-    self.secondaryStats.ccResist = 0
-    self.secondaryStats.spellResist = 30
-
-    self.secondaryStats.movementSpeed = 1
-end
-
-function CreepPreset:Spawn(owner, x, y, facing)
-    local creep = Creep(owner, self.unitid, x, y, facing);
-    creep.secondaryStats = self.secondaryStats
-    creep:ApplyStats()
-    return creep
-end
-
-Log("Creep load succsesfull")
-return CreepPreset
-end)
--- End of file Core\CreepPreset.lua
--- Start of file Core\WaveSpecification.lua
-Module("Core.WaveSpecification", function()
-local Log = Require("Log")
-
-local levelCreepCompositon = {
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},}
-    local nComposition = {
-        {1},
-        {1},
-        {1},
-        {1},
-        {1}
-    }
-    local aComposition = {
-        {nil},
-        {nil},
-        {nil},
-        {nil},
-        {nil}
-    }
-
-Log("WaveSpecification is load")
-return levelCreepCompositon, nComposition, aComposition, 5
-end)
--- End of file Core\WaveSpecification.lua
--- Start of file Core\Creeps\MagicDragon.lua
-Module("Core.Creeps.MagicDragon", function()
-local Class = Require("Class")
-local CreepPreset = Require("Core.CreepPreset")
-local Log = Require("Log")
-
-local MagicDragon = Class(CreepPreset)
-
-function MagicDragon:ctor()
-    CreepPreset.ctor(self)
-    self.secondaryStats.health = 15
-    self.secondaryStats.mana = 5
-    self.secondaryStats.weaponDamage = 3
-
-    self.unitid = FourCC('C_MD')
-end
-Log("MagicDragon load successfull")
-
-return MagicDragon
-end)
--- End of file Core\Creeps\MagicDragon.lua
--- Start of file Core\Node\CreepSpawner.lua
-Module("Core.Node.CreepSpawner", function()
-local Log = Require("Log")
-local Class = Require("Class")
-local Node = Require("Core.Node.Node")
-local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
-local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
-
-local CreepSpawner = Class(Node)
-
-local logCreepSpawner = Log.Category("CreepSpawner\\CreepSpawnerr", {
-    printVerbosity = Log.Verbosity.Trace,
-    fileVerbosity = Log.Verbosity.Trace,
-    })
-
-function CreepSpawner:ctor(owner,  x, y, prevnode, facing)
-    Node.ctor(self, x, y, prevnode)
-    self.owner = owner
-    self.facing = facing
-    Log("Max level: "..maxlevel)
-    self.levelCreepsComopsion = levelCreepsComopsion
-    self.nComposion = nComposion
-    self.maxlevel = maxlevel
-    self.aComposition = aComposition
-end
-
-function CreepSpawner:GetWaveSpecification(level)
-    local result_CreepsComposition = self.levelCreepsComopsion[level]
-    local result_nComposion = self.nComposion[level]
-    local result_aComposion = self.aComposition[level]
-    return result_CreepsComposition, result_nComposion, result_aComposion
-end
-
-function CreepSpawner:IsANextWave(level)
-    if level < self.maxlevel then
-        return true
-    end
-    return false
-end
-
-function CreepSpawner:SpawnNewWave(level)
-    -- logCreepSpawner:Info("WAVE "..self.level + 1)
-    local CreepsComposition, nComposion, aComposition = self:GetWaveSpecification(level)
-    local acc = 0
-    for i, CreepName in pairs(CreepsComposition) do
-        for j = 1, nComposion[i] do
-            local creepPresetClass = CreepClasses[CreepName]
-            local creepPreset = creepPresetClass()
-            local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing)
-            local x, y = self.prev:GetCenter()
-            creep:IssueAttackPoint(x, y)
-            acc = acc + 1
-        end
-    end
-    return acc
-end
-
-Log("CreepSpawner load succsesfull")
-return CreepSpawner
-end)
--- End of file Core\Node\CreepSpawner.lua
--- Start of file Core\CreepPreset.lua
-Module("Core.CreepPreset", function()
-local Class = Require("Class")
-local Log = Require("Log")
-local Stats = Require("Core.Stats")
-local Creep = Require("Core.Creep")
-
-
-local CreepPreset = Class()
-
-function CreepPreset:ctor()
-    self.secondaryStats = Stats.Secondary()
-
-    self.secondaryStats.health = 50
-    self.secondaryStats.mana = 2
-    self.secondaryStats.healthRegen = 1
-    self.secondaryStats.manaRegen = 1
-
-    self.secondaryStats.weaponDamage = 15
-    self.secondaryStats.attackSpeed = 0.5
-    self.secondaryStats.physicalDamage = 1
-    self.secondaryStats.spellDamage = 1
-
-    self.secondaryStats.armor = 5
-    self.secondaryStats.evasion = 30
-    self.secondaryStats.block = 0
-    self.secondaryStats.ccResist = 0
-    self.secondaryStats.spellResist = 30
-
-    self.secondaryStats.movementSpeed = 1
-end
-
-function CreepPreset:Spawn(owner, x, y, facing)
-    local creep = Creep(owner, self.unitid, x, y, facing);
-    creep.secondaryStats = self.secondaryStats
-    creep:ApplyStats()
-    return creep
-end
-
-Log("Creep load succsesfull")
-return CreepPreset
-end)
--- End of file Core\CreepPreset.lua
--- Start of file Core\WaveSpecification.lua
-Module("Core.WaveSpecification", function()
-local Log = Require("Log")
-
-local levelCreepCompositon = {
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},}
-    local nComposition = {
-        {3},
-        {1},
-        {1},
-        {1},
-        {1}
-    }
-    local aComposition = {
-        {nil},
-        {nil},
-        {nil},
-        {nil},
-        {nil}
-    }
-
-Log("WaveSpecification is load")
-return levelCreepCompositon, nComposition, aComposition, 5
-end)
--- End of file Core\WaveSpecification.lua
--- Start of file Core\Creeps\MagicDragon.lua
-Module("Core.Creeps.MagicDragon", function()
-local Class = Require("Class")
-local CreepPreset = Require("Core.CreepPreset")
-local Log = Require("Log")
-
-local MagicDragon = Class(CreepPreset)
-
-function MagicDragon:ctor()
-    CreepPreset.ctor(self)
-    self.secondaryStats.health = 15
-    self.secondaryStats.mana = 5
-    self.secondaryStats.weaponDamage = 3
-
-    self.unitid = FourCC('C_MD')
-end
-Log("MagicDragon load successfull")
-
-return MagicDragon
-end)
--- End of file Core\Creeps\MagicDragon.lua
--- Start of file Core\Node\CreepSpawner.lua
-Module("Core.Node.CreepSpawner", function()
-local Log = Require("Log")
-local Class = Require("Class")
-local Node = Require("Core.Node.Node")
-local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
-local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
-
-local CreepSpawner = Class(Node)
-
-local logCreepSpawner = Log.Category("CreepSpawner\\CreepSpawnerr", {
-    printVerbosity = Log.Verbosity.Trace,
-    fileVerbosity = Log.Verbosity.Trace,
-    })
-
-function CreepSpawner:ctor(owner,  x, y, prevnode, facing)
-    Node.ctor(self, x, y, prevnode)
-    self.owner = owner
-    self.facing = facing
-    Log("Max level: "..maxlevel)
-    self.levelCreepsComopsion = levelCreepsComopsion
-    self.nComposion = nComposion
-    self.maxlevel = maxlevel
-    self.aComposition = aComposition
-end
-
-function CreepSpawner:GetWaveSpecification(level)
-    local result_CreepsComposition = self.levelCreepsComopsion[level]
-    local result_nComposion = self.nComposion[level]
-    local result_aComposion = self.aComposition[level]
-    return result_CreepsComposition, result_nComposion, result_aComposion
-end
-
-function CreepSpawner:IsANextWave(level)
-    if level < self.maxlevel then
-        return true
-    end
-    return false
-end
-
-function CreepSpawner:SpawnNewWave(level)
-    -- logCreepSpawner:Info("WAVE "..self.level + 1)
-    local CreepsComposition, nComposion, aComposition = self:GetWaveSpecification(level)
-    local acc = 0
-    for i, CreepName in pairs(CreepsComposition) do
-        for j = 1, nComposion[i] do
-            local creepPresetClass = CreepClasses[CreepName]
-            local creepPreset = creepPresetClass()
-            local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing)
-            local x, y = self.prev:GetCenter()
-            creep:IssueAttackPoint(x, y)
-            acc = acc + 1
-        end
-    end
-    return acc
-end
-
-Log("CreepSpawner load succsesfull")
-return CreepSpawner
-end)
--- End of file Core\Node\CreepSpawner.lua
--- Start of file WC3\Player.lua
-Module("WC3.Player", function()
-local Class = Require("Class")
-
-local WCPlayer = Class()
-local players = {}
-local removedplayers = {}
-
-function WCPlayer.Get(player)
-    if math.type(player) == "integer" then
-        player = Player(player)
-    end
-    if not players[player] then
-        players[player] = WCPlayer(player)
-    end
-    return players[player]
-end
-
-function WCPlayer.IsActive(player)
-    if math.type(player) == "integer" then
-        player = Player(player)
-    end
-    if players[player] then
-        return true
-    else
-        return false
-    end
-end
-
-function  WCPlayer.SetPlayerVictorybyId(playerid)
-    local player = WCPlayer.Get(playerid)
-    if WCPlayer.IsActive(playerid) then
-        player:RemovePlayer(PLAYER_GAME_RESULT_VICTORY)
-    end
-    EndGame(false)
-end
-
-
-function  WCPlayer:RemovePlayer(playerGameResult)
-    RemoveLocation(self.handle, playerGameResult)
-    table.insert()
-end
-
-function WCPlayer:ctor(player)
-    self.handle = player
-end
-
-function WCPlayer:IsEnemy(other)
-    if not other:IsA(WCPlayer) then
-        error("Expected player as an argument", 2)
-    end
-    return IsPlayerEnemy(self.handle, other.handle)
-end
-
-return WCPlayer
-end)
--- End of file WC3\Player.lua
--- Start of file Core\CreepPreset.lua
-Module("Core.CreepPreset", function()
-local Class = Require("Class")
-local Log = Require("Log")
-local Stats = Require("Core.Stats")
-local Creep = Require("Core.Creep")
-
-
-local CreepPreset = Class()
-
-function CreepPreset:ctor()
-    self.secondaryStats = Stats.Secondary()
-
-    self.secondaryStats.health = 50
-    self.secondaryStats.mana = 2
-    self.secondaryStats.healthRegen = 1
-    self.secondaryStats.manaRegen = 1
-
-    self.secondaryStats.weaponDamage = 15
-    self.secondaryStats.attackSpeed = 0.5
-    self.secondaryStats.physicalDamage = 1
-    self.secondaryStats.spellDamage = 1
-
-    self.secondaryStats.armor = 5
-    self.secondaryStats.evasion = 30
-    self.secondaryStats.block = 0
-    self.secondaryStats.ccResist = 0
-    self.secondaryStats.spellResist = 30
-
-    self.secondaryStats.movementSpeed = 1
-end
-
-function CreepPreset:Spawn(owner, x, y, facing)
-    local creep = Creep(owner, self.unitid, x, y, facing);
-    creep.secondaryStats = self.secondaryStats
-    creep:ApplyStats()
-    return creep
-end
-
-Log("Creep load succsesfull")
-return CreepPreset
-end)
--- End of file Core\CreepPreset.lua
--- Start of file Core\WaveSpecification.lua
-Module("Core.WaveSpecification", function()
-local Log = Require("Log")
-
-local levelCreepCompositon = {
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},}
-    local nComposition = {
-        {3},
-        {1},
-        {1},
-        {1},
-        {1}
-    }
-    local aComposition = {
-        {nil},
-        {nil},
-        {nil},
-        {nil},
-        {nil}
-    }
-
-Log("WaveSpecification is load")
-return levelCreepCompositon, nComposition, aComposition, 5
-end)
--- End of file Core\WaveSpecification.lua
--- Start of file Core\Creeps\MagicDragon.lua
-Module("Core.Creeps.MagicDragon", function()
-local Class = Require("Class")
-local CreepPreset = Require("Core.CreepPreset")
-local Log = Require("Log")
-
-local MagicDragon = Class(CreepPreset)
-
-function MagicDragon:ctor()
-    CreepPreset.ctor(self)
-    self.secondaryStats.health = 15
-    self.secondaryStats.mana = 5
-    self.secondaryStats.weaponDamage = 3
-
-    self.unitid = FourCC('C_MD')
-end
-Log("MagicDragon load successfull")
-
-return MagicDragon
-end)
--- End of file Core\Creeps\MagicDragon.lua
--- Start of file Core\Node\CreepSpawner.lua
-Module("Core.Node.CreepSpawner", function()
-local Log = Require("Log")
-local Class = Require("Class")
-local Node = Require("Core.Node.Node")
-local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
-local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
-
-local CreepSpawner = Class(Node)
-
-local logCreepSpawner = Log.Category("CreepSpawner\\CreepSpawnerr", {
-    printVerbosity = Log.Verbosity.Trace,
-    fileVerbosity = Log.Verbosity.Trace,
-    })
-
-function CreepSpawner:ctor(owner,  x, y, prevnode, facing)
-    Node.ctor(self, x, y, prevnode)
-    self.owner = owner
-    self.facing = facing
-    Log("Max level: "..maxlevel)
-    self.levelCreepsComopsion = levelCreepsComopsion
-    self.nComposion = nComposion
-    self.maxlevel = maxlevel
-    self.aComposition = aComposition
-end
-
-function CreepSpawner:GetWaveSpecification(level)
-    local result_CreepsComposition = self.levelCreepsComopsion[level]
-    local result_nComposion = self.nComposion[level]
-    local result_aComposion = self.aComposition[level]
-    return result_CreepsComposition, result_nComposion, result_aComposion
-end
-
-function CreepSpawner:IsANextWave(level)
-    if level < self.maxlevel then
-        return true
-    end
-    return false
-end
-
-function CreepSpawner:SpawnNewWave(level)
-    -- logCreepSpawner:Info("WAVE "..self.level + 1)
-    local CreepsComposition, nComposion, aComposition = self:GetWaveSpecification(level)
-    local acc = 0
-    for i, CreepName in pairs(CreepsComposition) do
-        for j = 1, nComposion[i] do
-            local creepPresetClass = CreepClasses[CreepName]
-            local creepPreset = creepPresetClass()
-            local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing)
-            local x, y = self.prev:GetCenter()
-            creep:IssueAttackPoint(x, y)
-            acc = acc + 1
-        end
-    end
-    return acc
-end
-
-Log("CreepSpawner load succsesfull")
-return CreepSpawner
-end)
--- End of file Core\Node\CreepSpawner.lua
--- Start of file WC3\Player.lua
-Module("WC3.Player", function()
-local Class = Require("Class")
-
-local WCPlayer = Class()
-local players = {}
-local removedplayers = {}
-
-function WCPlayer.Get(player)
-    if math.type(player) == "integer" then
-        player = Player(player)
-    end
-    if not players[player] then
-        players[player] = WCPlayer(player)
-    end
-    return players[player]
-end
-
-function WCPlayer.IsActive(player)
-    if math.type(player) == "integer" then
-        player = Player(player)
-    end
-    if players[player] then
-        return true
-    else
-        return false
-    end
-end
-
-function  WCPlayer.SetPlayerVictorybyId(playerid)
-    local player = WCPlayer.Get(playerid)
-    if WCPlayer.IsActive(playerid) then
-        player:RemovePlayer(PLAYER_GAME_RESULT_VICTORY)
-    end
-    EndGame(false)
-end
-
-
-function  WCPlayer:RemovePlayer(playerGameResult)
-    RemoveLocation(self.handle, playerGameResult)
-    table.insert()
-end
-
-function WCPlayer:ctor(player)
-    self.handle = player
-end
-
-function WCPlayer:IsEnemy(other)
-    if not other:IsA(WCPlayer) then
-        error("Expected player as an argument", 2)
-    end
-    return IsPlayerEnemy(self.handle, other.handle)
-end
-
-return WCPlayer
-end)
--- End of file WC3\Player.lua
--- Start of file Core\CreepPreset.lua
-Module("Core.CreepPreset", function()
-local Class = Require("Class")
-local Log = Require("Log")
-local Stats = Require("Core.Stats")
-local Creep = Require("Core.Creep")
-
-
-local CreepPreset = Class()
-
-function CreepPreset:ctor()
-    self.secondaryStats = Stats.Secondary()
-
-    self.secondaryStats.health = 50
-    self.secondaryStats.mana = 2
-    self.secondaryStats.healthRegen = 1
-    self.secondaryStats.manaRegen = 1
-
-    self.secondaryStats.weaponDamage = 15
-    self.secondaryStats.attackSpeed = 0.5
-    self.secondaryStats.physicalDamage = 1
-    self.secondaryStats.spellDamage = 1
-
-    self.secondaryStats.armor = 5
-    self.secondaryStats.evasion = 30
-    self.secondaryStats.block = 0
-    self.secondaryStats.ccResist = 0
-    self.secondaryStats.spellResist = 30
-
-    self.secondaryStats.movementSpeed = 1
-end
-
-function CreepPreset:Spawn(owner, x, y, facing)
-    local creep = Creep(owner, self.unitid, x, y, facing);
-    creep.secondaryStats = self.secondaryStats
-    creep:ApplyStats()
-    return creep
-end
-
-Log("Creep load succsesfull")
-return CreepPreset
-end)
--- End of file Core\CreepPreset.lua
--- Start of file Core\WaveSpecification.lua
-Module("Core.WaveSpecification", function()
-local Log = Require("Log")
-
-local levelCreepCompositon = {
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},}
-    local nComposition = {
-        {3},
-        {1},
-        {1},
-        {1},
-        {1}
-    }
-    local aComposition = {
-        {nil},
-        {nil},
-        {nil},
-        {nil},
-        {nil}
-    }
-
-Log("WaveSpecification is load")
-return levelCreepCompositon, nComposition, aComposition, 5
-end)
--- End of file Core\WaveSpecification.lua
--- Start of file Core\Creeps\MagicDragon.lua
-Module("Core.Creeps.MagicDragon", function()
-local Class = Require("Class")
-local CreepPreset = Require("Core.CreepPreset")
-local Log = Require("Log")
-
-local MagicDragon = Class(CreepPreset)
-
-function MagicDragon:ctor()
-    CreepPreset.ctor(self)
-    self.secondaryStats.health = 15
-    self.secondaryStats.mana = 5
-    self.secondaryStats.weaponDamage = 3
-
-    self.unitid = FourCC('C_MD')
-end
-Log("MagicDragon load successfull")
-
-return MagicDragon
-end)
--- End of file Core\Creeps\MagicDragon.lua
--- Start of file Core\Node\CreepSpawner.lua
-Module("Core.Node.CreepSpawner", function()
-local Log = Require("Log")
-local Class = Require("Class")
-local Node = Require("Core.Node.Node")
-local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
-local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
-
-local CreepSpawner = Class(Node)
-
-local logCreepSpawner = Log.Category("CreepSpawner\\CreepSpawnerr", {
-    printVerbosity = Log.Verbosity.Trace,
-    fileVerbosity = Log.Verbosity.Trace,
-    })
-
-function CreepSpawner:ctor(owner,  x, y, prevnode, facing)
-    Node.ctor(self, x, y, prevnode)
-    self.owner = owner
-    self.facing = facing
-    Log("Max level: "..maxlevel)
-    self.levelCreepsComopsion = levelCreepsComopsion
-    self.nComposion = nComposion
-    self.maxlevel = maxlevel
-    self.aComposition = aComposition
-end
-
-function CreepSpawner:GetWaveSpecification(level)
-    local result_CreepsComposition = self.levelCreepsComopsion[level]
-    local result_nComposion = self.nComposion[level]
-    local result_aComposion = self.aComposition[level]
-    return result_CreepsComposition, result_nComposion, result_aComposion
-end
-
-function CreepSpawner:IsANextWave(level)
-    if level < self.maxlevel then
-        return true
-    end
-    return false
-end
-
-function CreepSpawner:SpawnNewWave(level)
-    -- logCreepSpawner:Info("WAVE "..self.level + 1)
-    local CreepsComposition, nComposion, aComposition = self:GetWaveSpecification(level)
-    local acc = 0
-    for i, CreepName in pairs(CreepsComposition) do
-        for j = 1, nComposion[i] do
-            local creepPresetClass = CreepClasses[CreepName]
-            local creepPreset = creepPresetClass()
-            local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing)
-            local x, y = self.prev:GetCenter()
-            creep:IssueAttackPoint(x, y)
-            acc = acc + 1
-        end
-    end
-    return acc
-end
-
-Log("CreepSpawner load succsesfull")
-return CreepSpawner
-end)
--- End of file Core\Node\CreepSpawner.lua
--- Start of file WC3\Player.lua
-Module("WC3.Player", function()
-local Class = Require("Class")
-
-local WCPlayer = Class()
-local players = {}
-local removedplayers = {}
-
-function WCPlayer.Get(player)
-    if math.type(player) == "integer" then
-        player = Player(player)
-    end
-    if not players[player] then
-        players[player] = WCPlayer(player)
-    end
-    return players[player]
-end
-
-function WCPlayer.IsActive(player)
-    if math.type(player) == "integer" then
-        player = Player(player)
-    end
-    if players[player] then
-        return true
-    else
-        return false
-    end
-end
-
-function  WCPlayer.SetPlayerVictorybyId(playerid)
-    local player = WCPlayer.Get(playerid)
-    if WCPlayer.IsActive(playerid) then
-        RemovePlayer(player, PLAYER_GAME_RESULT_VICTORY)
-    end
-    EndGame(false)
-end
-
-
-function  WCPlayer:RemovePlayer(playerGameResult)
-    RemovePlayer(self.handle, playerGameResult)
-    table.insert()
-end
-
-function WCPlayer:ctor(player)
-    self.handle = player
-end
-
-function WCPlayer:IsEnemy(other)
-    if not other:IsA(WCPlayer) then
-        error("Expected player as an argument", 2)
-    end
-    return IsPlayerEnemy(self.handle, other.handle)
-end
-
-return WCPlayer
-end)
--- End of file WC3\Player.lua
--- Start of file Core\CreepPreset.lua
-Module("Core.CreepPreset", function()
-local Class = Require("Class")
-local Log = Require("Log")
-local Stats = Require("Core.Stats")
-local Creep = Require("Core.Creep")
-
-
-local CreepPreset = Class()
-
-function CreepPreset:ctor()
-    self.secondaryStats = Stats.Secondary()
-
-    self.secondaryStats.health = 50
-    self.secondaryStats.mana = 2
-    self.secondaryStats.healthRegen = 1
-    self.secondaryStats.manaRegen = 1
-
-    self.secondaryStats.weaponDamage = 15
-    self.secondaryStats.attackSpeed = 0.5
-    self.secondaryStats.physicalDamage = 1
-    self.secondaryStats.spellDamage = 1
-
-    self.secondaryStats.armor = 5
-    self.secondaryStats.evasion = 30
-    self.secondaryStats.block = 0
-    self.secondaryStats.ccResist = 0
-    self.secondaryStats.spellResist = 30
-
-    self.secondaryStats.movementSpeed = 1
-end
-
-function CreepPreset:Spawn(owner, x, y, facing)
-    local creep = Creep(owner, self.unitid, x, y, facing);
-    creep.secondaryStats = self.secondaryStats
-    creep:ApplyStats()
-    return creep
-end
-
-Log("Creep load succsesfull")
-return CreepPreset
-end)
--- End of file Core\CreepPreset.lua
--- Start of file Core\WaveSpecification.lua
-Module("Core.WaveSpecification", function()
-local Log = Require("Log")
-
-local levelCreepCompositon = {
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},}
-    local nComposition = {
-        {3},
-        {1},
-        {1},
-        {1},
-        {1}
-    }
-    local aComposition = {
-        {nil},
-        {nil},
-        {nil},
-        {nil},
-        {nil}
-    }
-
-Log("WaveSpecification is load")
-return levelCreepCompositon, nComposition, aComposition, 5
-end)
--- End of file Core\WaveSpecification.lua
--- Start of file Core\Creeps\MagicDragon.lua
-Module("Core.Creeps.MagicDragon", function()
-local Class = Require("Class")
-local CreepPreset = Require("Core.CreepPreset")
-local Log = Require("Log")
-
-local MagicDragon = Class(CreepPreset)
-
-function MagicDragon:ctor()
-    CreepPreset.ctor(self)
-    self.secondaryStats.health = 15
-    self.secondaryStats.mana = 5
-    self.secondaryStats.weaponDamage = 3
-
-    self.unitid = FourCC('C_MD')
-end
-Log("MagicDragon load successfull")
-
-return MagicDragon
-end)
--- End of file Core\Creeps\MagicDragon.lua
--- Start of file Core\Node\CreepSpawner.lua
-Module("Core.Node.CreepSpawner", function()
-local Log = Require("Log")
-local Class = Require("Class")
-local Node = Require("Core.Node.Node")
-local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
-local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
-
-local CreepSpawner = Class(Node)
-
-local logCreepSpawner = Log.Category("CreepSpawner\\CreepSpawnerr", {
-    printVerbosity = Log.Verbosity.Trace,
-    fileVerbosity = Log.Verbosity.Trace,
-    })
-
-function CreepSpawner:ctor(owner,  x, y, prevnode, facing)
-    Node.ctor(self, x, y, prevnode)
-    self.owner = owner
-    self.facing = facing
-    Log("Max level: "..maxlevel)
-    self.levelCreepsComopsion = levelCreepsComopsion
-    self.nComposion = nComposion
-    self.maxlevel = maxlevel
-    self.aComposition = aComposition
-end
-
-function CreepSpawner:GetWaveSpecification(level)
-    local result_CreepsComposition = self.levelCreepsComopsion[level]
-    local result_nComposion = self.nComposion[level]
-    local result_aComposion = self.aComposition[level]
-    return result_CreepsComposition, result_nComposion, result_aComposion
-end
-
-function CreepSpawner:IsANextWave(level)
-    if level < self.maxlevel then
-        return true
-    end
-    return false
-end
-
-function CreepSpawner:SpawnNewWave(level)
-    -- logCreepSpawner:Info("WAVE "..self.level + 1)
-    local CreepsComposition, nComposion, aComposition = self:GetWaveSpecification(level)
-    local acc = 0
-    for i, CreepName in pairs(CreepsComposition) do
-        for j = 1, nComposion[i] do
-            local creepPresetClass = CreepClasses[CreepName]
-            local creepPreset = creepPresetClass()
-            local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing)
-            local x, y = self.prev:GetCenter()
-            creep:IssueAttackPoint(x, y)
-            acc = acc + 1
-        end
-    end
-    return acc
-end
-
-Log("CreepSpawner load succsesfull")
-return CreepSpawner
-end)
--- End of file Core\Node\CreepSpawner.lua
--- Start of file WC3\Player.lua
-Module("WC3.Player", function()
-local Class = Require("Class")
-
-local WCPlayer = Class()
-local players = {}
-local removedplayers = {}
-
-function WCPlayer.Get(player)
-    if math.type(player) == "integer" then
-        player = Player(player)
-    end
-    if not players[player] then
-        players[player] = WCPlayer(player)
-    end
-    return players[player]
-end
-
-function WCPlayer.IsActive(player)
-    if math.type(player) == "integer" then
-        player = Player(player)
-    end
-    if players[player] then
-        return true
-    else
-        return false
-    end
-end
-
-function  WCPlayer.SetPlayerVictorybyId(playerid)
-    local player = WCPlayer.Get(playerid)
-    if WCPlayer.IsActive(playerid) then
-        player:RemovePlayer(PLAYER_GAME_RESULT_VICTORY)
-    end
-    EndGame(false)
-end
-
-
-function  WCPlayer:RemovePlayer(playerGameResult)
-    RemoveLocation(self.handle, playerGameResult)
-    table.insert()
-end
-
-function WCPlayer:ctor(player)
-    self.handle = player
-end
-
-function WCPlayer:IsEnemy(other)
-    if not other:IsA(WCPlayer) then
-        error("Expected player as an argument", 2)
-    end
-    return IsPlayerEnemy(self.handle, other.handle)
-end
-
-return WCPlayer
-end)
--- End of file WC3\Player.lua
 function CreateUnitsForPlayer0()
     local p = Player(0)
     local u
@@ -3133,13 +2040,226 @@ end
 function InitCustomPlayerSlots()
     SetPlayerStartLocation(Player(0), 0)
     SetPlayerColor(Player(0), ConvertPlayerColor(0))
-    SetPlayerRacePreference(Player(0), RACE_PREF_HUMAN)
+    SetPlayerRacePreference(Player(0), RACE_PREF_RANDOM)
     SetPlayerRaceSelectable(Player(0), true)
     SetPlayerController(Player(0), MAP_CONTROL_USER)
+    SetPlayerStartLocation(Player(1), 1)
+    SetPlayerColor(Player(1), ConvertPlayerColor(1))
+    SetPlayerRacePreference(Player(1), RACE_PREF_RANDOM)
+    SetPlayerRaceSelectable(Player(1), true)
+    SetPlayerController(Player(1), MAP_CONTROL_USER)
+    SetPlayerStartLocation(Player(2), 2)
+    SetPlayerColor(Player(2), ConvertPlayerColor(2))
+    SetPlayerRacePreference(Player(2), RACE_PREF_RANDOM)
+    SetPlayerRaceSelectable(Player(2), true)
+    SetPlayerController(Player(2), MAP_CONTROL_USER)
+    SetPlayerStartLocation(Player(3), 3)
+    SetPlayerColor(Player(3), ConvertPlayerColor(3))
+    SetPlayerRacePreference(Player(3), RACE_PREF_RANDOM)
+    SetPlayerRaceSelectable(Player(3), true)
+    SetPlayerController(Player(3), MAP_CONTROL_USER)
+    SetPlayerStartLocation(Player(4), 4)
+    SetPlayerColor(Player(4), ConvertPlayerColor(4))
+    SetPlayerRacePreference(Player(4), RACE_PREF_RANDOM)
+    SetPlayerRaceSelectable(Player(4), true)
+    SetPlayerController(Player(4), MAP_CONTROL_USER)
+    SetPlayerStartLocation(Player(5), 5)
+    SetPlayerColor(Player(5), ConvertPlayerColor(5))
+    SetPlayerRacePreference(Player(5), RACE_PREF_RANDOM)
+    SetPlayerRaceSelectable(Player(5), true)
+    SetPlayerController(Player(5), MAP_CONTROL_USER)
+    SetPlayerStartLocation(Player(6), 6)
+    SetPlayerColor(Player(6), ConvertPlayerColor(6))
+    SetPlayerRacePreference(Player(6), RACE_PREF_RANDOM)
+    SetPlayerRaceSelectable(Player(6), true)
+    SetPlayerController(Player(6), MAP_CONTROL_USER)
+    SetPlayerStartLocation(Player(7), 7)
+    SetPlayerColor(Player(7), ConvertPlayerColor(7))
+    SetPlayerRacePreference(Player(7), RACE_PREF_RANDOM)
+    SetPlayerRaceSelectable(Player(7), true)
+    SetPlayerController(Player(7), MAP_CONTROL_USER)
+    SetPlayerStartLocation(Player(8), 8)
+    SetPlayerColor(Player(8), ConvertPlayerColor(8))
+    SetPlayerRacePreference(Player(8), RACE_PREF_RANDOM)
+    SetPlayerRaceSelectable(Player(8), true)
+    SetPlayerController(Player(8), MAP_CONTROL_COMPUTER)
+    SetPlayerStartLocation(Player(9), 9)
+    SetPlayerColor(Player(9), ConvertPlayerColor(9))
+    SetPlayerRacePreference(Player(9), RACE_PREF_RANDOM)
+    SetPlayerRaceSelectable(Player(9), true)
+    SetPlayerController(Player(9), MAP_CONTROL_COMPUTER)
 end
 
 function InitCustomTeams()
     SetPlayerTeam(Player(0), 0)
+    SetPlayerState(Player(0), PLAYER_STATE_ALLIED_VICTORY, 1)
+    SetPlayerTeam(Player(1), 0)
+    SetPlayerState(Player(1), PLAYER_STATE_ALLIED_VICTORY, 1)
+    SetPlayerTeam(Player(2), 0)
+    SetPlayerState(Player(2), PLAYER_STATE_ALLIED_VICTORY, 1)
+    SetPlayerTeam(Player(3), 0)
+    SetPlayerState(Player(3), PLAYER_STATE_ALLIED_VICTORY, 1)
+    SetPlayerTeam(Player(4), 0)
+    SetPlayerState(Player(4), PLAYER_STATE_ALLIED_VICTORY, 1)
+    SetPlayerTeam(Player(5), 0)
+    SetPlayerState(Player(5), PLAYER_STATE_ALLIED_VICTORY, 1)
+    SetPlayerTeam(Player(6), 0)
+    SetPlayerState(Player(6), PLAYER_STATE_ALLIED_VICTORY, 1)
+    SetPlayerTeam(Player(7), 0)
+    SetPlayerState(Player(7), PLAYER_STATE_ALLIED_VICTORY, 1)
+    SetPlayerTeam(Player(8), 0)
+    SetPlayerState(Player(8), PLAYER_STATE_ALLIED_VICTORY, 1)
+    SetPlayerAllianceStateAllyBJ(Player(0), Player(1), true)
+    SetPlayerAllianceStateAllyBJ(Player(0), Player(2), true)
+    SetPlayerAllianceStateAllyBJ(Player(0), Player(3), true)
+    SetPlayerAllianceStateAllyBJ(Player(0), Player(4), true)
+    SetPlayerAllianceStateAllyBJ(Player(0), Player(5), true)
+    SetPlayerAllianceStateAllyBJ(Player(0), Player(6), true)
+    SetPlayerAllianceStateAllyBJ(Player(0), Player(7), true)
+    SetPlayerAllianceStateAllyBJ(Player(0), Player(8), true)
+    SetPlayerAllianceStateAllyBJ(Player(1), Player(0), true)
+    SetPlayerAllianceStateAllyBJ(Player(1), Player(2), true)
+    SetPlayerAllianceStateAllyBJ(Player(1), Player(3), true)
+    SetPlayerAllianceStateAllyBJ(Player(1), Player(4), true)
+    SetPlayerAllianceStateAllyBJ(Player(1), Player(5), true)
+    SetPlayerAllianceStateAllyBJ(Player(1), Player(6), true)
+    SetPlayerAllianceStateAllyBJ(Player(1), Player(7), true)
+    SetPlayerAllianceStateAllyBJ(Player(1), Player(8), true)
+    SetPlayerAllianceStateAllyBJ(Player(2), Player(0), true)
+    SetPlayerAllianceStateAllyBJ(Player(2), Player(1), true)
+    SetPlayerAllianceStateAllyBJ(Player(2), Player(3), true)
+    SetPlayerAllianceStateAllyBJ(Player(2), Player(4), true)
+    SetPlayerAllianceStateAllyBJ(Player(2), Player(5), true)
+    SetPlayerAllianceStateAllyBJ(Player(2), Player(6), true)
+    SetPlayerAllianceStateAllyBJ(Player(2), Player(7), true)
+    SetPlayerAllianceStateAllyBJ(Player(2), Player(8), true)
+    SetPlayerAllianceStateAllyBJ(Player(3), Player(0), true)
+    SetPlayerAllianceStateAllyBJ(Player(3), Player(1), true)
+    SetPlayerAllianceStateAllyBJ(Player(3), Player(2), true)
+    SetPlayerAllianceStateAllyBJ(Player(3), Player(4), true)
+    SetPlayerAllianceStateAllyBJ(Player(3), Player(5), true)
+    SetPlayerAllianceStateAllyBJ(Player(3), Player(6), true)
+    SetPlayerAllianceStateAllyBJ(Player(3), Player(7), true)
+    SetPlayerAllianceStateAllyBJ(Player(3), Player(8), true)
+    SetPlayerAllianceStateAllyBJ(Player(4), Player(0), true)
+    SetPlayerAllianceStateAllyBJ(Player(4), Player(1), true)
+    SetPlayerAllianceStateAllyBJ(Player(4), Player(2), true)
+    SetPlayerAllianceStateAllyBJ(Player(4), Player(3), true)
+    SetPlayerAllianceStateAllyBJ(Player(4), Player(5), true)
+    SetPlayerAllianceStateAllyBJ(Player(4), Player(6), true)
+    SetPlayerAllianceStateAllyBJ(Player(4), Player(7), true)
+    SetPlayerAllianceStateAllyBJ(Player(4), Player(8), true)
+    SetPlayerAllianceStateAllyBJ(Player(5), Player(0), true)
+    SetPlayerAllianceStateAllyBJ(Player(5), Player(1), true)
+    SetPlayerAllianceStateAllyBJ(Player(5), Player(2), true)
+    SetPlayerAllianceStateAllyBJ(Player(5), Player(3), true)
+    SetPlayerAllianceStateAllyBJ(Player(5), Player(4), true)
+    SetPlayerAllianceStateAllyBJ(Player(5), Player(6), true)
+    SetPlayerAllianceStateAllyBJ(Player(5), Player(7), true)
+    SetPlayerAllianceStateAllyBJ(Player(5), Player(8), true)
+    SetPlayerAllianceStateAllyBJ(Player(6), Player(0), true)
+    SetPlayerAllianceStateAllyBJ(Player(6), Player(1), true)
+    SetPlayerAllianceStateAllyBJ(Player(6), Player(2), true)
+    SetPlayerAllianceStateAllyBJ(Player(6), Player(3), true)
+    SetPlayerAllianceStateAllyBJ(Player(6), Player(4), true)
+    SetPlayerAllianceStateAllyBJ(Player(6), Player(5), true)
+    SetPlayerAllianceStateAllyBJ(Player(6), Player(7), true)
+    SetPlayerAllianceStateAllyBJ(Player(6), Player(8), true)
+    SetPlayerAllianceStateAllyBJ(Player(7), Player(0), true)
+    SetPlayerAllianceStateAllyBJ(Player(7), Player(1), true)
+    SetPlayerAllianceStateAllyBJ(Player(7), Player(2), true)
+    SetPlayerAllianceStateAllyBJ(Player(7), Player(3), true)
+    SetPlayerAllianceStateAllyBJ(Player(7), Player(4), true)
+    SetPlayerAllianceStateAllyBJ(Player(7), Player(5), true)
+    SetPlayerAllianceStateAllyBJ(Player(7), Player(6), true)
+    SetPlayerAllianceStateAllyBJ(Player(7), Player(8), true)
+    SetPlayerAllianceStateAllyBJ(Player(8), Player(0), true)
+    SetPlayerAllianceStateAllyBJ(Player(8), Player(1), true)
+    SetPlayerAllianceStateAllyBJ(Player(8), Player(2), true)
+    SetPlayerAllianceStateAllyBJ(Player(8), Player(3), true)
+    SetPlayerAllianceStateAllyBJ(Player(8), Player(4), true)
+    SetPlayerAllianceStateAllyBJ(Player(8), Player(5), true)
+    SetPlayerAllianceStateAllyBJ(Player(8), Player(6), true)
+    SetPlayerAllianceStateAllyBJ(Player(8), Player(7), true)
+    SetPlayerTeam(Player(9), 1)
+end
+
+function InitAllyPriorities()
+    SetStartLocPrioCount(0, 7)
+    SetStartLocPrio(0, 0, 1, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(0, 1, 2, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(0, 2, 3, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(0, 3, 4, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(0, 4, 5, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(0, 5, 6, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(0, 6, 7, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrioCount(1, 7)
+    SetStartLocPrio(1, 0, 0, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(1, 1, 2, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(1, 2, 3, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(1, 3, 4, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(1, 4, 5, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(1, 5, 6, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(1, 6, 7, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrioCount(2, 7)
+    SetStartLocPrio(2, 0, 0, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(2, 1, 1, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(2, 2, 3, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(2, 3, 4, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(2, 4, 5, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(2, 5, 6, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(2, 6, 7, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrioCount(3, 7)
+    SetStartLocPrio(3, 0, 0, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(3, 1, 1, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(3, 2, 2, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(3, 3, 4, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(3, 4, 5, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(3, 5, 6, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(3, 6, 7, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrioCount(4, 7)
+    SetStartLocPrio(4, 0, 0, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(4, 1, 1, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(4, 2, 2, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(4, 3, 3, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(4, 4, 5, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(4, 5, 6, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(4, 6, 7, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrioCount(5, 7)
+    SetStartLocPrio(5, 0, 0, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(5, 1, 1, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(5, 2, 2, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(5, 3, 3, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(5, 4, 4, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(5, 5, 6, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(5, 6, 7, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrioCount(6, 7)
+    SetStartLocPrio(6, 0, 0, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(6, 1, 1, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(6, 2, 2, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(6, 3, 3, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(6, 4, 4, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(6, 5, 5, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(6, 6, 7, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrioCount(7, 7)
+    SetStartLocPrio(7, 0, 0, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(7, 1, 1, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(7, 2, 2, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(7, 3, 3, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(7, 4, 4, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(7, 5, 5, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(7, 6, 6, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrioCount(9, 9)
+    SetStartLocPrio(9, 0, 1, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(9, 1, 2, MAP_LOC_PRIO_HIGH)
+    SetStartLocPrio(9, 2, 3, MAP_LOC_PRIO_LOW)
+    SetStartLocPrio(9, 3, 4, MAP_LOC_PRIO_LOW)
+    SetStartLocPrio(9, 4, 5, MAP_LOC_PRIO_LOW)
+    SetStartLocPrio(9, 5, 6, MAP_LOC_PRIO_LOW)
+    SetStartLocPrio(9, 6, 7, MAP_LOC_PRIO_LOW)
+    SetStartLocPrio(9, 7, 8, MAP_LOC_PRIO_LOW)
+    SetEnemyStartLocPrioCount(9, 1)
+    SetEnemyStartLocPrio(9, 0, 5, MAP_LOC_PRIO_LOW)
 end
 
 function main()
@@ -3157,12 +2277,21 @@ end
 function config()
     SetMapName("TRIGSTR_001")
     SetMapDescription("TRIGSTR_003")
-    SetPlayers(1)
-    SetTeams(1)
-    SetGamePlacement(MAP_PLACEMENT_USE_MAP_SETTINGS)
+    SetPlayers(10)
+    SetTeams(10)
+    SetGamePlacement(MAP_PLACEMENT_TEAMS_TOGETHER)
     DefineStartLocation(0, -512.0, -1664.0)
+    DefineStartLocation(1, -2647.1, 2472.2)
+    DefineStartLocation(2, -2006.8, 1394.6)
+    DefineStartLocation(3, 1213.6, -1725.9)
+    DefineStartLocation(4, -2788.2, 936.6)
+    DefineStartLocation(5, 1076.0, -492.0)
+    DefineStartLocation(6, -1326.2, -1021.8)
+    DefineStartLocation(7, 1874.8, 569.4)
+    DefineStartLocation(8, -1213.2, -363.9)
+    DefineStartLocation(9, -1498.3, 1719.7)
     InitCustomPlayerSlots()
-    SetPlayerSlotAvailable(Player(0), MAP_CONTROL_USER)
-    InitGenericPlayerSlots()
+    InitCustomTeams()
+    InitAllyPriorities()
 end
 

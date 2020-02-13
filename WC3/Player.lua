@@ -1,7 +1,10 @@
 local Class = Require("Class")
+local Timer = Require("WC3.Timer")
 
 local WCPlayer = Class()
 local players = {}
+local playersCount = 12
+local isEnd = false
 
 function WCPlayer.Get(player)
     if math.type(player) == "integer" then
@@ -13,41 +16,50 @@ function WCPlayer.Get(player)
     return players[player]
 end
 
-function WCPlayer.IsActive(player)
-    if math.type(player) == "integer" then
-        player = Player(player)
-    end
-    if players[player] then
-        return true
+
+function WCPlayer.PlayersRemoweWithResult(isAVictory)
+    local result = nil
+    if isAVictory then
+        result = PLAYER_GAME_RESULT_VICTORY
     else
-        return false
+        result = PLAYER_GAME_RESULT_DEFEAT
     end
-end
-
-
-function WCPlayer.PlayersWin(playersCount)
     local tplayer = {}
-    for id = 1, playersCount, 1  do
+    for id = 0, playersCount, 1  do
         local player = WCPlayer.Get(id)
         tplayer[id] = player
     end
-    for id = 1, playersCount, 1  do
-        tplayer[id]:RemovePlayer(PLAYER_GAME_RESULT_VICTORY)
+    for id = 0, playersCount, 1  do
+        tplayer[id]:RemovePlayer(result)
     end
-    EndGame()
+    EndGame(true)
 end
 
-function WCPlayer.PlayersDefeat(playersCount)
-    local tplayer = {}
-    for id = 1, playersCount, 1 do
-        local player = WCPlayer.Get(id)
-        tplayer[id] = player
+function WCPlayer.PlayersEndGame(isAVictory)
+    local timer = Timer()
+    if not isEnd then
+        isEnd = true
+        if isAVictory then
+            WCPlayer.DisplayTextToAll("VICTORY")
+        else
+            WCPlayer.DisplayTextToAll("DEFEAT")
+        end
+        timer:Start(10, false, function()
+            EndGame()
+        end)
     end
-    for id = 1, playersCount, 1 do
-        tplayer[id]:RemovePlayer(PLAYER_GAME_RESULT_DEFEAT)
-    end
-    EndGame()
 end
+
+function  WCPlayer.DisplayTextToAll(text)
+    for id = 0, 23, 1 do
+        DisplayTextToPlayer(WCPlayer.Get(id).handle, 0, 0, text)
+    end
+end
+
+function WCPlayer:DisplayText(text)
+    DisplayTextToPlayer(self.handle, 0, 0, text)
+end
+
 
 
 function  WCPlayer:RemovePlayer(playerGameResult)

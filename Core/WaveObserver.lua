@@ -5,7 +5,7 @@ local Trigger = Require("WC3.Trigger")
 local Creep = Require("Core.Creep")
 local PathNode = Require("Core.Node.PathNode")
 local CreepSpawner = Require("Core.Node.CreepSpawner")
-local WCPlayer = Require("WC3.Player")
+local wcplayer = Require("WC3.Player")
 
 local logWaveObserver = Log.Category("WaveObserver\\WaveObserver", {
      printVerbosity = Log.Verbosity.Trace,
@@ -15,7 +15,7 @@ local logWaveObserver = Log.Category("WaveObserver\\WaveObserver", {
 
 local WaveObserver = Class()
 
-function WaveObserver:ctor(owner, main_player)
+function WaveObserver:ctor(owner)
     local node = PathNode(0, 0, nil)
     local node1 = PathNode(0, 700, node)
     local creepSpawner1 = CreepSpawner(owner, 700, 700, node1, 0)
@@ -36,8 +36,7 @@ function WaveObserver:ctor(owner, main_player)
     triggercheckalldead:RegisterPlayerUnitEvent(owner, EVENT_PLAYER_UNIT_DEATH, nil)
     triggercheckalldead:AddAction(function ()
     if creepcount == 0 and self.needtokillallcreep then
-        logWaveObserver:Info("You should win")
-        WCPlayer.SetPlayerVictorybyId(0)
+        wcplayer.PlayersEndGame(true)
     end
     end)
 

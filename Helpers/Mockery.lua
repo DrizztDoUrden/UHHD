@@ -342,6 +342,7 @@ function RegionAddRect(region, rect) end
 ---@return boolean
 function IsUnitInRegion(region, whichUnit) end
 
+function SelectUnit(whichUnit, value) end
 ---@return number
 function GetSpellTargetX() end
 ---@return number
