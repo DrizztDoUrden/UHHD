@@ -68,6 +68,16 @@ function DuskKnight:ctor()
         },
     }
 
+    self.talentBooks = {
+        FourCC("DKT0"),
+    }
+
+    self.talents = {
+        [FourCC("T030")] = {
+            tech = FourCC("U030"),
+        },
+    }
+
     self.basicStats.strength = 12
     self.basicStats.agility = 6
     self.basicStats.intellect = 12

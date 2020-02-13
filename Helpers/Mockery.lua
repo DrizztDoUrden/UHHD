@@ -195,7 +195,10 @@ function SetUnitY(unit, value) end
 ---@param unit unit
 ---@param value boolean
 function SelectUnit(unit, value) end
-
+---@param unit unit
+---@return integer
+function GetHeroLevel(unit) end
+---@param whichUnit unit
 function RemoveUnit(whichUnit) end
 
 function IssuePointOrderById(whichUnit, order, x, y) end
@@ -239,6 +242,10 @@ function BlzSetAbilityRealLevelField(whichAbility, whichField, level, value) end
 ---@param to player
 ---@return boolean
 function IsPlayerEnemy(from, to) end
+---@param whichPlayer player
+---@param techid integer
+---@param setToLevel integer
+function SetPlayerTechResearched(whichPlayer, techid, setToLevel) end
 
 ---@param str string
 ---@return id

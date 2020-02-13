@@ -24,6 +24,10 @@ function WCPlayer:IsEnemy(other)
     return IsPlayerEnemy(self.handle, other.handle)
 end
 
+function WCPlayer:SetTechLevel(tech, value)
+    SetPlayerTechResearched(self.handle, tech, value)
+end
+
 WCPlayer.Local = WCPlayer.Get(GetLocalPlayer())
 
 return WCPlayer

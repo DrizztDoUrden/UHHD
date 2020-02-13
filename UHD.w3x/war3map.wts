@@ -142,12 +142,6 @@ STRING 37
 Shadow Leap
 }
 
-STRING 40
-// Units: __SU (Stat Upgrade), Name (Name)
-{
-Stat Upgrade
-}
-
 STRING 41
 // Abilities: SU_0 (Upgrade strength), Name (Name)
 {
@@ -272,5 +266,47 @@ STRING 68
 // Abilities: SU_5 (Upgrade willpower), Ubertip (Tooltip - Normal - Extended)
 {
 +5% control resist|n+5% spell damage resist
+}
+
+STRING 69
+// Units: __SU (Stat Upgrades), Name (Name)
+{
+Stat Upgrades
+}
+
+STRING 70
+// Units: __TU (Talent Upgrades), Name (Name)
+{
+Talent Upgrades
+}
+
+STRING 71
+// Abilities: DKT0 (Dark Mend Talents), Name (Name)
+{
+Dark Mend Talents
+}
+
+STRING 72
+// Abilities: T030 (Survival Instinct), Name (Name)
+{
+Survival Instinct
+}
+
+STRING 73
+// Abilities: T030 (Survival Instinct), Tip (Tooltip - Normal)
+{
+Survival Instinct
+}
+
+STRING 74
+// Abilities: T030 (Survival Instinct), Ubertip (Tooltip - Normal - Extended)
+{
+Dark Mend heals 50% instantly and 75% over time.
+}
+
+STRING 75
+// Upgrades: U030 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Already Learned
 }
 

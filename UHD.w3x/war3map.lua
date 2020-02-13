@@ -438,6 +438,7 @@ local WCPlayer = Require("WC3.Player")
 
 local logHero = Log.Category("Core\\Hero")
 
+local talentsHelperId = FourCC("__TU")
 local statsHelperId = FourCC("__SU")
 local statUpgrades = {
     strength = FourCC("SU_0"),
@@ -453,6 +454,7 @@ local Hero = Class(UHDUnit)
 local statsX = 0
 local statsY = -1000
 Hero.StatsPerLevel = 5
+Hero.LevelsForTalent = 5
 
 function Hero:ctor(...)
     UHDUnit.ctor(self, ...)
@@ -471,17 +473,28 @@ function Hero:ctor(...)
 
     self.statUpgrades = {}
     self.skillUpgrades = {}
+    self.talentBooks = {}
+    self.talents = {}
+
+    self:AddTalentPoint()
+    self:AddTalentPoint()
 end
 
 function Hero:Destroy()
     UHDUnit.Destroy(self)
     for u in pairs(self.statUpgrades) do u:Destroy() end
     for u in pairs(self.skillUpgrades) do u:Destroy() end
+    for _, talent in pairs(self.talents) do
+        self:GetOwner():SetTechLevel(talent.tech, 1)
+    end
 end
 
 function Hero:OnLevel()
     for _ = 1,Hero.StatsPerLevel do
         self:AddStatPoint()
+    end
+    if self:GetLevel() % Hero.LevelsForTalent == 0 then
+        self:AddTalentPoint()
     end
 end
 
@@ -500,7 +513,7 @@ function Hero:AddStatPoint()
     trigger:AddAction(function()
         self.statUpgrades[statHelper] = nil
         statHelper:Destroy()
-        self:SelectNextStatHelper()
+        self:SelectNextHelper(true)
         local spellId = GetSpellAbilityId()
         for stat, id in pairs(statUpgrades) do
             if id == spellId then
@@ -514,11 +527,37 @@ function Hero:AddStatPoint()
     end)
 end
 
-function Hero:SelectNextStatHelper()
+function Hero:AddTalentPoint()
+    local talentHelper = Unit(self:GetOwner(), statsHelperId, statsX, statsY, 0)
+    self.skillUpgrades[talentHelper] = true
+
+    for id in pairs(self.talentBooks) do
+        talentHelper:AddAbility(id)
+    end
+
+    local trigger = Trigger()
+    talentHelper.toDestroy[trigger] = true
+
+    trigger:RegisterUnitSpellEffect(talentHelper)
+    trigger:AddAction(function()
+        self.skillUpgrades[talentHelper] = nil
+        talentHelper:Destroy()
+        local spellId = GetSpellAbilityId()
+        self:SelectNextHelper(false)
+        local talent = self.talents[spellId]
+        talent.learned = true
+        self:GetOwner():SetTechLevel(talent.tech, 0)
+    end)
+end
+
+function Hero:SelectNextHelper(prefferStats)
     if self:GetOwner() == WCPlayer.Local then
-        for helper in pairs(self.statUpgrades) do
-            helper:Select()
-            return
+        if prefferStats then
+            for helper in pairs(self.statUpgrades) do helper:Select() return end
+            for helper in pairs(self.skillUpgrades) do helper:Select() return end
+        else
+            for helper in pairs(self.skillUpgrades) do helper:Select() return end
+            for helper in pairs(self.statUpgrades) do helper:Select() return end
         end
         self:Select()
     end
@@ -615,6 +654,11 @@ function HeroPreset:Spawn(owner, x, y, facing)
 
     hero.baseSecondaryStats = self.secondaryStats
     hero:SetBasicStats(self.basicStats)
+    hero.talentBooks = self.talentBooks
+    hero.talents = {}
+    for k, v in pairs(self.talents) do
+        hero.talents[k] = v
+    end
 
     hero.abilities:AddAction(function() self:Cast(hero) end)
 
@@ -1119,6 +1163,16 @@ function DuskKnight:ctor()
         },
     }
 
+    self.talentBooks = {
+        FourCC("DKT0"),
+    }
+
+    self.talents = {
+        [FourCC("T030")] = {
+            tech = FourCC("U030"),
+        },
+    }
+
     self.basicStats.strength = 12
     self.basicStats.agility = 6
     self.basicStats.intellect = 12
@@ -1463,6 +1517,10 @@ function WCPlayer:IsEnemy(other)
         error("Expected player as an argument", 2)
     end
     return IsPlayerEnemy(self.handle, other.handle)
+end
+
+function WCPlayer:SetTechLevel(tech, value)
+    SetPlayerTechResearched(self.handle, tech, value)
 end
 
 WCPlayer.Local = WCPlayer.Get(GetLocalPlayer())
@@ -1858,6 +1916,7 @@ function Unit:GetOwner() return WCPlayer.Get(GetOwningPlayer(self.handle)) end
 function Unit:GetArmor() return BlzGetUnitArmor(self.handle) end
 function Unit:GetFacing() return GetUnitFacing(self.handle) end
 function Unit:GetAbility(id) return BlzGetUnitAbility(self.handle, id) end
+function Unit:GetLevel() return GetHeroLevel(self.handle) end
 
 return Unit
 end)

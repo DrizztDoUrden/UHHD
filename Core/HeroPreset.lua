@@ -36,6 +36,10 @@ function HeroPreset:Spawn(owner, x, y, facing)
 
     hero.baseSecondaryStats = self.secondaryStats
     hero:SetBasicStats(self.basicStats)
+    hero.talents = {}
+    hero.talentBooks = {}
+    for k, v in pairs(self.talents) do hero.talents[k] = v end
+    for k, v in pairs(self.talentBooks) do hero.talentBooks[k] = v end
 
     hero.abilities:AddAction(function() self:Cast(hero) end)
 
