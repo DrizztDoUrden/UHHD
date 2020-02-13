@@ -116,7 +116,7 @@ function DuskKnight:ctor()
     self:AddTalent("022")
 
     self:AddTalent("030")
-    self:AddTalent("031").onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id) - 3) end
+    self:AddTalent("031").onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
     self:AddTalent("032")
 
     self.basicStats.strength = 12
@@ -247,7 +247,7 @@ function HeavySlash:Cast()
         if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DamageTarget(unit, self.baseDamage, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_METAL_MEDIUM_SLICE)
             if self.manaBurn > 0 then unit:SetMana(math.max(0, unit:GetMana() - self.manaBurn)) end
-            if self.vampirism > 0 then self.caster:SetHP(math.min(self.caster.GetMaxHP(), self.vampirism * self.baseDamage)) end
+            if self.vampirism > 0 then self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.vampirism * self.baseDamage)) end
 
             if unit:IsA(UHDUnit) then
                 affected[unit] = true
