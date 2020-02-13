@@ -31,6 +31,8 @@ function HeroPreset:ctor()
     self.secondaryStats.spellResist = 0
 
     self.secondaryStats.movementSpeed = 1
+
+    self.talents = {}
 end
 
 function HeroPreset:Spawn(owner, x, y, facing)
@@ -63,6 +65,12 @@ function HeroPreset:Spawn(owner, x, y, facing)
     end
 
     return hero
+end
+
+function HeroPreset:AddTalent(id)
+    local talent = { tech = FourCC("U" .. id), }
+    self.talents[FourCC("T" .. id)] = talent
+    return talent
 end
 
 function HeroPreset:Cast(hero)

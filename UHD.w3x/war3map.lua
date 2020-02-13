@@ -644,6 +644,8 @@ function HeroPreset:ctor()
     self.secondaryStats.spellResist = 0
 
     self.secondaryStats.movementSpeed = 1
+
+    self.talents = {}
 end
 
 function HeroPreset:Spawn(owner, x, y, facing)
@@ -676,6 +678,10 @@ function HeroPreset:Spawn(owner, x, y, facing)
     end
 
     return hero
+end
+
+function HeroPreset:AddTalent(id)
+    self.talents[FourCC("T" .. id)] = { tech = FourCC("U" .. id), }
 end
 
 function HeroPreset:Cast(hero)
@@ -1205,11 +1211,21 @@ function DuskKnight:ctor()
         FourCC("DKT0"),
     }
 
-    self.talents = {
-        [FourCC("T030")] = {
-            tech = FourCC("U030"),
-        },
-    }
+    self:AddTalent("000")
+    self:AddTalent("001")
+    self:AddTalent("002")
+
+    self:AddTalent("010")
+    self:AddTalent("011")
+    self:AddTalent("012")
+
+    self:AddTalent("020")
+    self:AddTalent("021")
+    self:AddTalent("022")
+
+    self:AddTalent("030")
+    self:AddTalent("031")
+    self:AddTalent("032")
 
     self.basicStats.strength = 12
     self.basicStats.agility = 6
@@ -1418,6 +1434,7 @@ function DarkMend:Cast()
     local timer = Timer()
     local timeLeft = self.duration
     local curHp = self.caster:GetHP();
+    local part = 1 / math.floor(self.period / self.duration)
     self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * self.instantHeal)
     timer:Start(self.period, true, function()
         local curHp = self.caster:GetHP();
@@ -1426,7 +1443,6 @@ function DarkMend:Cast()
             return
         end
         timeLeft = timeLeft - self.period
-        local part = self.period / self.duration
         self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime)
         if timeLeft <= 0 then
             timer:Destroy()

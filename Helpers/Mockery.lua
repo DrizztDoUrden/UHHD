@@ -240,6 +240,26 @@ function BlzGetAbilityRealLevelField(whichAbility, whichField, level) end
 ---@param level integer
 ---@param value number
 function BlzSetAbilityRealLevelField(whichAbility, whichField, level, value) end
+---@param whichUnit unit
+---@param abilId id
+---@param level integer
+---@param manaCost integer
+function BlzSetUnitAbilityManaCost(whichUnit, abilId, level, manaCost) end
+---@param whichUnit unit
+---@param abilId id
+---@param level integer
+---@return integer
+function BlzGetUnitAbilityManaCost(whichUnit, abilId, level) end
+---@param whichUnit unit
+---@param abilId id
+---@param level integer
+---@param cooldown number
+function BlzSetUnitAbilityCooldown(whichUnit, abilId, level, cooldown) end
+---@param whichUnit unit
+---@param abilId id
+---@param level integer
+---@return number
+function BlzGetUnitAbilityCooldown(whichUnit, abilId, level) end
 
 ---@param from player
 ---@param to player
@@ -300,6 +320,10 @@ function Condition(func) end
 
 ---@return integer
 function GetSpellAbilityId() end
+---@param abilId integer
+---@param level integer
+---@return integer
+function BlzGetAbilityManaCost(abilId, level) end
 
 ---@return group
 function CreateGroup() end

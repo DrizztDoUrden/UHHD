@@ -111,6 +111,7 @@ function Hero:AddTalentPoint()
         logHero:Info(FourCC("T030"), spellId)
         local talent = self.talents[spellId]
         talent.learned = true
+        if talent.onTaken then talent:onTaken(self) end
         self:GetOwner():SetTechLevel(talent.tech, 0)
     end)
 end

@@ -210,6 +210,22 @@ function Unit:SetY(value)
     SetUnitY(self.handle, value)
 end
 
+function Unit:GetManaCost(abilityId, level)
+    return BlzGetUnitAbilityManaCost(self.handle, abilityId, level)
+end
+
+function Unit:SetManaCost(abilityId, level, value)
+    return BlzSetUnitAbilityManaCost(self.handle, abilityId, level, value)
+end
+
+function Unit:GetCooldown(abilityId, level)
+    return BlzGetUnitAbilityCooldown(self.handle, abilityId, level)
+end
+
+function Unit:SetCooldown(abilityId, level, value)
+    return BlzSetUnitAbilityCooldown(self.handle, abilityId, level, value)
+end
+
 function Unit:GetName() return GetUnitName(self.handle) end
 function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end
 function Unit:GetX() return GetUnitX(self.handle) end
