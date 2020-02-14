@@ -22,6 +22,10 @@ function Unit.GetDying()
     return Get(GetDyingUnit())
 end
 
+function Unit.GetSold()
+    return Get(GetBuyingUnit())
+end
+
 function Unit.GetEntering()
     return Get(GetEnteringUnit())
 end
@@ -164,6 +168,40 @@ function Unit:AddAbility(id)
         return false
     end
 end
+
+function Unit.AddUnitToAllStock(unitId, currentStock, stockMax)
+    if math.type(unitId) then
+        if math.type(currentStock) then
+            if math.type(stockMax) then
+                return AddUnitToAllStock(unitId, currentStock, stockMax)
+            else
+                error("stockMax should be an integer")
+            end
+        else
+            error("currentStock should be an integer")
+        end
+    else
+        error(" unitId should be an integer")
+    end
+end
+
+function Unit:AddUnitToStock(unitId, currentStock, stockMax)
+    if math.type(unitId) then
+        if math.type(currentStock) then
+            if math.type(stockMax) then
+                return AddUnitToAllStock(self.handle, unitId, currentStock, stockMax)
+            else
+                error("stockMax should be an integer")
+            end
+        else
+            error("currentStock should be an integer")
+        end
+    else
+        error(" unitId should be an integer")
+    end
+end
+
+
 
 function Unit:SetAbilityLevel(abilityId, level)
     return SetUnitAbilityLevel(self.handle, abilityId, level)

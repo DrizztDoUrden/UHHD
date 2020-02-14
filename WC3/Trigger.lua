@@ -12,6 +12,10 @@ function Trigger:Destroy()
     DestroyTrigger(self.handle)
 end
 
+function Trigger:RegisterUnitSold(unit)
+    return Unit.Get(TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SELL))
+end
+
 function Trigger:RegisterPlayerUnitEvent(player, event, filter)
     if filter then
         filter = function()

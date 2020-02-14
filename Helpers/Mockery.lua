@@ -29,6 +29,7 @@ EVENT_UNIT_SPELL_EFFECT = {}
 EVENT_UNIT_SPELL_FINISH = {}
 EVENT_UNIT_DEATH = {}
 EVENT_UNIT_HERO_LEVEL = {}
+EVENT_UNIT_SELL = {}
 
 PLAYER_GAME_RESULT_VICTORY = {}
 
@@ -299,6 +300,8 @@ function DestroyTrigger(trigger) end
 ---@return event
 function TriggerRegisterPlayerUnitEvent(trigger, player, event, filter) end
 
+function GetBuyingUnit() end
+
 function GetDyingUnit() end
 ---@param whichTrigger trigger
 ---@param actionFunc function
@@ -309,6 +312,10 @@ function TriggerAddAction(whichTrigger, actionFunc) end
 ---@param whichEvent unitevent
 ---@return event
 function TriggerRegisterUnitEvent(whichTrigger, whichUnit, whichEvent) end
+
+function AddUnitToAllStock(unitId, currentStock, stockMax) end
+
+function AddUnitToStock(whichUnit, unitId, currentStock, stockMax) end
 
 function TriggerRegisterEnterRegion(trigger, whichTrigger, whichRegion, filter) end
 ---@param func function
@@ -387,3 +394,4 @@ function RemoveLocation(loc) end
 function RemovePlayer(whichPlayer, PLAYER_GAME_RESULT) end
 
 function EndGame(isShowScore) end
+
