@@ -177,8 +177,8 @@ end)
 -- End of file Class.lua
 -- Start of file Initialization.lua
 Module("Initialization", function()
-local Log = Require("Log")
-local Timer = Require("WC3.Timer")
+local Log = require("Log")
+local Timer = require("WC3.Timer")
 
 local handlers = {
     initGlobals = { funcs = {}, executed = false, },
@@ -265,7 +265,7 @@ end)
 -- End of file Initialization.lua
 -- Start of file Log.lua
 Module("Log", function()
-local Class = Require("Class")
+local Class = require("Class")
 
 local Verbosity = {
     Fatal = 1,
@@ -372,10 +372,10 @@ end)
 -- End of file Log.lua
 -- Start of file Core\Core.lua
 Module("Core.Core", function()
-local Class = Require("Class")
-local Unit = Require("WC3.Unit")
-local Trigger = Require("WC3.Trigger")
-local Player = Require("WC3.Player")
+local Class = require("Class")
+local Unit = require("WC3.Unit")
+local Trigger = require("WC3.Trigger")
+local Player = require("WC3.Player")
 
 local wcplayer = Class(Player)
 local Core = Class(Unit)
@@ -400,9 +400,9 @@ end)
 -- End of file Core\Core.lua
 -- Start of file Core\Creep.lua
 Module("Core.Creep", function()
-local Class = Require("Class")
-local UHDUnit = Require("Core.UHDUnit")
-local Timer = Require("WC3.Timer")
+local Class = require("Class")
+local UHDUnit = require("Core.UHDUnit")
+local Timer = require("WC3.Timer")
 local Creep = Class(UHDUnit)
 
     function Creep:Destroy()
@@ -418,10 +418,10 @@ end)
 -- End of file Core\Creep.lua
 -- Start of file Core\CreepPreset.lua
 Module("Core.CreepPreset", function()
-local Class = Require("Class")
-local Log = Require("Log")
-local Stats = Require("Core.Stats")
-local Creep = Require("Core.Creep")
+local Class = require("Class")
+local Log = require("Log")
+local Stats = require("Core.Stats")
+local Creep = require("Core.Creep")
 
 
 local CreepPreset = Class()
@@ -461,13 +461,13 @@ end)
 -- End of file Core\CreepPreset.lua
 -- Start of file Core\Hero.lua
 Module("Core.Hero", function()
-local Class = Require("Class")
-local Stats = Require("Core.Stats")
-local UHDUnit = Require("Core.UHDUnit")
-local Trigger = Require("WC3.Trigger")
-local Unit = Require("WC3.Unit")
-local Log = Require("Log")
-local WCPlayer = Require("WC3.Player")
+local Class = require("Class")
+local Stats = require("Core.Stats")
+local UHDUnit = require("Core.UHDUnit")
+local Trigger = require("WC3.Trigger")
+local Unit = require("WC3.Unit")
+local Log = require("Log")
+local WCPlayer = require("WC3.Player")
 
 local logHero = Log.Category("Core\\Hero")
 
@@ -649,11 +649,11 @@ end)
 -- End of file Core\Hero.lua
 -- Start of file Core\HeroPreset.lua
 Module("Core.HeroPreset", function()
-local Class = Require("Class")
-local Trigger = Require("WC3.Trigger")
-local Stats = Require("Core.Stats")
-local Hero = Require("Core.Hero")
-local Log = Require("Log")
+local Class = require("Class")
+local Trigger = require("WC3.Trigger")
+local Stats = require("Core.Stats")
+local Hero = require("Core.Hero")
+local Log = require("Log")
 
 local HeroPreset = Class()
 
@@ -741,7 +741,7 @@ end)
 -- End of file Core\HeroPreset.lua
 -- Start of file Core\Stats.lua
 Module("Core.Stats", function()
-local Class = Require("Class")
+local Class = require("Class")
 local StatsBase = Class()
 
 function StatsBase:EnumerateNames()
@@ -825,11 +825,11 @@ end)
 -- End of file Core\Stats.lua
 -- Start of file Core\Tavern.lua
 Module("Core.Tavern", function()
-local Class = Require("Class")
-local Unit = Require("WC3.Unit")
-local Trigger = Require("WC3.Trigger")
-local Log = Require("Log")
-local Timer = Require("Timer")
+local Class = require("Class")
+local Unit = require("WC3.Unit")
+local Trigger = require("WC3.Trigger")
+local Log = require("Log")
+local Timer = require("WC3.Timer")
 
 local logTavern = Log.Category("Core\\Tavern")
 
@@ -842,17 +842,18 @@ function Tavern:ctor(owner, x, y, facing, heroPresets)
     Unit.ctor(self, owner, FourCC("n000"), x, y, facing)
 
     self.owner = owner
-
+    self.heroPresets = heroPresets
     local timer = Timer()
-    timer:Start(3, false, function()
+
+    timer:Start(0.5, false, function()
         timer:Destroy()
-        self.heroPresets = heroPresets
         for _, hero in pairs(heroPresets) do
-            logTavern:Info(hero.unitid)
+            logTavern:Info(hero.unitid, "==", FourCC("H_DK"), " is ", hero.unitid == FourCC("H_DK"))
+            logTavern:Info(self:GetTypeId(), "==", FourCC("n000"), " is ", self:GetTypeId() == FourCC("n000"))
             self:AddUnitToStock(hero.unitid)
         end
-        self:AddTrigger()
     end)
+    self:AddTrigger()
 end
 
 function Tavern:AddTrigger()
@@ -862,12 +863,14 @@ function Tavern:AddTrigger()
     trigger:AddAction(function()
         local whicUnit = Unit.GetSold()
         local whichOwner = whicUnit:GetOwner()
+        local id = whicUnit:GetTypeId()
+        whicUnit:Destroy()
         for _, hero in pairs(self.heroPresets) do
-            if hero.unitid == whicUnit:GetTypeId() then
+            if hero.unitid == id then
                 hero:Spawn(whichOwner, heroSpawnX, heroSpawnY, 0)
+                return
             end
         end
-        whicUnit:Destroy()
     end)
 end
 
@@ -878,9 +881,9 @@ end)
 -- End of file Core\Tavern.lua
 -- Start of file Core\UHDUnit.lua
 Module("Core.UHDUnit", function()
-local Class = Require("Class")
-local Stats = Require("Core.Stats")
-local Unit = Require("WC3.Unit")
+local Class = require("Class")
+local Stats = require("Core.Stats")
+local Unit = require("WC3.Unit")
 
 local UHDUnit = Class(Unit)
 
@@ -945,14 +948,14 @@ end)
 -- End of file Core\UHDUnit.lua
 -- Start of file Core\WaveObserver.lua
 Module("Core.WaveObserver", function()
-local Class = Require("Class")
-local Log = Require("Log")
-local Timer = Require("WC3.Timer")
-local Trigger = Require("WC3.Trigger")
-local Creep = Require("Core.Creep")
-local PathNode = Require("Core.Node.PathNode")
-local CreepSpawner = Require("Core.Node.CreepSpawner")
-local wcplayer = Require("WC3.Player")
+local Class = require("Class")
+local Log = require("Log")
+local Timer = require("WC3.Timer")
+local Trigger = require("WC3.Trigger")
+local Creep = require("Core.Creep")
+local PathNode = require("Core.Node.PathNode")
+local CreepSpawner = require("Core.Node.CreepSpawner")
+local wcplayer = require("WC3.Player")
 
 local logWaveObserver = Log.Category("WaveObserver\\WaveObserver", {
      printVerbosity = Log.Verbosity.Trace,
@@ -1012,7 +1015,7 @@ end)
 -- End of file Core\WaveObserver.lua
 -- Start of file Core\WaveSpecification.lua
 Module("Core.WaveSpecification", function()
-local Log = Require("Log")
+local Log = require("Log")
 
 local levelCreepCompositon = {
     {"MagicDragon"},
@@ -1041,9 +1044,9 @@ end)
 -- End of file Core\WaveSpecification.lua
 -- Start of file Core\Creeps\MagicDragon.lua
 Module("Core.Creeps.MagicDragon", function()
-local Class = Require("Class")
-local CreepPreset = Require("Core.CreepPreset")
-local Log = Require("Log")
+local Class = require("Class")
+local CreepPreset = require("Core.CreepPreset")
+local Log = require("Log")
 
 local MagicDragon = Class(CreepPreset)
 
@@ -1062,11 +1065,11 @@ end)
 -- End of file Core\Creeps\MagicDragon.lua
 -- Start of file Core\Node\CreepSpawner.lua
 Module("Core.Node.CreepSpawner", function()
-local Log = Require("Log")
-local Class = Require("Class")
-local Node = Require("Core.Node.Node")
-local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
-local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
+local Log = require("Log")
+local Class = require("Class")
+local Node = require("Core.Node.Node")
+local levelCreepsComopsion, nComposion, aComposition, maxlevel = require("Core.WaveSpecification")
+local CreepClasses = { MagicDragon = require("Core.Creeps.MagicDragon") }
 
 local CreepSpawner = Class(Node)
 
@@ -1123,8 +1126,8 @@ end)
 -- End of file Core\Node\CreepSpawner.lua
 -- Start of file Core\Node\Node.lua
 Module("Core.Node.Node", function()
-local Class = Require("Class")
-local Log = Require("Log")
+local Class = require("Class")
+local Log = require("Log")
 
 local Node = Class()
 
@@ -1144,13 +1147,13 @@ end)
 -- End of file Core\Node\Node.lua
 -- Start of file Core\Node\PathNode.lua
 Module("Core.Node.PathNode", function()
-local Class = Require("Class")
-local Log = Require("Log")
+local Class = require("Class")
+local Log = require("Log")
 
-local Trigger = Require("WC3.Trigger")
-local Unit = Require("WC3.Unit")
-local Creep = Require("Core.Creep")
-local RectNode = Require("Core.Node.RectNode")
+local Trigger = require("WC3.Trigger")
+local Unit = require("WC3.Unit")
+local Creep = require("Core.Creep")
+local RectNode = require("Core.Node.RectNode")
 local PathNode = Class(RectNode)
 function PathNode:ctor(x, y, prev)
     RectNode.ctor(self, 100, 100, x, y, prev)
@@ -1178,11 +1181,11 @@ end)
 -- End of file Core\Node\PathNode.lua
 -- Start of file Core\Node\RectNode.lua
 Module("Core.Node.RectNode", function()
-local Class = Require("Class")
-local Log = Require("Log")
-local WCRect = Require("WC3.Rect")
-local Region = Require("WC3.Region")
-local Node = Require("Core.Node.Node")
+local Class = require("Class")
+local Log = require("Log")
+local WCRect = require("WC3.Rect")
+local Region = require("WC3.Region")
+local Node = require("Core.Node.Node")
 
 local RectNode = Class(Node)
 
@@ -1204,13 +1207,13 @@ end)
 -- End of file Core\Node\RectNode.lua
 -- Start of file Heroes\DuskKnight.lua
 Module("Heroes.DuskKnight", function()
-local Class = Require("Class")
-local Timer = Require("WC3.Timer")
-local Trigger = Require("WC3.Trigger")
-local Unit = Require("WC3.Unit")
-local HeroPreset = Require("Core.HeroPreset")
-local UHDUnit = Require("Core.UHDUnit")
-local Log = Require("Log")
+local Class = require("Class")
+local Timer = require("WC3.Timer")
+local Trigger = require("WC3.Trigger")
+local Unit = require("WC3.Unit")
+local HeroPreset = require("Core.HeroPreset")
+local UHDUnit = require("Core.UHDUnit")
+local Log = require("Log")
 
 local logDuskKnight = Log.Category("Heroes\\Dusk Knight", {
     printVerbosity = Log.Verbosity.Trace,
@@ -1566,8 +1569,8 @@ end)
 -- End of file Heroes\DuskKnight.lua
 -- Start of file Tests\Initialization.lua
 Module("Tests.Initialization", function()
-local Log = Require("Log")
-local Init = Require("Initialization")
+local Log = require("Log")
+local Init = require("Initialization")
 
 if ExtensiveLog and TestBuild then
     local globalInit = "false";
@@ -1600,12 +1603,12 @@ end)
 -- End of file Tests\Initialization.lua
 -- Start of file Tests\Main.lua
 Module("Tests.Main", function()
-local Log = Require("Log")
-local WCPlayer = Require("WC3.Player")
-local DuskKnight = Require("Heroes.DuskKnight")
-local WaveObserver = Require("Core.WaveObserver")
-local Core = Require("Core.Core")
-local Tavern = Require("Core.Tavern")
+local Log = require("Log")
+local WCPlayer = require("WC3.Player")
+local DuskKnight = require("Heroes.DuskKnight")
+local WaveObserver = require("Core.WaveObserver")
+local Core = require("Core.Core")
+local Tavern = require("Core.Tavern")
 
 local heroPresets = {
     DuskKnight()
@@ -1627,7 +1630,7 @@ end)
 -- End of file Tests\Main.lua
 -- Start of file WC3\AbilityInstance.lua
 Module("WC3.AbilityInstance", function()
-local Class = Require("Class")
+local Class = require("Class")
 
 local AbilityInstance = Class()
 
@@ -1648,7 +1651,7 @@ end)
 -- End of file WC3\AbilityInstance.lua
 -- Start of file WC3\Location.lua
 Module("WC3.Location", function()
-local Class = Require("Class")
+local Class = require("Class")
 
 local Location = Class()
 
@@ -1674,8 +1677,8 @@ end)
 -- End of file WC3\Location.lua
 -- Start of file WC3\Player.lua
 Module("WC3.Player", function()
-local Class = Require("Class")
-local Timer = Require("WC3.Timer")
+local Class = require("Class")
+local Timer = require("WC3.Timer")
 
 local WCPlayer = Class()
 local players = {}
@@ -1765,7 +1768,7 @@ end)
 -- End of file WC3\Player.lua
 -- Start of file WC3\Rect.lua
 Module("WC3.Rect", function()
-local Class = Require("Class")
+local Class = require("Class")
 
 local WCRect = Class()
 
@@ -1783,7 +1786,7 @@ end)
 -- End of file WC3\Rect.lua
 -- Start of file WC3\Region.lua
 Module("WC3.Region", function()
-local Class = Require("Class")
+local Class = require("Class")
 
 local Region = Class()
 local regions = {}
@@ -1829,8 +1832,8 @@ end)
 -- End of file WC3\Region.lua
 -- Start of file WC3\Timer.lua
 Module("WC3.Timer", function()
-local Class = Require("Class")
-local Log = Require("Log")
+local Class = require("Class")
+local Log = require("Log")
 
 local Timer = Class()
 
@@ -1856,9 +1859,9 @@ end)
 -- End of file WC3\Timer.lua
 -- Start of file WC3\Trigger.lua
 Module("WC3.Trigger", function()
-local Class = Require("Class")
-local Log = Require("Log")
-local Unit = Require("WC3.Unit")
+local Class = require("Class")
+local Log = require("Log")
+local Unit = require("WC3.Unit")
 
 local Trigger = Class()
 
@@ -1928,9 +1931,9 @@ end)
 -- End of file WC3\Trigger.lua
 -- Start of file WC3\Unit.lua
 Module("WC3.Unit", function()
-local Class = Require("Class")
-local WCPlayer = Require("WC3.Player")
-local Log = Require("Log")
+local Class = require("Class")
+local WCPlayer = require("WC3.Player")
+local Log = require("Log")
 
 local Unit = Class()
 
@@ -2138,6 +2141,7 @@ function Unit:AddUnitToStock(unitId, currentStock, stockMax)
             error("stockMax should be an integer", 2)
         end
     end
+    print(self:GetTypeId(), unitId, currentStock, stockMax, AddUnitToStock)
     return AddUnitToStock(self.handle, unitId, currentStock, stockMax)
 end
 

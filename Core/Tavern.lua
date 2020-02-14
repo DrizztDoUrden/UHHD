@@ -5,8 +5,8 @@ local Log = require("Log")
 
 local logTavern = Log.Category("Core\\Tavern")
 
-local statsX = 0
-local statsY = -1000
+local heroSpawnX = 100
+local heroSpawnY = -1600
 
 local Tavern = Class(Unit)
 
@@ -15,9 +15,11 @@ function Tavern:ctor(owner, x, y, facing, heroPresets)
 
     self.owner = owner
     self.heroPresets = heroPresets
+
     for _, hero in pairs(heroPresets) do
-        logTavern:Info(hero.unitid)
-        self:AddUnitToStock(hero.unitid, 1, 1)
+        logTavern:Info(hero.unitid, "==", FourCC("H_DK"), " is ", hero.unitid == FourCC("H_DK"))
+        logTavern:Info(self:GetTypeId(), "==", FourCC("n000"), " is ", self:GetTypeId() == FourCC("n000"))
+        self:AddUnitToStock(hero.unitid)
     end
     self:AddTrigger()
 end
@@ -29,12 +31,14 @@ function Tavern:AddTrigger()
     trigger:AddAction(function()
         local whicUnit = Unit.GetSold()
         local whichOwner = whicUnit:GetOwner()
+        local id = whicUnit:GetTypeId()
+        whicUnit:Destroy()
         for _, hero in pairs(self.heroPresets) do
-            if hero.unitid == whicUnit:GetTypeId() then
-                hero:Spawn(whichOwner, 100, -1600, 0)
+            if hero.unitid == id then
+                hero:Spawn(whichOwner, heroSpawnX, heroSpawnY, 0)
+                return
             end
         end
-        whicUnit:Destroy()
     end)
 end
 

@@ -187,7 +187,7 @@ function Unit.AddToAllStock(unitId, currentStock, stockMax)
             error("stockMax should be an integer", 2)
         end
     end
-    return AddUnitToAllStock(unitId, currentStock, stockMax)
+    AddUnitToAllStock(unitId, currentStock, stockMax)
 end
 
 function Unit:AddUnitToStock(unitId, currentStock, stockMax)
@@ -208,7 +208,7 @@ function Unit:AddUnitToStock(unitId, currentStock, stockMax)
             error("stockMax should be an integer", 2)
         end
     end
-    return AddUnitToStock(self.handle, unitId, currentStock, stockMax)
+    AddUnitToStock(self.handle, unitId, currentStock, stockMax)
 end
 
 function Unit:SetAbilityLevel(abilityId, level)

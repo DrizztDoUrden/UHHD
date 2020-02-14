@@ -36,7 +36,7 @@ Drain Light
 }
 
 STRING 9
-// Abilities: DK_0 (Drain Light), Hotkey (Hotkey - Normal)
+// Units: H_DK (Dusk Knight), Hotkey (Hotkey)
 {
 Q
 }
@@ -54,7 +54,7 @@ Drain Light
 }
 
 STRING 15
-// Abilities: DK_2 (Shadow Leap), Hotkey (Hotkey - Normal)
+// Abilities: DK_0 (Drain Light), Hotkey (Hotkey - Normal)
 {
 Q
 }
@@ -66,7 +66,7 @@ STRING 16
 }
 
 STRING 18
-// Abilities: DK_3 (Dark Mend), Hotkey (Hotkey - Normal)
+// Abilities: DK_2 (Shadow Leap), Hotkey (Hotkey - Normal)
 {
 Q
 }
@@ -748,5 +748,11 @@ STRING 151
 // Abilities: DKT2 (Shadow Leap Talents), EditorSuffix (Editor Suffix)
 {
 (Dusk Knight)
+}
+
+STRING 152
+// Abilities: DK_3 (Dark Mend), Hotkey (Hotkey - Normal)
+{
+Q
 }
 
