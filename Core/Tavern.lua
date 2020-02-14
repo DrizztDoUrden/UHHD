@@ -1,7 +1,7 @@
-local Class = Require("Class")
-local Unit = Require("WC3.Unit")
-local Trigger = Require("WC3.Trigger")
-local Log = Require("Log")
+local Class = require("Class")
+local Unit = require("WC3.Unit")
+local Trigger = require("WC3.Trigger")
+local Log = require("Log")
 
 local logTavern = Log.Category("Core\\Tavern")
 

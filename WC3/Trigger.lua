@@ -1,6 +1,6 @@
-local Class = Require("Class")
-local Log = Require("Log")
-local Unit = Require("WC3.Unit")
+local Class = require("Class")
+local Log = require("Log")
+local Unit = require("WC3.Unit")
 
 local Trigger = Class()
 

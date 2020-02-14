@@ -1,6 +1,6 @@
-local Class = Require("Class")
-local UHDUnit = Require("Core.UHDUnit")
-local Timer = Require("WC3.Timer")
+local Class = require("Class")
+local UHDUnit = require("Core.UHDUnit")
+local Timer = require("WC3.Timer")
 local Creep = Class(UHDUnit)
 
     function Creep:Destroy()

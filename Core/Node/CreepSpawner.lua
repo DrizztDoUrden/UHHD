@@ -1,8 +1,8 @@
-local Log = Require("Log")
-local Class = Require("Class")
-local Node = Require("Core.Node.Node")
-local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
-local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
+local Log = require("Log")
+local Class = require("Class")
+local Node = require("Core.Node.Node")
+local levelCreepsComopsion, nComposion, aComposition, maxlevel = require("Core.WaveSpecification")
+local CreepClasses = { MagicDragon = require("Core.Creeps.MagicDragon") }
 
 local CreepSpawner = Class(Node)
 

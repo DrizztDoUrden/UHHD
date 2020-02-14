@@ -1,8 +1,8 @@
-local Class = Require("Class")
-local Trigger = Require("WC3.Trigger")
-local Stats = Require("Core.Stats")
-local Hero = Require("Core.Hero")
-local Log = Require("Log")
+local Class = require("Class")
+local Trigger = require("WC3.Trigger")
+local Stats = require("Core.Stats")
+local Hero = require("Core.Hero")
+local Log = require("Log")
 
 local HeroPreset = Class()
 

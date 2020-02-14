@@ -1,6 +1,6 @@
-local Class = Require("Class")
-local Stats = Require("Core.Stats")
-local Unit = Require("WC3.Unit")
+local Class = require("Class")
+local Stats = require("Core.Stats")
+local Unit = require("WC3.Unit")
 
 local UHDUnit = Class(Unit)
 

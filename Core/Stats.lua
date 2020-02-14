@@ -1,4 +1,4 @@
-local Class = Require("Class")
+local Class = require("Class")
 local StatsBase = Class()
 
 function StatsBase:EnumerateNames()

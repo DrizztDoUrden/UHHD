@@ -1,11 +1,11 @@
-local Class = Require("Class")
-local Log = Require("Log")
-local Timer = Require("WC3.Timer")
-local Trigger = Require("WC3.Trigger")
-local Creep = Require("Core.Creep")
-local PathNode = Require("Core.Node.PathNode")
-local CreepSpawner = Require("Core.Node.CreepSpawner")
-local wcplayer = Require("WC3.Player")
+local Class = require("Class")
+local Log = require("Log")
+local Timer = require("WC3.Timer")
+local Trigger = require("WC3.Trigger")
+local Creep = require("Core.Creep")
+local PathNode = require("Core.Node.PathNode")
+local CreepSpawner = require("Core.Node.CreepSpawner")
+local wcplayer = require("WC3.Player")
 
 local logWaveObserver = Log.Category("WaveObserver\\WaveObserver", {
      printVerbosity = Log.Verbosity.Trace,

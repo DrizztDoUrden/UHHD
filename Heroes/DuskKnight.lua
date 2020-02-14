@@ -1,10 +1,10 @@
-local Class = Require("Class")
-local Timer = Require("WC3.Timer")
-local Trigger = Require("WC3.Trigger")
-local Unit = Require("WC3.Unit")
-local HeroPreset = Require("Core.HeroPreset")
-local UHDUnit = Require("Core.UHDUnit")
-local Log = Require("Log")
+local Class = require("Class")
+local Timer = require("WC3.Timer")
+local Trigger = require("WC3.Trigger")
+local Unit = require("WC3.Unit")
+local HeroPreset = require("Core.HeroPreset")
+local UHDUnit = require("Core.UHDUnit")
+local Log = require("Log")
 
 local logDuskKnight = Log.Category("Heroes\\Dusk Knight", {
     printVerbosity = Log.Verbosity.Trace,

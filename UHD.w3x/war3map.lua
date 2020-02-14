@@ -829,11 +829,12 @@ local Class = Require("Class")
 local Unit = Require("WC3.Unit")
 local Trigger = Require("WC3.Trigger")
 local Log = Require("Log")
+local Timer = Require("Timer")
 
 local logTavern = Log.Category("Core\\Tavern")
 
-local statsX = 0
-local statsY = -1000
+local heroSpawnX = 100
+local heroSpawnY = -1600
 
 local Tavern = Class(Unit)
 
@@ -841,12 +842,17 @@ function Tavern:ctor(owner, x, y, facing, heroPresets)
     Unit.ctor(self, owner, FourCC("n000"), x, y, facing)
 
     self.owner = owner
-    self.heroPresets = heroPresets
-    for _, hero in pairs(heroPresets) do
-        logTavern:Info(hero.unitid)
-        self:AddUnitToStock(hero.unitid, 1, 1)
-    end
-    self:AddTrigger()
+
+    local timer = Timer()
+    timer:Start(3, false, function()
+        timer:Destroy()
+        self.heroPresets = heroPresets
+        for _, hero in pairs(heroPresets) do
+            logTavern:Info(hero.unitid)
+            self:AddUnitToStock(hero.unitid)
+        end
+        self:AddTrigger()
+    end)
 end
 
 function Tavern:AddTrigger()
@@ -858,7 +864,7 @@ function Tavern:AddTrigger()
         local whichOwner = whicUnit:GetOwner()
         for _, hero in pairs(self.heroPresets) do
             if hero.unitid == whicUnit:GetTypeId() then
-                hero:Spawn(whichOwner, 100, -1600, 0)
+                hero:Spawn(whichOwner, heroSpawnX, heroSpawnY, 0)
             end
         end
         whicUnit:Destroy()
@@ -2093,31 +2099,44 @@ function Unit:AddAbility(id)
     end
 end
 
-function Unit.AddUnitToAllStock(unitId, currentStock, stockMax)
-    if math.type(unitId) then
-        if math.type(currentStock) then
-            if math.type(stockMax) then
-                return AddUnitToAllStock(unitId, currentStock, stockMax)
-            else
-                error("stockMax should be an integer")
-            end
-        else
-            error("currentStock should be an integer")
-        end
-    else
-        error(" unitId should be an integer")
+function Unit.AddToAllStock(unitId, currentStock, stockMax)
+    if math.type(unitId) ~= "integer" then
+        error("unitId should be an integer", 2)
     end
+    if currentStock == nil then
+        currentStock = 1
+    else
+        if math.type(currentStock) ~= "integer" then
+            error("currentStock should be an integer", 2)
+        end
+    end
+    if stockMax == nil then
+        stockMax = 1
+    else
+        if math.type(stockMax) ~= "integer" then
+            error("stockMax should be an integer", 2)
+        end
+    end
+    return AddUnitToAllStock(unitId, currentStock, stockMax)
 end
 
 function Unit:AddUnitToStock(unitId, currentStock, stockMax)
-    if not math.type(stockMax) then
-        error("stockMax should be an integer", 2)
-    end
-    if not math.type(currentStock) then
-        error("currentStock should be an integer", 2)
-    end
-    if not math.type(unitId) then
+    if math.type(unitId) ~= "integer" then
         error("unitId should be an integer", 2)
+    end
+    if currentStock == nil then
+        currentStock = 1
+    else
+        if math.type(currentStock) ~= "integer" then
+            error("currentStock should be an integer", 2)
+        end
+    end
+    if stockMax == nil then
+        stockMax = 1
+    else
+        if math.type(stockMax) ~= "integer" then
+            error("stockMax should be an integer", 2)
+        end
     end
     return AddUnitToStock(self.handle, unitId, currentStock, stockMax)
 end

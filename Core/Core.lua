@@ -1,7 +1,7 @@
-local Class = Require("Class")
-local Unit = Require("WC3.Unit")
-local Trigger = Require("WC3.Trigger")
-local Player = Require("WC3.Player")
+local Class = require("Class")
+local Unit = require("WC3.Unit")
+local Trigger = require("WC3.Trigger")
+local Player = require("WC3.Player")
 
 local wcplayer = Class(Player)
 local Core = Class(Unit)

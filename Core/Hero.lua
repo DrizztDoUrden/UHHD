@@ -1,10 +1,10 @@
-local Class = Require("Class")
-local Stats = Require("Core.Stats")
-local UHDUnit = Require("Core.UHDUnit")
-local Trigger = Require("WC3.Trigger")
-local Unit = Require("WC3.Unit")
-local Log = Require("Log")
-local WCPlayer = Require("WC3.Player")
+local Class = require("Class")
+local Stats = require("Core.Stats")
+local UHDUnit = require("Core.UHDUnit")
+local Trigger = require("WC3.Trigger")
+local Unit = require("WC3.Unit")
+local Log = require("Log")
+local WCPlayer = require("WC3.Player")
 
 local logHero = Log.Category("Core\\Hero")
 

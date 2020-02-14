@@ -1,6 +1,6 @@
-local Class = Require("Class")
-local CreepPreset = Require("Core.CreepPreset")
-local Log = Require("Log")
+local Class = require("Class")
+local CreepPreset = require("Core.CreepPreset")
+local Log = require("Log")
 
 local MagicDragon = Class(CreepPreset)
 

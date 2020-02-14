@@ -1,9 +1,9 @@
-local Log = Require("Log")
-local WCPlayer = Require("WC3.Player")
-local DuskKnight = Require("Heroes.DuskKnight")
-local WaveObserver = Require("Core.WaveObserver")
-local Core = Require("Core.Core")
-local Tavern = Require("Core.Tavern")
+local Log = require("Log")
+local WCPlayer = require("WC3.Player")
+local DuskKnight = require("Heroes.DuskKnight")
+local WaveObserver = require("Core.WaveObserver")
+local Core = require("Core.Core")
+local Tavern = require("Core.Tavern")
 
 local heroPresets = {
     DuskKnight()
