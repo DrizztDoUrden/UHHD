@@ -186,22 +186,17 @@ function Unit.AddUnitToAllStock(unitId, currentStock, stockMax)
 end
 
 function Unit:AddUnitToStock(unitId, currentStock, stockMax)
-    if math.type(unitId) then
-        if math.type(currentStock) then
-            if math.type(stockMax) then
-                return AddUnitToAllStock(self.handle, unitId, currentStock, stockMax)
-            else
-                error("stockMax should be an integer")
-            end
-        else
-            error("currentStock should be an integer")
-        end
-    else
-        error(" unitId should be an integer")
+    if not math.type(stockMax) then
+        error("stockMax should be an integer", 2)
     end
+    if not math.type(currentStock) then
+        error("currentStock should be an integer", 2)
+    end
+    if not math.type(unitId) then
+        error("unitId should be an integer", 2)
+    end
+    return AddUnitToStock(self.handle, unitId, currentStock, stockMax)
 end
-
-
 
 function Unit:SetAbilityLevel(abilityId, level)
     return SetUnitAbilityLevel(self.handle, abilityId, level)
@@ -280,5 +275,6 @@ function Unit:GetArmor() return BlzGetUnitArmor(self.handle) end
 function Unit:GetFacing() return GetUnitFacing(self.handle) end
 function Unit:GetAbility(id) return BlzGetUnitAbility(self.handle, id) end
 function Unit:GetLevel() return GetHeroLevel(self.handle) end
+function Unit:GetTypeId() return GetUnitTypeId(self.handle) end
 
 return Unit

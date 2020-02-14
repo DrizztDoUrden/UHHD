@@ -25,6 +25,9 @@ ExtensiveLog = false
 ---@class rect
 ---@class location
 
+DAMAGE_TYPE_MAGIC = {}
+WEAPON_TYPE_WHOKNOWS = {}
+
 EVENT_UNIT_SPELL_EFFECT = {}
 EVENT_UNIT_SPELL_FINISH = {}
 EVENT_UNIT_DEATH = {}
@@ -204,6 +207,9 @@ function SelectUnit(unit, value) end
 function GetHeroLevel(unit) end
 ---@param whichUnit unit
 function RemoveUnit(whichUnit) end
+---@param unit unit
+---@return id
+function GetUnitTypeId(unit) end
 
 function IssuePointOrderById(whichUnit, order, x, y) end
 ---@param whichHero unit

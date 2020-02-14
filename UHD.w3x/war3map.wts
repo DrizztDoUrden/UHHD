@@ -126,7 +126,7 @@ Dark Mend
 }
 
 STRING 36
-// Units: C_MD (MagicDragon), Name (Name)
+// Units: e000 (MagicDragon), Name (Name)
 {
 MagicDragon
 }
@@ -730,5 +730,23 @@ STRING 148
 // Upgrades: U032 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 032
+}
+
+STRING 149
+// Abilities: DKT2 (Shadow Leap Talents), Name (Name)
+{
+Shadow Leap Talents
+}
+
+STRING 150
+// Abilities: DKT2 (Shadow Leap Talents), Tip (Tooltip - Normal)
+{
+Shadow Leap Talents
+}
+
+STRING 151
+// Abilities: DKT2 (Shadow Leap Talents), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
 }
 

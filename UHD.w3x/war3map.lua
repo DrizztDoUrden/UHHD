@@ -515,7 +515,7 @@ function Hero:OnLevel()
     for _ = 1,Hero.StatsPerLevel do
         self:AddStatPoint()
     end
-    -- if self:GetLevel() Hero.LevelsForTalent == 0 then
+    -- if self:GetLevel() % Hero.LevelsForTalent == 0 then
         self:AddTalentPoint()
     -- end
 end
@@ -566,7 +566,6 @@ function Hero:AddTalentPoint()
         talentHelper:Destroy()
         local spellId = GetSpellAbilityId()
         self:SelectNextHelper(false)
-        logHero:Info(FourCC("T030"), spellId)
         local talent = self.talents[spellId]
         talent.learned = true
         if talent.onTaken then talent:onTaken(self) end
@@ -818,6 +817,53 @@ end
 return Stats
 end)
 -- End of file Core\Stats.lua
+-- Start of file Core\Tavern.lua
+Module("Core.Tavern", function()
+local Class = Require("Class")
+local Unit = Require("WC3.Unit")
+local Trigger = Require("WC3.Trigger")
+local Log = Require("Log")
+
+local logTavern = Log.Category("Core\\Tavern")
+
+local statsX = 0
+local statsY = -1000
+
+local Tavern = Class(Unit)
+
+function Tavern:ctor(owner, x, y, facing, heroPresets)
+    Unit.ctor(self, owner, FourCC("n000"), x, y, facing)
+
+    self.owner = owner
+    self.heroPresets = heroPresets
+    for _, hero in pairs(heroPresets) do
+        logTavern:Info(hero.unitid)
+        self:AddUnitToStock(hero.unitid, 1, 1)
+    end
+    self:AddTrigger()
+end
+
+function Tavern:AddTrigger()
+    local trigger = Trigger()
+    self.toDestroy[trigger] = true
+    trigger:RegisterUnitSold(self)
+    trigger:AddAction(function()
+        local whicUnit = Unit.GetSold()
+        local whichOwner = whicUnit:GetOwner()
+        for _, hero in pairs(self.heroPresets) do
+            if hero.unitid == whicUnit:GetTypeId() then
+                hero:Spawn(whichOwner, 100, -1600, 0)
+            end
+        end
+        whicUnit:Destroy()
+    end)
+end
+
+
+return Tavern
+
+end)
+-- End of file Core\Tavern.lua
 -- Start of file Core\UHDUnit.lua
 Module("Core.UHDUnit", function()
 local Class = Require("Class")
@@ -931,7 +977,7 @@ function WaveObserver:ctor(owner)
 
     Log(" Create Timer")
     
-    wavetimer:Start(5, true, function()
+    wavetimer:Start(15, true, function()
         if creepSpawner1:IsANextWave(level) then
             logWaveObserver:Info("WAVE"..level)
             creepcount = creepcount + creepSpawner1:SpawnNewWave(level)
@@ -945,6 +991,8 @@ function WaveObserver:ctor(owner)
             end
         end
     end)
+
+
 end
 return WaveObserver
 
@@ -993,7 +1041,7 @@ function MagicDragon:ctor()
     self.secondaryStats.mana = 5
     self.secondaryStats.weaponDamage = 3
 
-    self.unitid = FourCC('C_MD')
+    self.unitid = FourCC('e000')
 end
 Log("MagicDragon load successfull")
 
@@ -1181,21 +1229,12 @@ function DuskKnight:ctor()
             armorRemoved = function(_) return 10 end,
             gainLimit = function(_) return 30 end,
             stealPercentage = function(_) return 0.25 end,
-            damage = function(_, caster)
-                if caster:HasTalent("T001") then return 5 * caster.secondaryStats.spellDamage end
-                return 0
-            end,
-            healLimit = function(_, caster) return 10 * caster.secondaryStats.spellDamage end
         },
         heavySlash = {
             id = FourCC('DK_1'),
             handler = HeavySlash,
             availableFromStart = true,
-            radius = function(_, caster)
-                local value = 125
-                if caster:HasTalent("T010") then value = value + 50 end
-                return value
-            end,
+            radius = function(_) return 125 end,
             distance = function(_) return 100 end,
             baseDamage = function(_, caster)
                 local value = 20
@@ -1254,7 +1293,7 @@ function DuskKnight:ctor()
     self.talentBooks = {
         FourCC("DKT0"),
         FourCC("DKT1"),
-        -- FourCC("DKT2"),
+        FourCC("DKT2"),
         FourCC("DKT3"),
     }
 
@@ -1293,8 +1332,6 @@ function DrainLight:ctor(definition, caster)
     self.stealTimeLeft = definition:duration(caster)
     self.period = definition:period(caster)
     self.toBonus = definition:stealPercentage(caster)
-    self.damage = definition:damage(caster)
-    self.healLimit = definition:healLimit(caster)
 
     self:Cast()
 end
@@ -1322,7 +1359,6 @@ function DrainLight:Cast()
         end
 
         self.stealTimeLeft = self.stealTimeLeft - self.period
-        self.healed = 0
 
         for _, target in pairs(self.affected) do
             self:Drain(target)
@@ -1362,8 +1398,7 @@ function DrainLight:End()
 end
 
 function DrainLight:Drain(target)
-    local parts = math.floor(self.stealTimeLeft / self.period)
-    local toStealNow = (target.toSteal - target.stolen) / parts
+    local toStealNow = (target.toSteal - target.stolen) * self.period / self.stealTimeLeft
     target.unit:SetArmor(target.unit:GetArmor() + target.stolen)
     target.stolen = target.stolen + toStealNow
     target.unit:SetArmor(target.unit:GetArmor() - target.stolen)
@@ -1499,7 +1534,7 @@ function DarkMend:Cast()
     local timeLeft = self.duration
     local curHp = self.caster:GetHP();
     local part = 1 / math.floor(self.period / self.duration)
-    self.caster:SetHP(math.min(self.caster:GetMaxHP(), curHp + (curHp * self.percentHeal + self.baseHeal) * self.instantHeal))
+    self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * self.instantHeal)
     timer:Start(self.period, true, function()
         local curHp = self.caster:GetHP();
         if curHp <= 0 then
@@ -1507,7 +1542,7 @@ function DarkMend:Cast()
             return
         end
         timeLeft = timeLeft - self.period
-        self.caster:SetHP(math.min(self.caster:GetMaxHP(), curHp + (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime))
+        self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime)
         if timeLeft <= 0 then
             timer:Destroy()
         end
@@ -1558,15 +1593,22 @@ local WCPlayer = Require("WC3.Player")
 local DuskKnight = Require("Heroes.DuskKnight")
 local WaveObserver = Require("Core.WaveObserver")
 local Core = Require("Core.Core")
+local Tavern = Require("Core.Tavern")
+
+local heroPresets = {
+    DuskKnight()
+}
 
 local testHeroPreset = DuskKnight()
-local core = Core(WCPlayer.Get(8), 0, -1800, 0)
+
+Core(WCPlayer.Get(8), 0, -1800, 0)
+Tavern(WCPlayer.Get(8), 0, -2000, 0, heroPresets)
 
 for i = 0,1 do
     testHeroPreset:Spawn(WCPlayer.Get(i), 0, -1600, 0)
 end
 
-local testWaveObserver = WaveObserver(WCPlayer.Get(9))
+WaveObserver(WCPlayer.Get(9))
 
 Log("Game initialized successfully")
 end)
@@ -1830,6 +1872,10 @@ function Trigger:RegisterPlayerUnitEvent(player, event, filter)
     return TriggerRegisterPlayerUnitEvent(self.handle, player.handle, event, Filter(filter))
 end
 
+function Trigger:RegisterUnitSold(unit)
+    TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SELL)
+end
+
 function Trigger:RegisterUnitDeath(unit)
     return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_DEATH)
 end
@@ -1892,6 +1938,10 @@ end
 
 function Unit.GetDying()
     return Get(GetDyingUnit())
+end
+
+function Unit.GetSold()
+    return Get(GetBuyingUnit())
 end
 
 function Unit.GetEntering()
@@ -2037,6 +2087,35 @@ function Unit:AddAbility(id)
     end
 end
 
+function Unit.AddUnitToAllStock(unitId, currentStock, stockMax)
+    if math.type(unitId) then
+        if math.type(currentStock) then
+            if math.type(stockMax) then
+                return AddUnitToAllStock(unitId, currentStock, stockMax)
+            else
+                error("stockMax should be an integer")
+            end
+        else
+            error("currentStock should be an integer")
+        end
+    else
+        error(" unitId should be an integer")
+    end
+end
+
+function Unit:AddUnitToStock(unitId, currentStock, stockMax)
+    if not math.type(stockMax) then
+        error("stockMax should be an integer", 2)
+    end
+    if not math.type(currentStock) then
+        error("currentStock should be an integer", 2)
+    end
+    if not math.type(unitId) then
+        error("unitId should be an integer", 2)
+    end
+    return AddUnitToStock(self.handle, unitId, currentStock, stockMax)
+end
+
 function Unit:SetAbilityLevel(abilityId, level)
     return SetUnitAbilityLevel(self.handle, abilityId, level)
 end
@@ -2114,10 +2193,562 @@ function Unit:GetArmor() return BlzGetUnitArmor(self.handle) end
 function Unit:GetFacing() return GetUnitFacing(self.handle) end
 function Unit:GetAbility(id) return BlzGetUnitAbility(self.handle, id) end
 function Unit:GetLevel() return GetHeroLevel(self.handle) end
+function Unit:GetTypeId() return GetUnitTypeId(self.handle) end
 
 return Unit
 end)
 -- End of file WC3\Unit.lua
+-- Start of file Heroes\DuskKnight.lua
+Module("Heroes.DuskKnight", function()
+local Class = Require("Class")
+local Timer = Require("WC3.Timer")
+local Trigger = Require("WC3.Trigger")
+local Unit = Require("WC3.Unit")
+local HeroPreset = Require("Core.HeroPreset")
+local UHDUnit = Require("Core.UHDUnit")
+local Log = Require("Log")
+
+local logDuskKnight = Log.Category("Heroes\\Dusk Knight", {
+    printVerbosity = Log.Verbosity.Trace,
+    fileVerbosity = Log.Verbosity.Trace,
+})
+
+local DuskKnight = Class(HeroPreset)
+
+local DrainLight = Class()
+local HeavySlash = Class()
+local ShadowLeap = Class()
+local DarkMend = Class()
+
+function DuskKnight:ctor()
+    HeroPreset.ctor(self)
+
+    self.unitid = FourCC('H_DK')
+
+    self.abilities = {
+        drainLight = {
+            id = FourCC('DK_0'),
+            handler = DrainLight,
+            availableFromStart = true,
+            radius = function(_) return 300 end,
+            duration = function(_) return 2 end,
+            period = function(_) return 0.1 end,
+            effectDuration = function(_) return 10 end,
+            armorRemoved = function(_) return 10 end,
+            gainLimit = function(_) return 30 end,
+            stealPercentage = function(_) return 0.25 end,
+            damage = function(_, caster) return 5 * caster.secondaryStats.spellDamage end,
+            healLimit = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
+        },
+        heavySlash = {
+            id = FourCC('DK_1'),
+            handler = HeavySlash,
+            availableFromStart = true,
+            radius = function(_) return 125 end,
+            distance = function(_) return 100 end,
+            baseDamage = function(_, caster)
+                local value = 20
+                if caster:HasTalent("T011") then value = value + 15 end
+                return value * caster.secondaryStats.physicalDamage
+            end,
+            baseSlow = function(_) return 0.3 end,
+            slowDuration = function(_) return 3 end,
+            manaBurn = function(_, caster)
+                if caster:HasTalent("T010") then return 20 end
+                return 0
+            end,
+            vampirism = function(_, caster)
+                if caster:HasTalent("T012") then return 0.15 end
+                return 0
+            end,
+        },
+        shadowLeap = {
+            id = FourCC('DK_2'),
+            handler = ShadowLeap,
+            availableFromStart = true,
+            period = function(_) return 0.05 end,
+            duration = function(_) return 0.5 end,
+            distance = function(_) return 300 end,
+            baseDamage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
+            push = function(_) return 100 end,
+            pushDuration = function(_) return 0.5 end,
+        },
+        darkMend = {
+            id = FourCC('DK_3'),
+            handler = DarkMend,
+            availableFromStart = true,
+            baseHeal = function(_, caster)
+                local value = 20
+                if caster:HasTalent("T030") then value = value * 0.75 end
+                return value * caster.secondaryStats.spellDamage
+            end,
+            duration = function(_) return 4 end,
+            percentHeal = function(_, caster)
+                local value = 0.1
+                if caster:HasTalent("T030") then value = value * 0.75 end
+                return value
+            end,
+            period = function(_) return 0.1 end,
+            instantHeal = function(_, caster)
+                if caster:HasTalent("T030") then return 0.5 end
+                return 0
+            end,
+            healOverTime = function(_, caster)
+                if caster:HasTalent("T030") then return 0.75 end
+                return 1
+            end,
+        },
+    }
+
+    self.talentBooks = {
+        FourCC("DKT0"),
+        FourCC("DKT1"),
+        FourCC("DKT2"),
+        FourCC("DKT3"),
+    }
+
+    self:AddTalent("000")
+    self:AddTalent("001")
+    self:AddTalent("002")
+
+    self:AddTalent("010")
+    self:AddTalent("011")
+    self:AddTalent("012")
+
+    self:AddTalent("020")
+    self:AddTalent("021")
+    self:AddTalent("022")
+
+    self:AddTalent("030")
+    self:AddTalent("031").onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
+    self:AddTalent("032")
+
+    self.basicStats.strength = 12
+    self.basicStats.agility = 6
+    self.basicStats.intellect = 12
+    self.basicStats.constitution = 11
+    self.basicStats.endurance = 8
+    self.basicStats.willpower = 11
+end
+
+function DrainLight:ctor(definition, caster)
+    self.caster = caster
+    self.affected = {}
+    self.bonus = 0
+    self.bonusLimit = definition:gainLimit(caster)
+    self.duration = definition:effectDuration(caster)
+    self.toSteal = definition:armorRemoved(caster)
+    self.radius = definition:radius(caster)
+    self.stealTimeLeft = definition:duration(caster)
+    self.period = definition:period(caster)
+    self.toBonus = definition:stealPercentage(caster)
+
+    self:Cast()
+end
+
+function DrainLight:Cast()
+    local timer = Timer()
+
+    Unit.EnumInRange(self.caster:GetX(), self.caster:GetY(), self.radius, function(unit)
+        if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+            table.insert(self.affected, {
+                unit = unit,
+                stolen = 0,
+                toSteal = self.toSteal,
+                toReturn = self.toSteal,
+                toBonus = 0.25,
+            })
+        end
+    end)
+
+    timer:Start(self.period, true, function()
+        if self.caster:GetHP() <= 0 then
+            timer:Destroy()
+            self:End()
+            return
+        end
+
+        self.stealTimeLeft = self.stealTimeLeft - self.period
+
+        for _, target in pairs(self.affected) do
+            self:Drain(target)
+        end
+
+        if self.stealTimeLeft <= 0 then
+            timer:Destroy()
+            self:Effect()
+        end
+    end)
+end
+
+function DrainLight:Effect()
+    local timer = Timer()
+    local trigger = Trigger()
+
+    trigger:RegisterUnitDeath(self.caster)
+
+    trigger:AddAction(function()
+        timer:Destroy()
+        trigger:Destroy()
+        self:End()
+    end)
+
+    timer:Start(self.duration, false, function()
+        timer:Destroy()
+        trigger:Destroy()
+        self:End()
+    end)
+end
+
+function DrainLight:End()
+    for _, target in pairs(self.affected) do
+        target.unit:SetArmor(target.unit:GetArmor() + target.toReturn)
+    end
+    self.caster:SetArmor(self.caster:GetArmor() - self.bonus)
+end
+
+function DrainLight:Drain(target)
+    local toStealNow = (target.toSteal - target.stolen) * self.period / self.stealTimeLeft
+    target.unit:SetArmor(target.unit:GetArmor() + target.stolen)
+    target.stolen = target.stolen + toStealNow
+    target.unit:SetArmor(target.unit:GetArmor() - target.stolen)
+    if self.bonus < self.bonusLimit then
+        local toBonus = math.min(self.bonusLimit - self.bonus, toStealNow * target.toBonus)
+        self.caster:SetArmor(self.caster:GetArmor() - self.bonus)
+        self.bonus = self.bonus + toBonus
+        self.caster:SetArmor(self.caster:GetArmor() + self.bonus)
+    end
+    if self.damage > 0 then
+        local damagePerTick = self.period * self.damage
+        self.caster:DamageTarget(target.unit, damagePerTick, false, true, ATTACK_TYPE_HERO, DAMAGE_TYPE_MAGIC, WEAPON_TYPE_WHOKNOWS)
+        if self.healed < self.healLimit * self.period then
+            local toHeal = math.min(self.healLimit * self.period - self.healed, self.toSteal * damagePerTick)
+            self.healed = self.healed + toHeal
+            self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.caster:GetHP() + toHeal))
+        end
+    end
+end
+
+function HeavySlash:ctor(definition, caster)
+    self.caster = caster
+    self.radius = definition:radius(caster)
+    self.distance = definition:distance(caster)
+    self.baseDamage = definition:baseDamage(caster)
+    self.baseSlow = definition:baseSlow(caster)
+    self.slowDuration = definition:slowDuration(caster)
+    self.manaBurn = definition:manaBurn(caster)
+    self.vampirism = definition:vampirism(caster)
+    self:Cast()
+end
+
+function HeavySlash:Cast()
+    local facing = self.caster:GetFacing() * math.pi / 180
+    local x = self.caster:GetX() + math.cos(facing) * self.distance
+    local y = self.caster:GetY() + math.sin(facing) * self.distance
+    local affected = {}
+
+    Unit.EnumInRange(x, y, self.radius, function(unit)
+        if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+            self.caster:DamageTarget(unit, self.baseDamage, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_METAL_MEDIUM_SLICE)
+            if self.manaBurn > 0 then unit:SetMana(math.max(0, unit:GetMana() - self.manaBurn)) end
+            if self.vampirism > 0 then self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.vampirism * self.baseDamage)) end
+
+            if unit:IsA(UHDUnit) then
+                affected[unit] = true
+                unit.secondaryStats.movementSpeed = unit.secondaryStats.movementSpeed * (1 - self.baseSlow)
+                unit.secondaryStats.attackSpeed = unit.secondaryStats.attackSpeed * (1 - self.baseSlow)
+                unit:ApplyStats()
+            end
+        end
+    end)
+
+    local timer = Timer()
+    timer:Start(self.slowDuration, false, function()
+        timer:Destroy()
+        for unit in pairs(affected) do
+            unit.secondaryStats.movementSpeed = unit.secondaryStats.movementSpeed / (1 - self.baseSlow)
+            unit.secondaryStats.attackSpeed = unit.secondaryStats.attackSpeed / (1 - self.baseSlow)
+            unit:ApplyStats()
+        end
+    end)
+end
+
+function ShadowLeap:ctor(definition, caster)
+    self.caster = caster
+    self.period = definition:period(caster)
+    self.duration = definition:duration(caster)
+    self.distance = definition:distance(caster)
+    self.baseDamage = definition:baseDamage(caster)
+    self.push = definition:push(caster)
+    self.pushDuration = definition:pushDuration(caster)
+    self:Cast()
+end
+
+function ShadowLeap:Cast()
+    local timer = Timer()
+    local timeLeft = self.duration
+    local affected = {}
+    local pushTicks = math.floor(self.pushDuration / self.period);
+    local targetX = GetSpellTargetX()
+    local targetY = GetSpellTargetY()
+    local targetDistance = math.sqrt((targetX - self.caster:GetX())^2 + (targetY - self.caster:GetY())^2)
+    local selfPush = math.min(targetDistance, self.distance) / math.floor(self.duration / self.period)
+    local castAngle = math.atan(targetY - self.caster:GetY(), targetX - self.caster:GetX())
+
+    local selfPushX = selfPush * math.cos(castAngle)
+    local selfPushY = selfPush * math.sin(castAngle)
+    timer:Start(self.period, true, function()
+        if timeLeft <= -self.pushDuration then
+            timer:Destroy()
+        end
+        if timeLeft > 0 then
+            self.caster:SetX(self.caster:GetX() + selfPushX)
+            self.caster:SetY(self.caster:GetY() + selfPushY)
+            Unit.EnumInRange(self.caster:GetX(), self.caster:GetY(), 75, function (unit)
+                if not affected[unit] and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+                    local angle = math.atan(self.caster:GetY() - unit:GetY(), self.caster:GetX() - unit:GetX())
+                    affected[unit] = {
+                        x = self.push * math.cos(angle) / pushTicks,
+                        y = self.push * math.sin(angle) / pushTicks,
+                        ticksLeft = pushTicks,
+                    }
+                    self.caster:DamageTarget(unit, self.baseDamage, false, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_METAL_MEDIUM_SLICE)
+                end
+            end)
+        end
+        timeLeft = timeLeft - self.period
+        for unit, push in pairs(affected) do
+            unit:SetX(unit:GetX() + push.x)
+            unit:SetY(unit:GetY() + push.y)
+            push.ticksLeft = push.ticksLeft - 1
+            if push.ticksLeft == 0 then
+                affected[unit] = nil
+            end
+        end
+    end)
+end
+
+function DarkMend:ctor(definition, caster)
+    self.caster = caster
+    self.baseHeal = definition:baseHeal(caster)
+    self.duration = definition:duration(caster)
+    self.percentHeal = definition:percentHeal(caster)
+    self.period = definition:period(caster)
+    self.instantHeal = definition:instantHeal(caster)
+    self.healOverTime = definition:healOverTime(caster)
+    self:Cast()
+end
+
+function DarkMend:Cast()
+    local timer = Timer()
+    local timeLeft = self.duration
+    local curHp = self.caster:GetHP();
+    local part = 1 / math.floor(self.period / self.duration)
+    self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * self.instantHeal)
+    timer:Start(self.period, true, function()
+        local curHp = self.caster:GetHP();
+        if curHp <= 0 then
+            timer:Destroy()
+            return
+        end
+        timeLeft = timeLeft - self.period
+        self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime)
+        if timeLeft <= 0 then
+            timer:Destroy()
+        end
+    end)
+end
+
+return DuskKnight
+end)
+-- End of file Heroes\DuskKnight.lua
+-- Start of file Core\Hero.lua
+Module("Core.Hero", function()
+local Class = Require("Class")
+local Stats = Require("Core.Stats")
+local UHDUnit = Require("Core.UHDUnit")
+local Trigger = Require("WC3.Trigger")
+local Unit = Require("WC3.Unit")
+local Log = Require("Log")
+local WCPlayer = Require("WC3.Player")
+
+local logHero = Log.Category("Core\\Hero")
+
+local talentsHelperId = FourCC("__TU")
+local statsHelperId = FourCC("__SU")
+local statUpgrades = {
+    strength = FourCC("SU_0"),
+    agility = FourCC("SU_1"),
+    intellect = FourCC("SU_2"),
+    constitution = FourCC("SU_3"),
+    endurance = FourCC("SU_4"),
+    willpower = FourCC("SU_5"),
+}
+
+local Hero = Class(UHDUnit)
+
+local statsX = 0
+local statsY = -1000
+Hero.StatsPerLevel = 5
+Hero.LevelsForTalent = 5
+
+function Hero:ctor(...)
+    UHDUnit.ctor(self, ...)
+    self.basicStats = Stats.Basic()
+    self.baseSecondaryStats = Stats.Secondary()
+    self.bonusSecondaryStats = Stats.Secondary()
+
+    self.leveling = Trigger()
+    self.leveling:RegisterHeroLevel(self)
+    self.leveling:AddAction(function() self:OnLevel() end)
+    self.toDestroy[self.leveling] = true
+
+    self.abilities = Trigger()
+    self.abilities:RegisterUnitSpellEffect(self)
+    self.toDestroy[self.abilities] = true
+
+    self.statUpgrades = {}
+    self.skillUpgrades = {}
+    self.talentBooks = {}
+    self.talents = {}
+end
+
+function Hero:Destroy()
+    UHDUnit.Destroy(self)
+    for u in pairs(self.statUpgrades) do u:Destroy() end
+    for u in pairs(self.skillUpgrades) do u:Destroy() end
+end
+
+function Hero:OnLevel()
+    for _ = 1,Hero.StatsPerLevel do
+        self:AddStatPoint()
+    end
+    -- if self:GetLevel() Hero.LevelsForTalent == 0 then
+        self:AddTalentPoint()
+    -- end
+end
+
+function Hero:AddStatPoint()
+    local statHelper = Unit(self:GetOwner(), statsHelperId, statsX, statsY, 0)
+    self.statUpgrades[statHelper] = true
+
+    for _, id in pairs(statUpgrades) do
+        statHelper:AddAbility(id)
+    end
+
+    local trigger = Trigger()
+    statHelper.toDestroy[trigger] = true
+
+    trigger:RegisterUnitSpellEffect(statHelper)
+    trigger:AddAction(function()
+        self.statUpgrades[statHelper] = nil
+        statHelper:Destroy()
+        self:SelectNextHelper(true)
+        local spellId = GetSpellAbilityId()
+        for stat, id in pairs(statUpgrades) do
+            if id == spellId then
+                self.basicStats[stat] = self.basicStats[stat] + 1
+                self:UpdateSecondaryStats()
+                self:ApplyStats()
+                return
+            end
+        end
+        logHero:Error("Invalid spell in stat upgrades: " .. spellId)
+    end)
+end
+
+function Hero:AddTalentPoint()
+    local talentHelper = Unit(self:GetOwner(), talentsHelperId, statsX, statsY, 0)
+    self.skillUpgrades[talentHelper] = true
+
+    for _, id in pairs(self.talentBooks) do
+        talentHelper:AddAbility(id)
+    end
+
+    local trigger = Trigger()
+    talentHelper.toDestroy[trigger] = true
+
+    trigger:RegisterUnitSpellEffect(talentHelper)
+    trigger:AddAction(function()
+        self.skillUpgrades[talentHelper] = nil
+        talentHelper:Destroy()
+        local spellId = GetSpellAbilityId()
+        self:SelectNextHelper(false)
+        local talent = self.talents[spellId]
+        talent.learned = true
+        if talent.onTaken then talent:onTaken(self) end
+        self:GetOwner():SetTechLevel(talent.tech, 0)
+    end)
+end
+
+function Hero:SelectNextHelper(prefferStats)
+    if self:GetOwner() == WCPlayer.Local then
+        if prefferStats then
+            for helper in pairs(self.statUpgrades) do helper:Select() return end
+            for helper in pairs(self.skillUpgrades) do helper:Select() return end
+        else
+            for helper in pairs(self.skillUpgrades) do helper:Select() return end
+            for helper in pairs(self.statUpgrades) do helper:Select() return end
+        end
+        self:Select()
+    end
+end
+
+local function BonusBeforePow(base, pow, stat, bonus)
+    return (base + bonus) * pow^stat
+end
+
+local function BonusMul(base, pow, stat, bonus)
+    return base * pow^stat * (1 + bonus)
+end
+
+local function ProbabilityBased(base, pow, stat, bonus)
+    return base + bonus + (1 - base - bonus) * (1 - pow^stat)
+end
+
+function Hero:UpdateSecondaryStats()
+    local gtoBase = 1.05
+    local ltoBase = 0.95
+
+    self.secondaryStats.physicalDamage = BonusMul(self.baseSecondaryStats.physicalDamage, gtoBase, self.basicStats.strength, self.bonusSecondaryStats.physicalDamage)
+    self.secondaryStats.weaponDamage = (self.baseSecondaryStats.weaponDamage + self.bonusSecondaryStats.weaponDamage) * self.secondaryStats.physicalDamage
+
+    self.secondaryStats.evasion = ProbabilityBased(self.baseSecondaryStats.evasion, math.sqrt(ltoBase), self.basicStats.agility, self.bonusSecondaryStats.evasion)
+    self.secondaryStats.attackSpeed = BonusMul(self.baseSecondaryStats.attackSpeed, math.sqrt(gtoBase), self.basicStats.agility, self.bonusSecondaryStats.attackSpeed)
+
+    self.secondaryStats.spellDamage = BonusMul(self.baseSecondaryStats.spellDamage, gtoBase, self.basicStats.intellect, self.bonusSecondaryStats.spellDamage)
+
+    self.secondaryStats.health = BonusBeforePow(self.baseSecondaryStats.health, gtoBase, self.basicStats.constitution, self.bonusSecondaryStats.health)
+    self.secondaryStats.healthRegen = BonusBeforePow(self.baseSecondaryStats.healthRegen, gtoBase, self.basicStats.constitution, self.bonusSecondaryStats.healthRegen)
+
+    self.secondaryStats.mana = BonusBeforePow(self.baseSecondaryStats.mana, gtoBase, self.basicStats.endurance, self.bonusSecondaryStats.health)
+    self.secondaryStats.manaRegen = BonusBeforePow(self.baseSecondaryStats.manaRegen, gtoBase, self.basicStats.endurance, self.bonusSecondaryStats.manaRegen)
+
+    self.secondaryStats.ccResist = ProbabilityBased(self.baseSecondaryStats.ccResist, ltoBase, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
+    self.secondaryStats.spellResist = ProbabilityBased(self.baseSecondaryStats.ccResist, ltoBase, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
+end
+
+function Hero:SetBasicStats(value)
+    self.basicStats = value
+    self:UpdateSecondaryStats()
+    self:ApplyStats()
+end
+
+function Hero:ApplyStats()
+    self:SetStr(self.basicStats.strength, true)
+    self:SetAgi(self.basicStats.agility, true)
+    self:SetInt(self.basicStats.intellect, true)
+    UHDUnit.ApplyStats(self)
+end
+
+function Hero:HasTalent(id)
+    return self.talents[FourCC(id)].learned
+end
+
+return Hero
+
+end)
+-- End of file Core\Hero.lua
 function CreateUnitsForPlayer0()
     local p = Player(0)
     local u
@@ -2453,16 +3084,16 @@ function config()
     SetPlayers(10)
     SetTeams(10)
     SetGamePlacement(MAP_PLACEMENT_TEAMS_TOGETHER)
-    DefineStartLocation(0, -512.0, -1664.0)
-    DefineStartLocation(1, -2624.0, 2496.0)
-    DefineStartLocation(2, -1984.0, 1408.0)
-    DefineStartLocation(3, 1216.0, -1728.0)
-    DefineStartLocation(4, -2816.0, 960.0)
-    DefineStartLocation(5, 1088.0, -512.0)
-    DefineStartLocation(6, -1344.0, -1024.0)
-    DefineStartLocation(7, 1856.0, 576.0)
-    DefineStartLocation(8, -1216.0, -384.0)
-    DefineStartLocation(9, -1472.0, 1728.0)
+    DefineStartLocation(0, 0.0, -1984.0)
+    DefineStartLocation(1, 0.0, -1984.0)
+    DefineStartLocation(2, 0.0, -1984.0)
+    DefineStartLocation(3, 0.0, -1984.0)
+    DefineStartLocation(4, 0.0, -1984.0)
+    DefineStartLocation(5, 0.0, -1984.0)
+    DefineStartLocation(6, 0.0, -1984.0)
+    DefineStartLocation(7, 0.0, -1984.0)
+    DefineStartLocation(8, 0.0, -1984.0)
+    DefineStartLocation(9, 0.0, -1984.0)
     InitCustomPlayerSlots()
     InitCustomTeams()
     InitAllyPriorities()

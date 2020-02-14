@@ -99,7 +99,7 @@ function DuskKnight:ctor()
     self.talentBooks = {
         FourCC("DKT0"),
         FourCC("DKT1"),
-        -- FourCC("DKT2"),
+        FourCC("DKT2"),
         FourCC("DKT3"),
     }
 
