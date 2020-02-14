@@ -57,9 +57,10 @@ function Hero:OnLevel()
     for _ = 1,Hero.StatsPerLevel do
         self:AddStatPoint()
     end
-    -- if self:GetLevel() % Hero.LevelsForTalent == 0 then
+    local div = self:GetLevel() / Hero.LevelsForTalent -- todo: change to % when blizz fixes
+    if math.floor(div) == div then
         self:AddTalentPoint()
-    -- end
+    end
 end
 
 function Hero:AddStatPoint()
