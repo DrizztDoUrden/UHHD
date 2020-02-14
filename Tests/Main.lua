@@ -8,6 +8,10 @@ local testHeroPreset = DuskKnight()
 local core = Core(WCPlayer.Get(8), 0, -1800, 0)
 local testHero = tawern(WCPlayer.Get(8), 0, -1800, 0)
 
+for i = 0,1 do
+    testHeroPreset:Spawn(WCPlayer.Get(i), 0, -1600, 0)
+end
+
 local testWaveObserver = WaveObserver(WCPlayer.Get(9))
 
 Log("Game initialized successfully")

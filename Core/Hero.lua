@@ -57,9 +57,9 @@ function Hero:OnLevel()
     for _ = 1,Hero.StatsPerLevel do
         self:AddStatPoint()
     end
-    if self:GetLevel() % Hero.LevelsForTalent == 0 then
+    -- if self:GetLevel() % Hero.LevelsForTalent == 0 then
         self:AddTalentPoint()
-    end
+    -- end
 end
 
 function Hero:AddStatPoint()
@@ -108,7 +108,6 @@ function Hero:AddTalentPoint()
         talentHelper:Destroy()
         local spellId = GetSpellAbilityId()
         self:SelectNextHelper(false)
-        logHero:Info(FourCC("T030"), spellId)
         local talent = self.talents[spellId]
         talent.learned = true
         if talent.onTaken then talent:onTaken(self) end

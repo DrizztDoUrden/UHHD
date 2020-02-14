@@ -98,6 +98,9 @@ function DuskKnight:ctor()
 
     self.talentBooks = {
         FourCC("DKT0"),
+        FourCC("DKT1"),
+        -- FourCC("DKT2"),
+        FourCC("DKT3"),
     }
 
     self:AddTalent("000")
@@ -113,7 +116,7 @@ function DuskKnight:ctor()
     self:AddTalent("022")
 
     self:AddTalent("030")
-    self:AddTalent("031").onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id) - 3) end
+    self:AddTalent("031").onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
     self:AddTalent("032")
 
     self.basicStats.strength = 12
@@ -211,6 +214,15 @@ function DrainLight:Drain(target)
         self.bonus = self.bonus + toBonus
         self.caster:SetArmor(self.caster:GetArmor() + self.bonus)
     end
+    if self.damage > 0 then
+        local damagePerTick = self.period * self.damage
+        self.caster:DamageTarget(target.unit, damagePerTick, false, true, ATTACK_TYPE_HERO, DAMAGE_TYPE_MAGIC, WEAPON_TYPE_WHOKNOWS)
+        if self.healed < self.healLimit * self.period then
+            local toHeal = math.min(self.healLimit * self.period - self.healed, self.toSteal * damagePerTick)
+            self.healed = self.healed + toHeal
+            self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.caster:GetHP() + toHeal))
+        end
+    end
 end
 
 function HeavySlash:ctor(definition, caster)
@@ -235,7 +247,7 @@ function HeavySlash:Cast()
         if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DamageTarget(unit, self.baseDamage, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_METAL_MEDIUM_SLICE)
             if self.manaBurn > 0 then unit:SetMana(math.max(0, unit:GetMana() - self.manaBurn)) end
-            if self.vampirism > 0 then self.caster:SetHP(math.min(self.caster.GetMaxHP(), self.vampirism * self.baseDamage)) end
+            if self.vampirism > 0 then self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.vampirism * self.baseDamage)) end
 
             if unit:IsA(UHDUnit) then
                 affected[unit] = true
