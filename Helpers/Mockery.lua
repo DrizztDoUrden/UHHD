@@ -403,3 +403,4 @@ function RemovePlayer(whichPlayer, PLAYER_GAME_RESULT) end
 
 function EndGame(isShowScore) end
 
+function ClearSelection() end

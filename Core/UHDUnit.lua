@@ -7,6 +7,8 @@ local UHDUnit = Class(WC3.Unit)
 local hpRegenAbility = FourCC('_HPR')
 local mpRegenAbility = FourCC('_MPR')
 
+UHDUnit.armorValue = 0.06
+
 function UHDUnit:ctor(...)
     WC3.Unit.ctor(self, ...)
     self.secondaryStats = Stats.Secondary()
@@ -62,19 +64,37 @@ function UHDUnit:ApplyStats()
     end
 end
 
-function UHDUnit:DamageDealt(args)
+function UHDUnit:DamageDealt()
+    local args = {
+        source = self
+    }
     for handler in pairs(self.onDamageDealt) do
         handler(args)
     end
 end
 
+function UHDUnit:DealDamage(target, damage)
+    local dmg = damage.value
+    if damage.isAttack then
+        dmg = damage.value * (1 - math.pow(UHDUnit.armorValue, target.secondaryStats.armor))
+    else
+        dmg = damage.value * (1 - target.secondaryStats.spellResist)
+    end
+    local hpAfterDamage = target:GetHP() - dmg
+    if hpAfterDamage < 0 then
+        hpAfterDamage = 0
+        dmg = dmg + hpAfterDamage
+    end
+    target:SetHP(hpAfterDamage)
+    self:DamageDealt()
+    return dmg
+end
+
 local unitDamaging = WC3.Trigger()
 for i=0,23 do unitDamaging:RegisterPlayerUnitDamaging(WC3.Player.Get(i)) end
 unitDamaging:AddAction(function()
-    local args = {
-        source = WC3.Unit.GetEventDamageSource()
-    }
-    if args.source.IsA(UHDUnit) then args.source:DamageDealt(args) end
+    local source = WC3.Unit.GetEventDamageSource()
+    if source.IsA(UHDUnit) then source:DamageDealt() end
 end)
 
 return UHDUnit

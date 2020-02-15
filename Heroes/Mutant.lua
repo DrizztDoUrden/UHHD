@@ -1,13 +1,14 @@
 local Class = require("Class")
 local HeroPreset = require("Core.HeroPreset")
 local WC3 = require("WC3.All")
+local Spell = require "Core.Spell"
 
 local Mutant = Class(HeroPreset)
 
-local BashingStrikes = Class()
-local TakeCover = Class()
-local Rage = Class()
-local Meditation = Class()
+local BashingStrikes = Class(Spell)
+local TakeCover = Class(Spell)
+local Rage = Class(Spell)
+local Meditation = Class(Spell)
 
 function Mutant:ctor()
     HeroPreset.ctor(self)
@@ -18,31 +19,39 @@ function Mutant:ctor()
         bashingStrikes = {
             id = FourCC('MT_0'),
             handler = BashingStrikes,
-            attacks = function(_) return 3 end,
-            attackSpeedBonus = function(_) return 0.5 end,
-            healPerHit = function(_) return 0.05 end,
+            params = {
+                attacks = function(_) return 3 end,
+                attackSpeedBonus = function(_) return 0.5 end,
+                healPerHit = function(_) return 0.05 end,
+            },
         },
         takeCover = {
             id = FourCC('MT_1'),
             handler = TakeCover,
             availableFromStart = true,
-            baseRedirect = function(_) return 0.3 end,
-            redirectPerRage = function(_) return 0.02 end,
+            params = {
+                baseRedirect = function(_) return 0.3 end,
+                redirectPerRage = function(_) return 0.02 end,
+            },
         },
         rage = {
             id = FourCC('MT_2'),
             handler = Rage,
             availableFromStart = true,
-            ragePerAttack = function(_) return 1 end,
-            damagePerRage = function(_) return 1 end,
-            armorPerRage = function(_) return -1 end,
-            startingStacks = function(_) return 3 end,
+            params = {
+                ragePerAttack = function(_) return 1 end,
+                damagePerRage = function(_) return 1 end,
+                armorPerRage = function(_) return -1 end,
+                startingStacks = function(_) return 3 end,
+            },
         },
         meditation = {
             id = FourCC('MT_3'),
             handler = Meditation,
             availableFromStart = true,
-            healPerRage = function(_) return 0.06 end,
+            params = {
+                healPerRage = function(_) return 0.06 end,
+            },
         },
     }
 
@@ -75,15 +84,6 @@ function Mutant:ctor()
     self.basicStats.constitution = 13
     self.basicStats.endurance = 8
     self.basicStats.willpower = 10
-end
-
-function BashingStrikes:ctor(definition, caster)
-    self.caster = caster
-    self.hitsLeft = definition:attacks(caster)
-    self.attackSpeedBonus = definition:attackSpeedBonus(caster)
-    self.healPerHit = definition:healPerHit(caster)
-
-    self:Cast()
 end
 
 function BashingStrikes:Cast()

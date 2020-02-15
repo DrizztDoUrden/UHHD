@@ -65,22 +65,22 @@ function Hero:ctor(...)
     self.baseSecondaryStats.movementSpeed = 1
 
 
-    self.secondaryStats.health = 0
-    self.secondaryStats.mana = 0
-    self.secondaryStats.healthRegen = 0
-    self.secondaryStats.manaRegen = 0
+    self.bonusSecondaryStats.health = 0
+    self.bonusSecondaryStats.mana = 0
+    self.bonusSecondaryStats.healthRegen = 0
+    self.bonusSecondaryStats.manaRegen = 0
 
-    self.secondaryStats.weaponDamage = 0
-    self.secondaryStats.attackSpeed = 1
-    self.secondaryStats.physicalDamage = 1
-    self.secondaryStats.spellDamage = 1
+    self.bonusSecondaryStats.weaponDamage = 0
+    self.bonusSecondaryStats.attackSpeed = 1
+    self.bonusSecondaryStats.physicalDamage = 1
+    self.bonusSecondaryStats.spellDamage = 1
 
-    self.secondaryStats.armor = 0
-    self.secondaryStats.evasion = 0
-    self.secondaryStats.ccResist = 0
-    self.secondaryStats.spellResist = 0
+    self.bonusSecondaryStats.armor = 0
+    self.bonusSecondaryStats.evasion = 0
+    self.bonusSecondaryStats.ccResist = 0
+    self.bonusSecondaryStats.spellResist = 0
 
-    self.secondaryStats.movementSpeed = 0
+    self.bonusSecondaryStats.movementSpeed = 0
 end
 
 function Hero:Destroy()
@@ -154,6 +154,7 @@ end
 
 function Hero:SelectNextHelper(prefferStats)
     if self:GetOwner() == WCPlayer.Local then
+        ClearSelection()
         if prefferStats then
             for helper in pairs(self.statUpgrades) do helper:Select() return end
             for helper in pairs(self.skillUpgrades) do helper:Select() return end
@@ -161,7 +162,8 @@ function Hero:SelectNextHelper(prefferStats)
             for helper in pairs(self.skillUpgrades) do helper:Select() return end
             for helper in pairs(self.statUpgrades) do helper:Select() return end
         end
-        self:Select()
+        -- todo: fix selection
+        -- self:Select()
     end
 end
 
