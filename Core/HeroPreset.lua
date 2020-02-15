@@ -39,7 +39,8 @@ function HeroPreset:Spawn(owner, x, y, facing)
     local hero = Hero(owner, self.unitid, x, y, facing);
 
     hero.baseSecondaryStats = self.secondaryStats
-    hero:SetBasicStats(self.basicStats)
+    hero.basicStats = self.basicStats
+    hero:ApplyStats()
     hero.talents = {}
     hero.talentBooks = {}
 

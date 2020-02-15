@@ -45,6 +45,42 @@ function Hero:ctor(...)
     self.skillUpgrades = {}
     self.talentBooks = {}
     self.talents = {}
+
+
+    self.baseSecondaryStats.health = 100
+    self.baseSecondaryStats.mana = 100
+    self.baseSecondaryStats.healthRegen = .5
+    self.baseSecondaryStats.manaRegen = 1
+
+    self.baseSecondaryStats.weaponDamage = 10
+    self.baseSecondaryStats.attackSpeed = .5
+    self.baseSecondaryStats.physicalDamage = 1
+    self.baseSecondaryStats.spellDamage = 1
+
+    self.baseSecondaryStats.armor = 0
+    self.baseSecondaryStats.evasion = 0.05
+    self.baseSecondaryStats.ccResist = 0
+    self.baseSecondaryStats.spellResist = 0
+
+    self.baseSecondaryStats.movementSpeed = 1
+
+
+    self.secondaryStats.health = 0
+    self.secondaryStats.mana = 0
+    self.secondaryStats.healthRegen = 0
+    self.secondaryStats.manaRegen = 0
+
+    self.secondaryStats.weaponDamage = 0
+    self.secondaryStats.attackSpeed = 1
+    self.secondaryStats.physicalDamage = 1
+    self.secondaryStats.spellDamage = 1
+
+    self.secondaryStats.armor = 0
+    self.secondaryStats.evasion = 0
+    self.secondaryStats.ccResist = 0
+    self.secondaryStats.spellResist = 0
+
+    self.secondaryStats.movementSpeed = 0
 end
 
 function Hero:Destroy()
@@ -134,7 +170,7 @@ local function BonusBeforePow(base, pow, stat, bonus)
 end
 
 local function BonusMul(base, pow, stat, bonus)
-    return base * pow^stat * (1 + bonus)
+    return base * pow^stat * bonus
 end
 
 local function ProbabilityBased(base, pow, stat, bonus)
@@ -161,15 +197,13 @@ function Hero:UpdateSecondaryStats()
 
     self.secondaryStats.ccResist = ProbabilityBased(self.baseSecondaryStats.ccResist, ltoBase, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
     self.secondaryStats.spellResist = ProbabilityBased(self.baseSecondaryStats.ccResist, ltoBase, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
-end
 
-function Hero:SetBasicStats(value)
-    self.basicStats = value
-    self:UpdateSecondaryStats()
-    self:ApplyStats()
+    self.secondaryStats.movementSpeed = self.baseSecondaryStats.movementSpeed + self.bonusSecondaryStats.movementSpeed
+    self.secondaryStats.armor = self.baseSecondaryStats.armor + self.bonusSecondaryStats.armor
 end
 
 function Hero:ApplyStats()
+    self:UpdateSecondaryStats()
     self:SetStr(self.basicStats.strength, true)
     self:SetAgi(self.basicStats.agility, true)
     self:SetInt(self.basicStats.intellect, true)

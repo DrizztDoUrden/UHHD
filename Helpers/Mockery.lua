@@ -28,17 +28,17 @@ ExtensiveLog = false
 DAMAGE_TYPE_MAGIC = {}
 WEAPON_TYPE_WHOKNOWS = {}
 
+PLAYER_GAME_RESULT_VICTORY = {}
+PLAYER_GAME_RESULT_DEFEAT = {}
+
 EVENT_UNIT_SPELL_EFFECT = {}
 EVENT_UNIT_SPELL_FINISH = {}
 EVENT_UNIT_DEATH = {}
 EVENT_UNIT_HERO_LEVEL = {}
 EVENT_UNIT_SELL = {}
 
-PLAYER_GAME_RESULT_VICTORY = {}
-
-PLAYER_GAME_RESULT_DEFEAT = {}
 EVENT_PLAYER_UNIT_DEATH = {}
-
+EVENT_PLAYER_UNIT_DAMAGING = {}
 EVENT_PLAYER_UNIT_SPELL_FINISH = {}
 
 EVENT_GAME_ENTER_REGION = {}
@@ -355,6 +355,8 @@ function GetFilterUnit() end
 function GetEnteringUnit() end
 ---@return unit
 function GetLevelingUnit() end
+---@return unit
+function GetEventDamageSource() end
 ---@return region
 function GetTriggeringRegion() end
 

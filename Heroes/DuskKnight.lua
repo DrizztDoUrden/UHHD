@@ -200,7 +200,8 @@ function DrainLight:End()
     for _, target in pairs(self.affected) do
         target.unit:SetArmor(target.unit:GetArmor() + target.toReturn)
     end
-    self.caster:SetArmor(self.caster:GetArmor() - self.bonus)
+    self.caster.bonusSecondatyStats.armor = self.caster.bonusSecondatyStats.armor - self.bonus
+    self.caster:ApplyStats()
 end
 
 function DrainLight:Drain(target)
@@ -210,9 +211,9 @@ function DrainLight:Drain(target)
     target.unit:SetArmor(target.unit:GetArmor() - target.stolen)
     if self.bonus < self.bonusLimit then
         local toBonus = math.min(self.bonusLimit - self.bonus, toStealNow * target.toBonus)
-        self.caster:SetArmor(self.caster:GetArmor() - self.bonus)
+        self.caster.bonusSecondatyStats.armor = self.caster.bonusSecondatyStats.armor + toBonus
+        self.caster:ApplyStats()
         self.bonus = self.bonus + toBonus
-        self.caster:SetArmor(self.caster:GetArmor() + self.bonus)
     end
     if self.damage > 0 then
         local damagePerTick = self.period * self.damage

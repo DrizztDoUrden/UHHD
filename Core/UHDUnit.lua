@@ -1,15 +1,16 @@
 local Class = require("Class")
 local Stats = require("Core.Stats")
-local Unit = require("WC3.Unit")
+local WC3 = require("WC3.All")
 
-local UHDUnit = Class(Unit)
+local UHDUnit = Class(WC3.Unit)
 
 local hpRegenAbility = FourCC('_HPR')
 local mpRegenAbility = FourCC('_MPR')
 
 function UHDUnit:ctor(...)
-    Unit.ctor(self, ...)
+    WC3.Unit.ctor(self, ...)
     self.secondaryStats = Stats.Secondary()
+    self.effects = {}
 
     self.secondaryStats.health = 100
     self.secondaryStats.mana = 100
@@ -23,11 +24,12 @@ function UHDUnit:ctor(...)
 
     self.secondaryStats.armor = 0
     self.secondaryStats.evasion = 0.05
-    self.secondaryStats.block = 0
     self.secondaryStats.ccResist = 0
     self.secondaryStats.spellResist = 0
 
     self.secondaryStats.movementSpeed = 1
+
+    self.onDamageDealt = {}
 
     self:AddAbility(hpRegenAbility)
     self:AddAbility(mpRegenAbility)
@@ -59,5 +61,20 @@ function UHDUnit:ApplyStats()
         self:SetMana(self.secondaryStats.mana)
     end
 end
+
+function UHDUnit:DamageDealt(args)
+    for handler in pairs(self.onDamageDealt) do
+        handler(args)
+    end
+end
+
+local unitDamaging = WC3.Trigger()
+for i=0,23 do unitDamaging:RegisterPlayerUnitDamaging(WC3.Player.Get(i)) end
+unitDamaging:AddAction(function()
+    local args = {
+        source = WC3.Unit.GetEventDamageSource()
+    }
+    if args.source.IsA(UHDUnit) then args.source:DamageDealt(args) end
+end)
 
 return UHDUnit
