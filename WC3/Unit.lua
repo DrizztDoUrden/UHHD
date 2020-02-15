@@ -34,6 +34,10 @@ function Unit.GetLeveling()
     return Get(GetLevelingUnit())
 end
 
+function Unit.GetEventDamageSource()
+    return Get(GetEventDamageSource())
+end
+
 function Unit.EnumInRange(x, y, radius, handler)
     local group = CreateGroup()
     GroupEnumUnitsInRange(group, x, y, radius, Filter(function()
