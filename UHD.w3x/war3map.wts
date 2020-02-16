@@ -726,7 +726,6 @@ STRING 152
 Q
 }
 
-
 STRING 154
 // Abilities: T000 (Ward Drain), Tip (Tooltip - Normal)
 {
@@ -896,13 +895,13 @@ Each attack gives +1 weapon damage and -1 armor. Starts with 3 statks. Every 2 s
 }
 
 STRING 185
-// Upgrades: MTU0 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+// Upgrades: MTU0 (Улучшенные топоры,Улучшенные пилы), Name (Name)
 {
 Rage active
 }
 
 STRING 186
-// Upgrades: R001 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+// Upgrades: R001 (Улучшенные топоры,Улучшенные пилы), Name (Name)
 {
 Rage inactive
 }
@@ -962,13 +961,13 @@ Next 3 attacks have +50% attack speed and heal 5% max HP each.
 }
 
 STRING 200
-// Upgrades: R002 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+// Upgrades: R002 (Улучшенные топоры,Улучшенные пилы), Name (Name)
 {
 Already in effect
 }
 
 STRING 201
-// Upgrades: R002 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
+// Upgrades: R002 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
 {
 (Bashing strikes)
 }

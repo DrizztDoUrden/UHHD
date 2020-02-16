@@ -300,7 +300,9 @@ local verbosityColors = {
 local function LogInternal(category, verbosity, ...)
     if verbosity <= math.max(category.printVerbosity, category.fileVerbosity) then
         if verbosity <= category.printVerbosity then
-            print(verbosityColors[verbosity].start .. "[" .. verbosityNames[verbosity] .. "] " .. category.name .. ": ", ..., verbosityColors[verbosity].end_)
+            local params = {...}
+            table.insert(params, verbosityColors[verbosity].end_)
+            print(verbosityColors[verbosity].start .. "[" .. verbosityNames[verbosity] .. "] " .. category.name .. ": ", ...)
         end
         if verbosity <= category.fileVerbosity then
             category.buffer = category.buffer .. "\n[" .. verbosityNames[verbosity] .. "]"
@@ -772,9 +774,9 @@ function HeroPreset:Spawn(owner, x, y, facing)
     return hero
 end
 
-function HeroPreset:AddTalent(id)
-    local talent = { tech = FourCC("U" .. id), }
-    self.talents[FourCC("T" .. id)] = talent
+function HeroPreset:AddTalent(heroId, id)
+    local talent = { tech = FourCC("U0" .. id), }
+    self.talents[FourCC("T" .. heroId .. id)] = talent
     return talent
 end
 
@@ -918,17 +920,13 @@ local heroSpawnY = -1600
 
 local Tavern = Class(Unit)
 
+
 function Tavern:ctor(owner, x, y, facing, heroPresets)
     Unit.ctor(self, owner, FourCC("n000"), x, y, facing)
 
     self.owner = owner
     self.heroPresets = heroPresets
-
-    for _, hero in pairs(heroPresets) do
-        logTavern:Info(hero.unitid, "==", FourCC("H_DK"), " is ", hero.unitid == FourCC("H_DK"))
-        logTavern:Info(self:GetTypeId(), "==", FourCC("n000"), " is ", self:GetTypeId() == FourCC("n000"))
-        self:AddUnitToStock(hero.unitid)
-    end
+    logTavern:Info("add unit")
     self:AddTrigger()
 end
 
@@ -937,16 +935,19 @@ function Tavern:AddTrigger()
     self.toDestroy[trigger] = true
     trigger:RegisterUnitSold(self)
     trigger:AddAction(function()
-        local whicUnit = Unit.GetSold()
-        local whichOwner = whicUnit:GetOwner()
-        local id = whicUnit:GetTypeId()
-        whicUnit:Destroy()
+        local buying = Unit.GetBying()
+        local sold = Unit.GetSold()
+        local whichOwner = sold:GetOwner()
+        local id = sold:GetTypeId()
+        logTavern:Info("Unit bought with id "..id)
         for _, hero in pairs(self.heroPresets) do
             if hero.unitid == id then
                 hero:Spawn(whichOwner, heroSpawnX, heroSpawnY, 0)
-                return
+                break
             end
         end
+        buying:Destroy()
+        sold:Destroy()
     end)
 end
 
@@ -1027,12 +1028,10 @@ function UHDUnit:ApplyStats()
 end
 
 function UHDUnit:DamageDealt()
-    logUnit:Warning("hit processing: from source")
     local args = {
         source = self
     }
     for handler in pairs(self.onDamageDealt) do
-        logUnit:Warning("hit processing: from source, invoking")
         handler(args)
     end
 end
@@ -1058,7 +1057,6 @@ local unitDamaging = WC3.Trigger()
 for i=0,23 do unitDamaging:RegisterPlayerUnitDamaging(WC3.Player.Get(i)) end
 unitDamaging:AddAction(function()
     local source = WC3.Unit.GetEventDamageSource()
-    logUnit:Warning("hit processing: from " .. source:GetName())
     if source:IsA(UHDUnit) then source:DamageDealt() end
 end)
 
@@ -1085,10 +1083,10 @@ local logWaveObserver = Log.Category("WaveObserver\\WaveObserver", {
 local WaveObserver = Class()
 
 function WaveObserver:ctor(owner)
-    local node = PathNode(0, -1800, nil)
-    local node1 = PathNode(0, 0, node)
-    local creepSpawner1 = CreepSpawner(owner, 1600, 0, node1, 0)
-    local creepSpawner2 = CreepSpawner(owner, -1600, 0, node1, 0)
+    local node = PathNode(-2300, -3800, nil)
+    local node1 = PathNode(-2300, 5000, node)
+    local creepSpawner1 = CreepSpawner(owner, 1600, 5000, node1, 0)
+    local creepSpawner2 = CreepSpawner(owner, -5800, 5000, node1, 0)
     local trigger = Trigger()
     self.needtokillallcreep = false
     local creepcount = 0
@@ -1445,21 +1443,21 @@ function DuskKnight:ctor()
         FourCC("DKT3"),
     }
 
-    self:AddTalent("000")
-    self:AddTalent("001")
-    self:AddTalent("002")
+    self:AddTalent("0", "00")
+    self:AddTalent("0", "01")
+    self:AddTalent("0", "02")
 
-    self:AddTalent("010")
-    self:AddTalent("011")
-    self:AddTalent("012")
+    self:AddTalent("0", "10")
+    self:AddTalent("0", "11")
+    self:AddTalent("0", "12")
 
-    self:AddTalent("020")
-    self:AddTalent("021")
-    self:AddTalent("022")
+    self:AddTalent("0", "20")
+    self:AddTalent("0", "21")
+    self:AddTalent("0", "22")
 
-    self:AddTalent("030")
-    self:AddTalent("031").onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
-    self:AddTalent("032")
+    self:AddTalent("0", "30")
+    self:AddTalent("0", "31").onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
+    self:AddTalent("0", "32")
 
     self.basicStats.strength = 12
     self.basicStats.agility = 6
@@ -1708,6 +1706,8 @@ function Mutant:ctor()
             handler = Meditate,
             availableFromStart = true,
             params = {
+                castTime = function(_) return 2 end,
+                castSlow = function(_) return -0.7 end,
                 healPerRage = function(_) return 0.06 end,
             },
         },
@@ -1720,6 +1720,8 @@ function Mutant:ctor()
                 damagePerRage = function(_) return 1 end,
                 armorPerRage = function(_) return -1 end,
                 startingStacks = function(_) return 3 end,
+                maxStacks = function(_) return 3 end,
+                stackDecayTime = function(_) return 2 end,
             },
         },
     }
@@ -1727,6 +1729,7 @@ function Mutant:ctor()
     self.initialTechs = {
         [FourCC("MTU0")] = 0,
         [FourCC("R001")] = 1,
+        [FourCC("R002")] = 1,
     }
 
     self.talentBooks = {
@@ -1736,21 +1739,22 @@ function Mutant:ctor()
         -- FourCC("MTT3"),
     }
 
-    -- self:AddTalent("100")
-    -- self:AddTalent("101")
-    -- self:AddTalent("102")
+    self:AddTalent("0", "00")
+    self:AddTalent("0", "01")
+    self:AddTalent("0", "02")
 
-    -- self:AddTalent("110")
-    -- self:AddTalent("111")
-    -- self:AddTalent("112")
+    self:AddTalent("0", "10")
+    self:AddTalent("0", "11")
+    self:AddTalent("0", "12")
 
-    -- self:AddTalent("120")
-    -- self:AddTalent("121")
-    -- self:AddTalent("122")
+    self:AddTalent("0", "20")
+    self:AddTalent("0", "21")
+    self:AddTalent("0", "22")
 
-    -- self:AddTalent("130")
-    -- self:AddTalent("131").onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
-    -- self:AddTalent("132")
+    self:AddTalent("0", "30")
+    self:AddTalent("0", "31") -- .onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
+    self:AddTalent("0", "32")
+
 
     self.basicStats.strength = 16
     self.basicStats.agility = 6
@@ -1762,16 +1766,19 @@ end
 
 function BashingStrikes:Cast()
     self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed * (1 + self.attackSpeedBonus)
-    logMutant:Warning("Bashing strikes start")
+    self.caster:ApplyStats()
+    self.caster:GetOwner():SetTechLevel(FourCC("R002"), 0)
+    self.caster:SetCooldownRemaining(FourCC("MT_0"), 0)
 
     local function handler()
-        logMutant:Warning("Bashing strikes hit")
-        self:SetHP(math.min(self.caster.secondaryStats.health, self:GetHP() + self.healPerHit * self.caster.secondaryStats.health))
-        self.hitsLeft = self.hitsLeft - 1
-        if self.hitsLeft < 0 then
-            logMutant:Warning("Bashing strikes end")
+        self.caster:SetHP(math.min(self.caster.secondaryStats.health, self.caster:GetHP() + self.healPerHit * self.caster.secondaryStats.health))
+        self.attacks = self.attacks - 1
+        if self.attacks <= 0 then
+            self.caster:GetOwner():SetTechLevel(FourCC("R002"), 1)
+            self.caster:SetCooldownRemaining(FourCC("MT_0"), 10)
             self.caster.onDamageDealt[handler] = nil
             self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed / (1 + self.attackSpeedBonus)
+            self.caster:ApplyStats()
         end
     end
 
@@ -1779,23 +1786,83 @@ function BashingStrikes:Cast()
 end
 
 function TakeCover:Cast()
-    if not self.caster.effects["mt.cover"] then
+    if not self.caster.effects["Mutant.TakeCover"] then
         self.caster:RemoveAbility(FourCC('MT_1'))
         self.caster:AddAbility(FourCC('MTD1'))
         self.caster:SetCooldownRemaining(FourCC('MTD1'), 5)
-        self.caster.effects["mt.cover"] = true
+        self.caster.effects["Mutant.TakeCover"] = true
     else
         self.caster:RemoveAbility(FourCC('MTD1'))
         self.caster:AddAbility(FourCC('MT_1'))
         self.caster:SetCooldownRemaining(FourCC('MT_1'), 5)
-        self.caster.effects["mt.cover"] = nil
+        self.caster.effects["Mutant.TakeCover"] = nil
     end
 end
 
 function Meditate:Cast()
+    local timer = WC3.Timer()
+    self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed * (1 + self.castSlow)
+    self.caster:ApplyStats()
+
+    timer:Start(self.castTime, false, function()
+        timer:Destroy()
+        self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed * (1 - self.castSlow)
+        self.caster:ApplyStats()
+        local rage = self.caster.effects["Mutant.Rage"]
+        if rage then
+            local curHp = self.caster:GetHP()
+            local percentHealed = rage.stacks * self.healPerRage
+            local heal = (self.caster.secondaryStats.health - curHp) * percentHealed
+            self.caster:SetHP(curHp + heal)
+            rage:SetStacks(0)
+        end
+    end)
 end
 
 function Rage:Cast()
+    self.caster:GetOwner():SetTechLevel(FourCC("R001"), 0)
+    self.caster:GetOwner():SetTechLevel(FourCC("MTU0"), 1)
+    self.caster:SetCooldownRemaining(FourCC('MT_3'), 0)
+    self.caster:SetCooldownRemaining(FourCC('MT_2'), 2)
+    self.caster.effects["Mutant.Rage"] = self
+    self:SetStacks(self.startingStacks)
+
+    self.handler = function()
+        self:SetStacks(self.stacks + self.ragePerAttack)
+    end
+
+    self.timer = WC3.Timer()
+
+    self.timer:Start(self.stackDecayTime, true, function()
+        self:SetStacks(self.stacks - 1)
+    end)
+
+    self.caster.onDamageDealt[self.handler] = true
+end
+
+function Rage:SetStacks(value)
+    value = math.min(self.maxStacks, value)
+    if self.stacks == value then return end
+    if self.stacks then
+        self.caster.bonusSecondaryStats.weaponDamage = self.caster.bonusSecondaryStats.weaponDamage - self.damagePerRage * self.stacks
+        self.caster.bonusSecondaryStats.armor = self.caster.bonusSecondaryStats.armor - self.armorPerRage * self.stacks
+    end
+    self.stacks = value
+    self.caster.bonusSecondaryStats.weaponDamage = self.caster.bonusSecondaryStats.weaponDamage + self.damagePerRage * self.stacks
+    self.caster.bonusSecondaryStats.armor = self.caster.bonusSecondaryStats.armor + self.armorPerRage * self.stacks
+    self.caster:ApplyStats()
+    if self.stacks <= 0 then
+        self:Destroy()
+    end
+end
+
+function Rage:Destroy()
+    self.timer:Destroy()
+    self.caster.onDamageDealt[self.handler] = nil
+    self.caster:GetOwner():SetTechLevel(FourCC("R001"), 1)
+    self.caster:GetOwner():SetTechLevel(FourCC("MTU0"), 0)
+    self.caster:SetCooldownRemaining(FourCC('MT_3'), 20)
+    self.caster.effects["Mutant.Rage"] = nil
 end
 
 return Mutant
@@ -1859,14 +1926,14 @@ for _, preset in pairs(heroPresets) do
 end
 ]]
 
-Core(WCPlayer.Get(8), 0, -1800, 0)
-Tavern(WCPlayer.Get(0), 0, -2000, 0, heroPresets)
+Core(WCPlayer.Get(8), -2300, -3800, 0)
+Tavern(WCPlayer.Get(0), 1600, -3800, 0, heroPresets)
 
 for i = 0,1 do
-    heroPresets[2]:Spawn(WCPlayer.Get(i), 0, -1600, 0)
+    heroPresets[1]:Spawn(WCPlayer.Get(i), 0, -1600, 0)
 end
 
-WaveObserver(WCPlayer.Get(9))
+--WaveObserver(WCPlayer.Get(9))
 
 Log("Game initialized successfully")
 end)
@@ -2228,8 +2295,12 @@ function Unit.GetDying()
     return Get(GetDyingUnit())
 end
 
-function Unit.GetSold()
+function Unit.GetBying()
     return Get(GetBuyingUnit())
+end
+
+function Unit.GetSold()
+    return Get(GetSoldUnit())
 end
 
 function Unit.GetEntering()
@@ -2522,7 +2593,7 @@ function CreateUnitsForPlayer0()
     local unitID
     local t
     local life
-    u = BlzCreateUnitWithSkin(p, FourCC("ushd"), 98.3, 49.5, 77.006, FourCC("ushd"))
+    u = BlzCreateUnitWithSkin(p, FourCC("ushd"), -2332.8, -3133.0, 77.006, FourCC("ushd"))
 end
 
 function CreatePlayerBuildings()
@@ -2834,11 +2905,11 @@ function InitAllyPriorities()
 end
 
 function main()
-    SetCameraBounds(-3328.0 + GetCameraMargin(CAMERA_MARGIN_LEFT), -3584.0 + GetCameraMargin(CAMERA_MARGIN_BOTTOM), 3328.0 - GetCameraMargin(CAMERA_MARGIN_RIGHT), 3072.0 - GetCameraMargin(CAMERA_MARGIN_TOP), -3328.0 + GetCameraMargin(CAMERA_MARGIN_LEFT), 3072.0 - GetCameraMargin(CAMERA_MARGIN_TOP), 3328.0 - GetCameraMargin(CAMERA_MARGIN_RIGHT), -3584.0 + GetCameraMargin(CAMERA_MARGIN_BOTTOM))
-    SetDayNightModels("Environment\\DNC\\DNCLordaeron\\DNCLordaeronTerrain\\DNCLordaeronTerrain.mdl", "Environment\\DNC\\DNCLordaeron\\DNCLordaeronUnit\\DNCLordaeronUnit.mdl")
+    SetCameraBounds(-7424.0 + GetCameraMargin(CAMERA_MARGIN_LEFT), -6656.0 + GetCameraMargin(CAMERA_MARGIN_BOTTOM), 3328.0 - GetCameraMargin(CAMERA_MARGIN_RIGHT), 8192.0 - GetCameraMargin(CAMERA_MARGIN_TOP), -7424.0 + GetCameraMargin(CAMERA_MARGIN_LEFT), 8192.0 - GetCameraMargin(CAMERA_MARGIN_TOP), 3328.0 - GetCameraMargin(CAMERA_MARGIN_RIGHT), -6656.0 + GetCameraMargin(CAMERA_MARGIN_BOTTOM))
+    SetDayNightModels("Environment\\DNC\\DNCDalaran\\DNCDalaranTerrain\\DNCDalaranTerrain.mdl", "Environment\\DNC\\DNCDalaran\\DNCDalaranUnit\\DNCDalaranUnit.mdl")
     NewSoundEnvironment("Default")
-    SetAmbientDaySound("LordaeronSummerDay")
-    SetAmbientNightSound("LordaeronSummerNight")
+    SetAmbientDaySound("DalaranRuinsDay")
+    SetAmbientNightSound("DalaranRuinsNight")
     SetMapMusic("Music", true, 0)
     CreateAllUnits()
     InitBlizzard()
