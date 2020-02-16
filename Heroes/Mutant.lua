@@ -91,7 +91,7 @@ function Mutant:ctor()
             availableFromStart = true,
             params = {
                 ragePerAttack = function(_) return 1 end,
-                damagePerRage = function(_) end,
+                damagePerRage = function(_) return 1 end,
                 armorPerRage = function(_, caster)
                     local value = -1
                     if caster:HasTalent("T130") then value = value + 0.2 end
