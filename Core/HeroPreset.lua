@@ -55,14 +55,21 @@ function HeroPreset:Spawn(owner, x, y, facing)
 
     for _, ability in pairs(self.abilities) do
         if ability.availableFromStart then
-            hero:AddAbility(ability.id)
-            hero:SetAbilityLevel(ability.id, 1)
+            if type(ability.id) == "table" then
+                hero:AddAbility(ability.id[1])
+            else
+                hero:AddAbility(ability.id)
+            end
         end
     end
 
     if TestBuild then
         hero:AddTalentPoint()
         hero:AddTalentPoint()
+    end
+
+    for tech, level in pairs(self.initialTechs or {}) do
+        owner:SetTechLevel(tech, level)
     end
 
     return hero
@@ -78,9 +85,18 @@ function HeroPreset:Cast(hero)
     local abilityId = GetSpellAbilityId()
 
     for _, ability in pairs(self.abilities) do
-        if ability.id == abilityId then
-            ability:handler(hero)
-            break
+        if type(ability.id) == "table" then
+            for _, id in pairs(ability.id) do
+                if id == abilityId then
+                    ability:handler(hero)
+                    break
+                end
+            end
+        else
+            if ability.id == abilityId then
+                ability:handler(hero)
+                break
+            end
         end
     end
 end

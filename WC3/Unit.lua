@@ -173,6 +173,15 @@ function Unit:AddAbility(id)
     end
 end
 
+function Unit:RemoveAbility(id)
+    if math.type(id) then
+        return UnitRemoveAbility(self.handle, math.tointeger(id))
+    else
+        error("Abilityid should be an integer (" .. type(id) .. ")", 2)
+        return false
+    end
+end
+
 function Unit.AddToAllStock(unitId, currentStock, stockMax)
     if math.type(unitId) ~= "integer" then
         error("unitId should be an integer", 2)
@@ -274,6 +283,10 @@ end
 
 function Unit:SetCooldown(abilityId, level, value)
     return BlzSetUnitAbilityCooldown(self.handle, abilityId, level, value)
+end
+
+function Unit:SetCooldownRemaining(abilityId, value)
+    return BlzStartUnitAbilityCooldown(self.handle, abilityId, value)
 end
 
 function Unit:GetName() return GetUnitName(self.handle) end
