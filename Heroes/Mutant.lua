@@ -227,14 +227,14 @@ function TakeCover:Enable()
         end
 
         self.caster:SetMana(curMp - mpBurned)
-        args:SetDamage((damage - redirected) * self.damageReduction)
+        args:SetDamage((damage - redirected) * (1 - self.damageReduction))
 
         do
             local recursion = { ["Mutant.TakeCover"] = true, }
             for k, v in pairs(args.recursion) do recursion[k] = v end
 
             local toAlly = {
-                value = redirected * self.damageReduction,
+                value = redirected * (1 - self.damageReduction),
                 isAttack = false,
                 recursion = recursion,
             }
