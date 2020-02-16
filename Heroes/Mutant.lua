@@ -34,6 +34,7 @@ function Mutant:ctor()
             handler = TakeCover,
             availableFromStart = true,
             params = {
+                radius = function(_) return 500 end,
                 baseRedirect = function(_) return 0.3 end,
                 redirectPerRage = function(_) return 0.02 end,
             },
@@ -58,7 +59,7 @@ function Mutant:ctor()
                 armorPerRage = function(_) return -1 end,
                 startingStacks = function(_) return 3 end,
                 maxStacks = function(_) return 3 end,
-                stackDecayTime = function(_) return 2 end,
+                stackDecayTime = function(_) return 4 end, -- todo: update ability desc
             },
         },
     }
@@ -76,21 +77,21 @@ function Mutant:ctor()
         -- FourCC("MTT3"),
     }
 
-    self:AddTalent("0", "00")
-    self:AddTalent("0", "01")
-    self:AddTalent("0", "02")
+    self:AddTalent("1", "00")
+    self:AddTalent("1", "01")
+    self:AddTalent("1", "02")
 
-    self:AddTalent("0", "10")
-    self:AddTalent("0", "11")
-    self:AddTalent("0", "12")
+    self:AddTalent("1", "10")
+    self:AddTalent("1", "11")
+    self:AddTalent("1", "12")
 
-    self:AddTalent("0", "20")
-    self:AddTalent("0", "21")
-    self:AddTalent("0", "22")
+    self:AddTalent("1", "20")
+    self:AddTalent("1", "21")
+    self:AddTalent("1", "22")
 
-    self:AddTalent("0", "30")
-    self:AddTalent("0", "31") -- .onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
-    self:AddTalent("0", "32")
+    self:AddTalent("1", "30")
+    self:AddTalent("1", "31") -- .onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
+    self:AddTalent("1", "32")
 
 
     self.basicStats.strength = 16
@@ -124,16 +125,67 @@ end
 
 function TakeCover:Cast()
     if not self.caster.effects["Mutant.TakeCover"] then
-        self.caster:RemoveAbility(FourCC('MT_1'))
-        self.caster:AddAbility(FourCC('MTD1'))
-        self.caster:SetCooldownRemaining(FourCC('MTD1'), 5)
-        self.caster.effects["Mutant.TakeCover"] = true
+        self:Enable()
     else
-        self.caster:RemoveAbility(FourCC('MTD1'))
-        self.caster:AddAbility(FourCC('MT_1'))
-        self.caster:SetCooldownRemaining(FourCC('MT_1'), 5)
-        self.caster.effects["Mutant.TakeCover"] = nil
+        self:Disable()
     end
+end
+
+function TakeCover:Enable()
+    self.caster:RemoveAbility(FourCC('MT_1'))
+    self.caster:AddAbility(FourCC('MTD1'))
+    self.caster:SetCooldownRemaining(FourCC('MTD1'), 5)
+    self.caster.effects["Mutant.TakeCover"] = true
+
+    self.handler = function(args)
+        if args.recursion["Mutant.TakeCover"] then
+            return
+        end
+        local nearest
+        local nearestRange = math.huge
+        WC3.Unit.EnumInRange(self.caster:GetX(), self.caster:GetY(), self.radius, function(unit)
+            if unit ~= self.caster and unit:IsHero() and not self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+                local range = math.sqrt((self.caster:GetX() - unit:GetX())^2 + (self.caster:GetY() - unit:GetY())^2)
+                if range < nearestRange then
+                    nearest = unit
+                    nearestRange = range
+                end
+            end
+        end)
+
+        if not nearest then
+            return
+        end
+
+        local damage = args.GetDamage()
+        local rage = self.caster.effects["Mutant.Rage"] or {}
+        local rageStacks = rage.stacks or 0
+        local redirected = (self.baseRedirect + self.redirectPerRage * rageStacks) * damage
+
+        local mpBurned = redirected / self.caster:GetMaxHP() * self.caster:GetMaxMana()
+        local curMp = self.caster:GetMana()
+
+        if curMp < mpBurned then
+            redirected = redirected * curMp / mpBurned
+            mpBurned = curMp
+        end
+
+        self.caster:SetMana(curMp - mpBurned)
+        args:SetDamage(damage - redirected)
+        local recursion = { ["Mutant.TakeCover"] = true, }
+        for k, v in pairs(args.recursion) do recursion[k] = v end
+        args.source:DealDamage(nearest, { value = redirected, isAttack = false, recursion = recursion, })
+    end
+
+    self.caster.onDamageReceived[self.handler] = true
+end
+
+function TakeCover:Disable()
+    self.caster:RemoveAbility(FourCC('MTD1'))
+    self.caster:AddAbility(FourCC('MT_1'))
+    self.caster:SetCooldownRemaining(FourCC('MT_1'), 5)
+    self.caster.effects["Mutant.TakeCover"] = nil
+    self.caster.onDamageReceived[self.handler] = nil
 end
 
 function Meditate:Cast()
