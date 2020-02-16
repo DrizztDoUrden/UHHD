@@ -151,7 +151,7 @@ function DrainLight:Cast()
     local timer = Timer()
 
     Unit.EnumInRange(self.caster:GetX(), self.caster:GetY(), self.radius, function(unit)
-        if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+        if self.caster ~= unit and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             table.insert(self.affected, {
                 unit = unit,
                 stolen = 0,
@@ -225,10 +225,13 @@ function DrainLight:Drain(target)
     end
     if self.damage > 0 then
         local damagePerTick = self.period * self.damage
-        local damage = self.caster:DealDamage(target.unit, { value = damagePerTick, isAttack = false, })
+        local damage = self.caster:DealDamage(target.unit, { value = damagePerTick, })
         if self.healed < self.healLimit * self.period then
             local toHeal = math.min(self.healLimit * self.period - self.healed, self.stealPercentage * damage)
             self.healed = self.healed + toHeal
+            if toHeal < 0 then
+                logDuskKnight:Error("Negative heal: " .. toHeal .. ", " .. self.healLimit * self.period - self.healed, self.stealPercentage * damage)
+            end
             self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.caster:GetHP() + toHeal))
         end
     end
