@@ -77,7 +77,7 @@ function Mutant:ctor()
                     if caster:HasTalent("T121") then value = 0 end
                     return value
                 end,
-                healPerRage = function(_) return 0.05 end, --todo: update tooltip
+                healPerRage = function(_) return 0.05 end,
                 manaHealPerRage = function(_, caster)
                     local value = 0
                     if caster:HasTalent("T120") then value = value + 0.025 end
@@ -104,7 +104,7 @@ function Mutant:ctor()
                     return value
                 end,
                 stackDecayTime = function(_, caster)
-                    local value = 3 -- todo: update tooltip
+                    local value = 3
                     if caster:HasTalent("T132") then value = value + 1.5 end
                     return value
                 end,
@@ -124,10 +124,10 @@ function Mutant:ctor()
     }
 
     self.talentBooks = {
-        -- FourCC("MTT0"),
-        -- FourCC("MTT1"),
-        -- FourCC("MTT2"),
-        -- FourCC("MTT3"),
+        FourCC("MTT0"),
+        FourCC("MTT1"),
+        FourCC("MTT2"),
+        FourCC("MTT3"),
     }
 
     self:AddTalent("1", "00")
@@ -143,9 +143,8 @@ function Mutant:ctor()
     self:AddTalent("1", "22")
 
     self:AddTalent("1", "30")
-    self:AddTalent("1", "31") -- .onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
+    self:AddTalent("1", "31")
     self:AddTalent("1", "32")
-
 
     self.basicStats.strength = 16
     self.basicStats.agility = 6
