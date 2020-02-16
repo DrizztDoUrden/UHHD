@@ -1,6 +1,9 @@
 local Class = require("Class")
 local Stats = require("Core.Stats")
 local WC3 = require("WC3.All")
+local Log = require("Log")
+
+local logUnit = Log.Category("Core\\Unit")
 
 local UHDUnit = Class(WC3.Unit)
 
@@ -94,7 +97,7 @@ local unitDamaging = WC3.Trigger()
 for i=0,23 do unitDamaging:RegisterPlayerUnitDamaging(WC3.Player.Get(i)) end
 unitDamaging:AddAction(function()
     local source = WC3.Unit.GetEventDamageSource()
-    if source.IsA(UHDUnit) then source:DamageDealt() end
+    if source:IsA(UHDUnit) then source:DamageDealt() end
 end)
 
 return UHDUnit
