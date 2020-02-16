@@ -23,6 +23,7 @@ end
 for i = 0, 7, 1 do
     local shiftx = 1300 + i * 100
     local unit = Unit(WCPlayer.Get(i), FourCC("e001"), shiftx, -3600, 0)
+    unit:SetMoveSpeed(0)
 end
 Core(WCPlayer.Get(8), -2300, -3800, 0)
 Tavern(WCPlayer.Get(0), 1600, -3800, 0, heroPresets)

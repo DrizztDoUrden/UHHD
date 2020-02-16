@@ -1735,6 +1735,21 @@ function Mutant:ctor()
                 radius = function(_) return 500 end,
                 baseRedirect = function(_) return 0.3 end,
                 redirectPerRage = function(_) return 0.02 end,
+                manaPerHealth = function(_, caster)
+                    local value = 1
+                    if caster:HasTalent("T110") then value = value * 0.75 end
+                    return value
+                end,
+                damageReduction = function(_, caster)
+                    local value = 0
+                    if caster:HasTalent("T111") then value = 0.15 end
+                    return value
+                end,
+                damageReflection = function(_, caster)
+                    local value = 0
+                    if caster:HasTalent("T112") then value = 0.15 end
+                    return value
+                end,
             },
         },
         meditate = {
@@ -1743,8 +1758,17 @@ function Mutant:ctor()
             availableFromStart = true,
             params = {
                 castTime = function(_) return 2 end,
-                castSlow = function(_) return -0.7 end,
-                healPerRage = function(_) return 0.06 end,
+                castSlow = function(_, caster)
+                    local value = -0.7
+                    if caster:HasTalent("T121") then value = 0 end
+                    return value
+                end,
+                healPerRage = function(_) return 0.05 end, --todo: update tooltip
+                manaHealPerRage = function(_, caster)
+                    local value = 0
+                    if caster:HasTalent("T120") then value = value + 0.025 end
+                    return value
+                end,
             },
         },
         rage = {
@@ -1766,8 +1790,13 @@ function Mutant:ctor()
                     return value
                 end,
                 stackDecayTime = function(_, caster)
-                    local value = 3 -- todo: update ability desc
+                    local value = 3 -- todo: update tooltip
                     if caster:HasTalent("T132") then value = value + 1.5 end
+                    return value
+                end,
+                meditationCooldown = function(_, caster)
+                    local value = 20
+                    if caster:HasTalent("T122") then value = value - 10 end
                     return value
                 end,
             },
@@ -1875,7 +1904,7 @@ function TakeCover:Enable()
         local rageStacks = rage.stacks or 0
         local redirected = (self.baseRedirect + self.redirectPerRage * rageStacks) * damage
 
-        local mpBurned = redirected / self.caster:GetMaxHP() * self.caster:GetMaxMana()
+        local mpBurned = redirected / self.caster:GetMaxHP() * self.caster:GetMaxMana() * self.manaPerHealth
         local curMp = self.caster:GetMana()
 
         if curMp < mpBurned then
@@ -1884,10 +1913,31 @@ function TakeCover:Enable()
         end
 
         self.caster:SetMana(curMp - mpBurned)
-        args:SetDamage(damage - redirected)
-        local recursion = { ["Mutant.TakeCover"] = true, }
-        for k, v in pairs(args.recursion) do recursion[k] = v end
-        args.source:DealDamage(nearest, { value = redirected, isAttack = false, recursion = recursion, })
+        args:SetDamage((damage - redirected) * self.damageReduction)
+
+        do
+            local recursion = { ["Mutant.TakeCover"] = true, }
+            for k, v in pairs(args.recursion) do recursion[k] = v end
+
+            local toAlly = {
+                value = redirected * self.damageReduction,
+                isAttack = false,
+                recursion = recursion,
+            }
+            args.source:DealDamage(nearest, toAlly)
+        end
+
+        if self.damageReflection > 0 then
+            local recursion = { ["Mutant.TakeCover.Reflect"] = true, }
+            for k, v in pairs(args.recursion) do recursion[k] = v end
+
+            local toReflect = {
+                value = damage.value * self.damageReflection,
+                isAttack = false,
+                recursion = recursion,
+            }
+            self.caster.source:DealDamage(nearest, toReflect)
+        end
     end
 
     self.caster.onDamageReceived[self.handler] = true
@@ -1916,6 +1966,11 @@ function Meditate:Cast()
             local percentHealed = rage.stacks * self.healPerRage
             local heal = (self.caster.secondaryStats.health - curHp) * percentHealed
             self.caster:SetHP(curHp + heal)
+            if self.manaHealPerRage then
+                local manaHealPart = self.manaHealPerRage * rage.stacks
+                local curMp = self.caster:GetMana()
+                self.caster:SetMana(curMp + manaHealPart * (self.caster:GetMaxMana() - curMp))
+            end
             rage:SetStacks(0)
         end
     end)
@@ -1925,7 +1980,7 @@ function Rage:Cast()
     self.caster:GetOwner():SetTechLevel(FourCC("R001"), 0)
     self.caster:GetOwner():SetTechLevel(FourCC("MTU0"), 1)
     self.caster:SetCooldownRemaining(FourCC('MT_3'), 0)
-    self.caster:SetCooldownRemaining(FourCC('MT_2'), 2)
+    self.caster:SetCooldownRemaining(FourCC('MT_2'), self.meditationCooldown)
     self.caster.effects["Mutant.Rage"] = self
     self:SetStacks(self.startingStacks)
 
@@ -2029,8 +2084,9 @@ for _, preset in pairs(heroPresets) do
 end
 ]]
 for i = 0, 7, 1 do
-    local shiftx = 1200 + i * 100
+    local shiftx = 1300 + i * 100
     local unit = Unit(WCPlayer.Get(i), FourCC("e001"), shiftx, -3600, 0)
+    unit:SetMoveSpeed(0)
 end
 Core(WCPlayer.Get(8), -2300, -3800, 0)
 Tavern(WCPlayer.Get(0), 1600, -3800, 0, heroPresets)
