@@ -7,8 +7,8 @@ local Mutant = Class(HeroPreset)
 
 local BashingStrikes = Class(Spell)
 local TakeCover = Class(Spell)
+local Meditate = Class(Spell)
 local Rage = Class(Spell)
-local Meditation = Class(Spell)
 
 function Mutant:ctor()
     HeroPreset.ctor(self)
@@ -19,6 +19,7 @@ function Mutant:ctor()
         bashingStrikes = {
             id = FourCC('MT_0'),
             handler = BashingStrikes,
+            availableFromStart = true,
             params = {
                 attacks = function(_) return 3 end,
                 attackSpeedBonus = function(_) return 0.5 end,
@@ -26,7 +27,7 @@ function Mutant:ctor()
             },
         },
         takeCover = {
-            id = FourCC('MT_1'),
+            id = { FourCC('MT_1'), FourCC('MTD1'), },
             handler = TakeCover,
             availableFromStart = true,
             params = {
@@ -34,8 +35,16 @@ function Mutant:ctor()
                 redirectPerRage = function(_) return 0.02 end,
             },
         },
-        rage = {
+        meditate = {
             id = FourCC('MT_2'),
+            handler = Meditate,
+            availableFromStart = true,
+            params = {
+                healPerRage = function(_) return 0.06 end,
+            },
+        },
+        rage = {
+            id = FourCC('MT_3'),
             handler = Rage,
             availableFromStart = true,
             params = {
@@ -45,14 +54,11 @@ function Mutant:ctor()
                 startingStacks = function(_) return 3 end,
             },
         },
-        meditation = {
-            id = FourCC('MT_3'),
-            handler = Meditation,
-            availableFromStart = true,
-            params = {
-                healPerRage = function(_) return 0.06 end,
-            },
-        },
+    }
+
+    self.initialTechs = {
+        [FourCC("MTU0")] = 0,
+        [FourCC("R001")] = 1,
     }
 
     self.talentBooks = {
@@ -99,6 +105,26 @@ function BashingStrikes:Cast()
     end
 
     self.caster.onDamageDealt[handler] = true
+end
+
+function TakeCover:Cast()
+    if not self.caster.effects["mt.cover"] then
+        self.caster:RemoveAbility(FourCC('MT_1'))
+        self.caster:AddAbility(FourCC('MTD1'))
+        self.caster:SetCooldownRemaining(FourCC('MTD1'), 5)
+        self.caster.effects["mt.cover"] = true
+    else
+        self.caster:RemoveAbility(FourCC('MTD1'))
+        self.caster:AddAbility(FourCC('MT_1'))
+        self.caster:SetCooldownRemaining(FourCC('MT_1'), 5)
+        self.caster.effects["mt.cover"] = nil
+    end
+end
+
+function Meditate:Cast()
+end
+
+function Rage:Cast()
 end
 
 return Mutant

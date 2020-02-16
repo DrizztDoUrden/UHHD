@@ -141,6 +141,10 @@ function IsUnitInRange(whichUnit, otherUnit, distance) end
 ---@return boolean
 function UnitAddAbility(whichUnit, abilityId) end
 ---@param whichUnit unit
+---@param abilityId integer
+---@return boolean
+function UnitRemoveAbility(whichUnit, abilityId) end
+---@param whichUnit unit
 ---@param abilcode integer
 ---@param level integer
 ---@return integer
@@ -267,6 +271,10 @@ function BlzSetUnitAbilityCooldown(whichUnit, abilId, level, cooldown) end
 ---@param level integer
 ---@return number
 function BlzGetUnitAbilityCooldown(whichUnit, abilId, level) end
+---@param whichUnit unit
+---@param abilCode id
+---@param cooldown number
+function BlzStartUnitAbilityCooldown(whichUnit, abilCode, cooldown) end
 
 ---@param from player
 ---@param to player

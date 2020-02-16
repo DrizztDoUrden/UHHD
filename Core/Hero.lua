@@ -96,7 +96,7 @@ function Hero:OnLevel()
     local div = self:GetLevel() / Hero.LevelsForTalent
     if math.floor(div) == div then
         self:AddTalentPoint()
-    -- end
+    end
 end
 
 function Hero:AddStatPoint()
