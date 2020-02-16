@@ -1,5 +1,5 @@
-local Class = Require("Class")
-local Log = Require("Log")
+local Class = require("Class")
+local Log = require("Log")
 
 local Timer = Class()
 

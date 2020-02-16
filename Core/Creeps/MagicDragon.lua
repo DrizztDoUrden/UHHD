@@ -1,6 +1,6 @@
-local Class = Require("Class")
-local CreepPreset = Require("Core.CreepPreset")
-local Log = Require("Log")
+local Class = require("Class")
+local CreepPreset = require("Core.CreepPreset")
+local Log = require("Log")
 
 local MagicDragon = Class(CreepPreset)
 
@@ -10,7 +10,7 @@ function MagicDragon:ctor()
     self.secondaryStats.mana = 5
     self.secondaryStats.weaponDamage = 3
 
-    self.unitid = FourCC('C_MD')
+    self.unitid = FourCC('e000')
 end
 Log("MagicDragon load successfull")
 

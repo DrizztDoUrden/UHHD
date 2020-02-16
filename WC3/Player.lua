@@ -1,5 +1,5 @@
-local Class = Require("Class")
-local Timer = Require("WC3.Timer")
+local Class = require("Class")
+local Timer = require("WC3.Timer")
 
 local WCPlayer = Class()
 local players = {}

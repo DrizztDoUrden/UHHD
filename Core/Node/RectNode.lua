@@ -1,8 +1,8 @@
-local Class = Require("Class")
-local Log = Require("Log")
-local WCRect = Require("WC3.Rect")
-local Region = Require("WC3.Region")
-local Node = Require("Core.Node.Node")
+local Class = require("Class")
+local Log = require("Log")
+local WCRect = require("WC3.Rect")
+local Region = require("WC3.Region")
+local Node = require("Core.Node.Node")
 
 local RectNode = Class(Node)
 

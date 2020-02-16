@@ -1,7 +1,7 @@
-local Class = Require("Class")
-local Log = Require("Log")
-local Stats = Require("Core.Stats")
-local Creep = Require("Core.Creep")
+local Class = require("Class")
+local Log = require("Log")
+local Stats = require("Core.Stats")
+local Creep = require("Core.Creep")
 
 
 local CreepPreset = Class()

@@ -1,5 +1,5 @@
-local Log = Require("Log")
-local Timer = Require("WC3.Timer")
+local Log = require("Log")
+local Timer = require("WC3.Timer")
 
 local handlers = {
     initGlobals = { funcs = {}, executed = false, },

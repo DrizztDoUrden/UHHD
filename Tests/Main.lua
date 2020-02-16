@@ -1,17 +1,30 @@
-local Log = Require("Log")
-local WCPlayer = Require("WC3.Player")
-local DuskKnight = Require("Heroes.DuskKnight")
-local WaveObserver = Require("Core.WaveObserver")
-local Core = Require("Core.Core")
+local Log = require("Log")
+local WCPlayer = require("WC3.Player")
+local DuskKnight = require("Heroes.DuskKnight")
+local WaveObserver = require("Core.WaveObserver")
+local Core = require("Core.Core")
+local Tavern = require("Core.Tavern")
 
-local testHeroPreset = DuskKnight()
-local core = Core(WCPlayer.Get(8), 0, -1800, 0)
-local testHero = tawern(WCPlayer.Get(8), 0, -1800, 0)
+local heroPresets = {
+    DuskKnight()
+}
+
+-- preloading heroes to reduce lags
+-- before doing that it's needed to finish the cleanup in Hero:Destroy. e.g. stat/talent helpers should be deleted as well
+-- also it would be cool to add a mode of hero spawning which also spawns stat/talent helpers to make sure they get preloaded too
+--[[
+for _, preset in pairs(heroPresets) do
+    preset::Spawn(WCPlayer.Get(0), 0, -1600, 0):Destroy()
+end
+]]
+
+Core(WCPlayer.Get(8), 0, -1800, 0)
+Tavern(WCPlayer.Get(8), 0, -2000, 0, heroPresets)
 
 for i = 0,1 do
-    testHeroPreset:Spawn(WCPlayer.Get(i), 0, -1600, 0)
+    heroPresets[1]:Spawn(WCPlayer.Get(i), 0, -1600, 0)
 end
 
-local testWaveObserver = WaveObserver(WCPlayer.Get(9))
+WaveObserver(WCPlayer.Get(9))
 
 Log("Game initialized successfully")

@@ -4,7 +4,7 @@ local function Class(base, ctor)
     if not ctor and type(base) == 'function' then
         ctor = base
         base = nil
-        elseif type(base) == 'table' then
+    elseif type(base) == 'table' then
         for i,v in pairs(base) do
             class[i] = v
         end

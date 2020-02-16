@@ -1,6 +1,6 @@
-local Class = Require("Class")
-local WCPlayer = Require("WC3.Player")
-local Log = Require("Log")
+local Class = require("Class")
+local WCPlayer = require("WC3.Player")
+local Log = require("Log")
 
 local Unit = Class()
 
@@ -32,6 +32,10 @@ end
 
 function Unit.GetLeveling()
     return Get(GetLevelingUnit())
+end
+
+function Unit.GetEventDamageSource()
+    return Get(GetEventDamageSource())
 end
 
 function Unit.EnumInRange(x, y, radius, handler)
@@ -169,39 +173,47 @@ function Unit:AddAbility(id)
     end
 end
 
-function Unit.AddUnitToAllStock(unitId, currentStock, stockMax)
-    if math.type(unitId) then
-        if math.type(currentStock) then
-            if math.type(stockMax) then
-                return AddUnitToAllStock(unitId, currentStock, stockMax)
-            else
-                error("stockMax should be an integer")
-            end
-        else
-            error("currentStock should be an integer")
-        end
-    else
-        error(" unitId should be an integer")
+function Unit.AddToAllStock(unitId, currentStock, stockMax)
+    if math.type(unitId) ~= "integer" then
+        error("unitId should be an integer", 2)
     end
+    if currentStock == nil then
+        currentStock = 1
+    else
+        if math.type(currentStock) ~= "integer" then
+            error("currentStock should be an integer", 2)
+        end
+    end
+    if stockMax == nil then
+        stockMax = 1
+    else
+        if math.type(stockMax) ~= "integer" then
+            error("stockMax should be an integer", 2)
+        end
+    end
+    AddUnitToAllStock(unitId, currentStock, stockMax)
 end
 
 function Unit:AddUnitToStock(unitId, currentStock, stockMax)
-    if math.type(unitId) then
-        if math.type(currentStock) then
-            if math.type(stockMax) then
-                return AddUnitToAllStock(self.handle, unitId, currentStock, stockMax)
-            else
-                error("stockMax should be an integer")
-            end
-        else
-            error("currentStock should be an integer")
-        end
-    else
-        error(" unitId should be an integer")
+    if math.type(unitId) ~= "integer" then
+        error("unitId should be an integer", 2)
     end
+    if currentStock == nil then
+        currentStock = 1
+    else
+        if math.type(currentStock) ~= "integer" then
+            error("currentStock should be an integer", 2)
+        end
+    end
+    if stockMax == nil then
+        stockMax = 1
+    else
+        if math.type(stockMax) ~= "integer" then
+            error("stockMax should be an integer", 2)
+        end
+    end
+    AddUnitToStock(self.handle, unitId, currentStock, stockMax)
 end
-
-
 
 function Unit:SetAbilityLevel(abilityId, level)
     return SetUnitAbilityLevel(self.handle, abilityId, level)
@@ -280,5 +292,6 @@ function Unit:GetArmor() return BlzGetUnitArmor(self.handle) end
 function Unit:GetFacing() return GetUnitFacing(self.handle) end
 function Unit:GetAbility(id) return BlzGetUnitAbility(self.handle, id) end
 function Unit:GetLevel() return GetHeroLevel(self.handle) end
+function Unit:GetTypeId() return GetUnitTypeId(self.handle) end
 
 return Unit

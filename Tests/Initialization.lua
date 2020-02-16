@@ -1,5 +1,5 @@
-local Log = Require("Log")
-local Init = Require("Initialization")
+local Log = require("Log")
+local Init = require("Initialization")
 
 if ExtensiveLog and TestBuild then
     local globalInit = "false";

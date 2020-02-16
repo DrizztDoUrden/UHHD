@@ -1,4 +1,4 @@
-local Log = Require("Log")
+local Log = require("Log")
 
 local levelCreepCompositon = {
     {"MagicDragon"},

@@ -1,10 +1,10 @@
-local Class = Require("Class")
-local Stats = Require("Core.Stats")
-local UHDUnit = Require("Core.UHDUnit")
-local Trigger = Require("WC3.Trigger")
-local Unit = Require("WC3.Unit")
-local Log = Require("Log")
-local WCPlayer = Require("WC3.Player")
+local Class = require("Class")
+local Stats = require("Core.Stats")
+local UHDUnit = require("Core.UHDUnit")
+local Trigger = require("WC3.Trigger")
+local Unit = require("WC3.Unit")
+local Log = require("Log")
+local WCPlayer = require("WC3.Player")
 
 local logHero = Log.Category("Core\\Hero")
 
@@ -45,6 +45,42 @@ function Hero:ctor(...)
     self.skillUpgrades = {}
     self.talentBooks = {}
     self.talents = {}
+
+
+    self.baseSecondaryStats.health = 100
+    self.baseSecondaryStats.mana = 100
+    self.baseSecondaryStats.healthRegen = .5
+    self.baseSecondaryStats.manaRegen = 1
+
+    self.baseSecondaryStats.weaponDamage = 10
+    self.baseSecondaryStats.attackSpeed = .5
+    self.baseSecondaryStats.physicalDamage = 1
+    self.baseSecondaryStats.spellDamage = 1
+
+    self.baseSecondaryStats.armor = 0
+    self.baseSecondaryStats.evasion = 0.05
+    self.baseSecondaryStats.ccResist = 0
+    self.baseSecondaryStats.spellResist = 0
+
+    self.baseSecondaryStats.movementSpeed = 1
+
+
+    self.bonusSecondaryStats.health = 0
+    self.bonusSecondaryStats.mana = 0
+    self.bonusSecondaryStats.healthRegen = 0
+    self.bonusSecondaryStats.manaRegen = 0
+
+    self.bonusSecondaryStats.weaponDamage = 0
+    self.bonusSecondaryStats.attackSpeed = 1
+    self.bonusSecondaryStats.physicalDamage = 1
+    self.bonusSecondaryStats.spellDamage = 1
+
+    self.bonusSecondaryStats.armor = 0
+    self.bonusSecondaryStats.evasion = 0
+    self.bonusSecondaryStats.ccResist = 0
+    self.bonusSecondaryStats.spellResist = 0
+
+    self.bonusSecondaryStats.movementSpeed = 0
 end
 
 function Hero:Destroy()
@@ -57,7 +93,8 @@ function Hero:OnLevel()
     for _ = 1,Hero.StatsPerLevel do
         self:AddStatPoint()
     end
-    -- if self:GetLevel() % Hero.LevelsForTalent == 0 then
+    local div = self:GetLevel() / Hero.LevelsForTalent
+    if math.floor(div) == div then
         self:AddTalentPoint()
     -- end
 end
@@ -117,6 +154,7 @@ end
 
 function Hero:SelectNextHelper(prefferStats)
     if self:GetOwner() == WCPlayer.Local then
+        ClearSelection()
         if prefferStats then
             for helper in pairs(self.statUpgrades) do helper:Select() return end
             for helper in pairs(self.skillUpgrades) do helper:Select() return end
@@ -124,7 +162,8 @@ function Hero:SelectNextHelper(prefferStats)
             for helper in pairs(self.skillUpgrades) do helper:Select() return end
             for helper in pairs(self.statUpgrades) do helper:Select() return end
         end
-        self:Select()
+        -- todo: fix selection
+        -- self:Select()
     end
 end
 
@@ -133,7 +172,7 @@ local function BonusBeforePow(base, pow, stat, bonus)
 end
 
 local function BonusMul(base, pow, stat, bonus)
-    return base * pow^stat * (1 + bonus)
+    return base * pow^stat * bonus
 end
 
 local function ProbabilityBased(base, pow, stat, bonus)
@@ -160,15 +199,13 @@ function Hero:UpdateSecondaryStats()
 
     self.secondaryStats.ccResist = ProbabilityBased(self.baseSecondaryStats.ccResist, ltoBase, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
     self.secondaryStats.spellResist = ProbabilityBased(self.baseSecondaryStats.ccResist, ltoBase, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
-end
 
-function Hero:SetBasicStats(value)
-    self.basicStats = value
-    self:UpdateSecondaryStats()
-    self:ApplyStats()
+    self.secondaryStats.movementSpeed = self.baseSecondaryStats.movementSpeed + self.bonusSecondaryStats.movementSpeed
+    self.secondaryStats.armor = self.baseSecondaryStats.armor + self.bonusSecondaryStats.armor
 end
 
 function Hero:ApplyStats()
+    self:UpdateSecondaryStats()
     self:SetStr(self.basicStats.strength, true)
     self:SetAgi(self.basicStats.agility, true)
     self:SetInt(self.basicStats.intellect, true)

@@ -25,17 +25,20 @@ ExtensiveLog = false
 ---@class rect
 ---@class location
 
+DAMAGE_TYPE_MAGIC = {}
+WEAPON_TYPE_WHOKNOWS = {}
+
+PLAYER_GAME_RESULT_VICTORY = {}
+PLAYER_GAME_RESULT_DEFEAT = {}
+
 EVENT_UNIT_SPELL_EFFECT = {}
 EVENT_UNIT_SPELL_FINISH = {}
 EVENT_UNIT_DEATH = {}
 EVENT_UNIT_HERO_LEVEL = {}
 EVENT_UNIT_SELL = {}
 
-PLAYER_GAME_RESULT_VICTORY = {}
-
-PLAYER_GAME_RESULT_DEFEAT = {}
 EVENT_PLAYER_UNIT_DEATH = {}
-
+EVENT_PLAYER_UNIT_DAMAGING = {}
 EVENT_PLAYER_UNIT_SPELL_FINISH = {}
 
 EVENT_GAME_ENTER_REGION = {}
@@ -204,6 +207,9 @@ function SelectUnit(unit, value) end
 function GetHeroLevel(unit) end
 ---@param whichUnit unit
 function RemoveUnit(whichUnit) end
+---@param unit unit
+---@return id
+function GetUnitTypeId(unit) end
 
 function IssuePointOrderById(whichUnit, order, x, y) end
 ---@param whichHero unit
@@ -349,6 +355,8 @@ function GetFilterUnit() end
 function GetEnteringUnit() end
 ---@return unit
 function GetLevelingUnit() end
+---@return unit
+function GetEventDamageSource() end
 ---@return region
 function GetTriggeringRegion() end
 
@@ -395,3 +403,4 @@ function RemovePlayer(whichPlayer, PLAYER_GAME_RESULT) end
 
 function EndGame(isShowScore) end
 
+function ClearSelection() end

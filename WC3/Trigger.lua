@@ -1,6 +1,6 @@
-local Class = Require("Class")
-local Log = Require("Log")
-local Unit = Require("WC3.Unit")
+local Class = require("Class")
+local Log = require("Log")
+local Unit = require("WC3.Unit")
 
 local Trigger = Class()
 
@@ -10,10 +10,6 @@ end
 
 function Trigger:Destroy()
     DestroyTrigger(self.handle)
-end
-
-function Trigger:RegisterUnitSold(unit)
-    return Unit.Get(TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SELL))
 end
 
 function Trigger:RegisterPlayerUnitEvent(player, event, filter)
@@ -30,6 +26,10 @@ function Trigger:RegisterPlayerUnitEvent(player, event, filter)
     return TriggerRegisterPlayerUnitEvent(self.handle, player.handle, event, Filter(filter))
 end
 
+function Trigger:RegisterUnitSold(unit)
+    TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SELL)
+end
+
 function Trigger:RegisterUnitDeath(unit)
     return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_DEATH)
 end
@@ -40,6 +40,20 @@ end
 
 function Trigger:RegisterHeroLevel(unit)
     return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_HERO_LEVEL)
+end
+
+function Trigger:RegisterPlayerUnitDamaging(player, filter)
+    if filter then
+        filter = function()
+            local result, errOrRet = pcall(filter, Unit.Get(GetFilterUnit()))
+            if not result then
+                Log("Error filtering player units for and event: " .. errOrRet)
+                return false
+            end
+            return errOrRet
+        end
+    end
+    return TriggerRegisterPlayerUnitEvent(self.handle, player.handle, EVENT_PLAYER_UNIT_DAMAGING, Filter(filter))
 end
 
 function Trigger:RegisterEnterRegion(region, filter)

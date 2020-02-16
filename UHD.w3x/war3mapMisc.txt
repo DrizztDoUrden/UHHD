@@ -1,3 +1,6 @@
+[HERO]
+DependencyOr=H_DK
+
 [Misc]
 AgiAttackSpeedBonus=0.0
 AgiDefenseBase=0.0

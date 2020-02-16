@@ -10,12 +10,12 @@ STRING 2
 
 STRING 3
 {
-Nondescript
+You have to surving the waves of creeps and several bosses.
 }
 
 STRING 4
 {
-Porgy and Andronet
+Porgy#21516, Andronet#2670
 }
 
 STRING 5
@@ -36,7 +36,7 @@ Drain Light
 }
 
 STRING 9
-// Abilities: DK_0 (Drain Light), Hotkey (Hotkey - Normal)
+// Units: H_DK (Dusk Knight), Hotkey (Hotkey)
 {
 Q
 }
@@ -54,7 +54,7 @@ Drain Light
 }
 
 STRING 15
-// Abilities: DK_2 (Shadow Leap), Hotkey (Hotkey - Normal)
+// Abilities: DK_0 (Drain Light), Hotkey (Hotkey - Normal)
 {
 Q
 }
@@ -66,7 +66,7 @@ STRING 16
 }
 
 STRING 18
-// Abilities: DK_3 (Dark Mend), Hotkey (Hotkey - Normal)
+// Abilities: DK_2 (Shadow Leap), Hotkey (Hotkey - Normal)
 {
 Q
 }
@@ -126,7 +126,7 @@ Dark Mend
 }
 
 STRING 36
-// Units: C_MD (MagicDragon), Name (Name)
+// Units: e000 (MagicDragon), Name (Name)
 {
 MagicDragon
 }
@@ -384,12 +384,6 @@ STRING 90
 Ward Drain
 }
 
-STRING 91
-// Abilities: T000 (Ward Drain), Tip (Tooltip - Normal)
-{
-Ward Drain (Not implented)
-}
-
 STRING 92
 // Abilities: T000 (Ward Drain), Ubertip (Tooltip - Normal - Extended)
 {
@@ -472,12 +466,6 @@ STRING 105
 // Abilities: T002 (Drain of Will), Name (Name)
 {
 Drain of Will
-}
-
-STRING 106
-// Abilities: T002 (Drain of Will), Tip (Tooltip - Normal)
-{
-Drain of Will (Not implemented)
 }
 
 STRING 107
@@ -730,5 +718,47 @@ STRING 148
 // Upgrades: U032 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 032
+}
+
+STRING 149
+// Abilities: DKT2 (Shadow Leap Talents), Name (Name)
+{
+Shadow Leap Talents
+}
+
+STRING 150
+// Abilities: DKT2 (Shadow Leap Talents), Tip (Tooltip - Normal)
+{
+Shadow Leap Talents
+}
+
+STRING 151
+// Abilities: DKT2 (Shadow Leap Talents), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
+}
+
+STRING 152
+// Abilities: DK_3 (Dark Mend), Hotkey (Hotkey - Normal)
+{
+Q
+}
+
+STRING 153
+// Upgrades: R000 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Not Impelement
+}
+
+STRING 154
+// Abilities: T000 (Ward Drain), Tip (Tooltip - Normal)
+{
+Ward Drain
+}
+
+STRING 155
+// Abilities: T002 (Drain of Will), Tip (Tooltip - Normal)
+{
+Drain of Will
 }
 

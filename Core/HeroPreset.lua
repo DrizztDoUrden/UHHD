@@ -1,8 +1,8 @@
-local Class = Require("Class")
-local Trigger = Require("WC3.Trigger")
-local Stats = Require("Core.Stats")
-local Hero = Require("Core.Hero")
-local Log = Require("Log")
+local Class = require("Class")
+local Trigger = require("WC3.Trigger")
+local Stats = require("Core.Stats")
+local Hero = require("Core.Hero")
+local Log = require("Log")
 
 local HeroPreset = Class()
 
@@ -39,7 +39,8 @@ function HeroPreset:Spawn(owner, x, y, facing)
     local hero = Hero(owner, self.unitid, x, y, facing);
 
     hero.baseSecondaryStats = self.secondaryStats
-    hero:SetBasicStats(self.basicStats)
+    hero.basicStats = self.basicStats
+    hero:ApplyStats()
     hero.talents = {}
     hero.talentBooks = {}
 

@@ -1,10 +1,11 @@
-local Class = Require("Class")
-local Timer = Require("WC3.Timer")
-local Trigger = Require("WC3.Trigger")
-local Unit = Require("WC3.Unit")
-local HeroPreset = Require("Core.HeroPreset")
-local UHDUnit = Require("Core.UHDUnit")
-local Log = Require("Log")
+local Class = require("Class")
+local Timer = require("WC3.Timer")
+local Trigger = require("WC3.Trigger")
+local Unit = require("WC3.Unit")
+local HeroPreset = require("Core.HeroPreset")
+local UHDUnit = require("Core.UHDUnit")
+local Log = require("Log")
+local Spell = require "Core.Spell"
 
 local logDuskKnight = Log.Category("Heroes\\Dusk Knight", {
     printVerbosity = Log.Verbosity.Trace,
@@ -13,10 +14,10 @@ local logDuskKnight = Log.Category("Heroes\\Dusk Knight", {
 
 local DuskKnight = Class(HeroPreset)
 
-local DrainLight = Class()
-local HeavySlash = Class()
-local ShadowLeap = Class()
-local DarkMend = Class()
+local DrainLight = Class(Spell)
+local HeavySlash = Class(Spell)
+local ShadowLeap = Class(Spell)
+local DarkMend = Class(Spell)
 
 function DuskKnight:ctor()
     HeroPreset.ctor(self)
@@ -28,78 +29,91 @@ function DuskKnight:ctor()
             id = FourCC('DK_0'),
             handler = DrainLight,
             availableFromStart = true,
-            radius = function(_) return 300 end,
-            duration = function(_) return 2 end,
-            period = function(_) return 0.1 end,
-            effectDuration = function(_) return 10 end,
-            armorRemoved = function(_) return 10 end,
-            gainLimit = function(_) return 30 end,
-            stealPercentage = function(_) return 0.25 end,
+            params = {
+                radius = function(_) return 300 end,
+                duration = function(_) return 2 end,
+                period = function(_) return 0.1 end,
+                effectDuration = function(_) return 10 end,
+                armorRemoved = function(_) return 10 end,
+                gainLimit = function(_) return 30 end,
+                stealPercentage = function(_) return 0.25 end,
+                damage = function(_, caster)
+                    if caster:HasTalent("T001") then return 5 * caster.secondaryStats.spellDamage end
+                    return 0
+                end,
+                healLimit = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
+            },
         },
         heavySlash = {
             id = FourCC('DK_1'),
             handler = HeavySlash,
             availableFromStart = true,
-            radius = function(_) return 125 end,
-            distance = function(_) return 100 end,
-            baseDamage = function(_, caster)
-                local value = 20
-                if caster:HasTalent("T011") then value = value + 15 end
-                return value * caster.secondaryStats.physicalDamage
-            end,
-            baseSlow = function(_) return 0.3 end,
-            slowDuration = function(_) return 3 end,
-            manaBurn = function(_, caster)
-                if caster:HasTalent("T010") then return 20 end
-                return 0
-            end,
-            vampirism = function(_, caster)
-                if caster:HasTalent("T012") then return 0.15 end
-                return 0
-            end,
+            params = {
+                radius = function(_) return 125 end,
+                distance = function(_) return 100 end,
+                baseDamage = function(_, caster)
+                    local value = 20
+                    if caster:HasTalent("T011") then value = value + 15 end
+                    return value * caster.secondaryStats.physicalDamage
+                end,
+                baseSlow = function(_) return 0.3 end,
+                slowDuration = function(_) return 3 end,
+                manaBurn = function(_, caster)
+                    if caster:HasTalent("T010") then return 20 end
+                    return 0
+                end,
+                vampirism = function(_, caster)
+                    if caster:HasTalent("T012") then return 0.15 end
+                    return 0
+                end,
+            },
         },
         shadowLeap = {
             id = FourCC('DK_2'),
             handler = ShadowLeap,
             availableFromStart = true,
-            period = function(_) return 0.05 end,
-            duration = function(_) return 0.5 end,
-            distance = function(_) return 300 end,
-            baseDamage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
-            push = function(_) return 100 end,
-            pushDuration = function(_) return 0.5 end,
+            params = {
+                period = function(_) return 0.05 end,
+                duration = function(_) return 0.5 end,
+                distance = function(_) return 300 end,
+                baseDamage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
+                push = function(_) return 100 end,
+                pushDuration = function(_) return 0.5 end,
+            },
         },
         darkMend = {
             id = FourCC('DK_3'),
             handler = DarkMend,
             availableFromStart = true,
-            baseHeal = function(_, caster)
-                local value = 20
-                if caster:HasTalent("T030") then value = value * 0.75 end
-                return value * caster.secondaryStats.spellDamage
-            end,
-            duration = function(_) return 4 end,
-            percentHeal = function(_, caster)
-                local value = 0.1
-                if caster:HasTalent("T030") then value = value * 0.75 end
-                return value
-            end,
-            period = function(_) return 0.1 end,
-            instantHeal = function(_, caster)
-                if caster:HasTalent("T030") then return 0.5 end
-                return 0
-            end,
-            healOverTime = function(_, caster)
-                if caster:HasTalent("T030") then return 0.75 end
-                return 1
-            end,
+            params = {
+                baseHeal = function(_, caster)
+                    local value = 20
+                    if caster:HasTalent("T030") then value = value * 0.75 end
+                    return value * caster.secondaryStats.spellDamage
+                end,
+                duration = function(_) return 4 end,
+                percentHeal = function(_, caster)
+                    local value = 0.1
+                    if caster:HasTalent("T030") then value = value * 0.75 end
+                    return value
+                end,
+                period = function(_) return 0.1 end,
+                instantHeal = function(_, caster)
+                    if caster:HasTalent("T030") then return 0.5 end
+                    return 0
+                end,
+                healOverTime = function(_, caster)
+                    if caster:HasTalent("T030") then return 0.75 end
+                    return 1
+                end,
+            },
         },
     }
 
     self.talentBooks = {
         FourCC("DKT0"),
         FourCC("DKT1"),
-        -- FourCC("DKT2"),
+        FourCC("DKT2"),
         FourCC("DKT3"),
     }
 
@@ -128,18 +142,9 @@ function DuskKnight:ctor()
 end
 
 function DrainLight:ctor(definition, caster)
-    self.caster = caster
     self.affected = {}
     self.bonus = 0
-    self.bonusLimit = definition:gainLimit(caster)
-    self.duration = definition:effectDuration(caster)
-    self.toSteal = definition:armorRemoved(caster)
-    self.radius = definition:radius(caster)
-    self.stealTimeLeft = definition:duration(caster)
-    self.period = definition:period(caster)
-    self.toBonus = definition:stealPercentage(caster)
-
-    self:Cast()
+    Spell.ctor(self, definition, caster)
 end
 
 function DrainLight:Cast()
@@ -150,9 +155,9 @@ function DrainLight:Cast()
             table.insert(self.affected, {
                 unit = unit,
                 stolen = 0,
-                toSteal = self.toSteal,
-                toReturn = self.toSteal,
-                toBonus = 0.25,
+                toSteal = self.armorRemoved,
+                toReturn = self.armorRemoved,
+                toBonus = self.stealPercentage,
             })
         end
     end)
@@ -164,13 +169,16 @@ function DrainLight:Cast()
             return
         end
 
-        self.stealTimeLeft = self.stealTimeLeft - self.period
+        self.duration = self.duration - self.period
+        self.healed = 0
 
         for _, target in pairs(self.affected) do
-            self:Drain(target)
+            if target.unit:GetHP() > 0 then
+                self:Drain(target)
+            end
         end
 
-        if self.stealTimeLeft <= 0 then
+        if self.duration <= 0 then
             timer:Destroy()
             self:Effect()
         end
@@ -189,7 +197,7 @@ function DrainLight:Effect()
         self:End()
     end)
 
-    timer:Start(self.duration, false, function()
+    timer:Start(self.effectDuration, false, function()
         timer:Destroy()
         trigger:Destroy()
         self:End()
@@ -200,41 +208,30 @@ function DrainLight:End()
     for _, target in pairs(self.affected) do
         target.unit:SetArmor(target.unit:GetArmor() + target.toReturn)
     end
-    self.caster:SetArmor(self.caster:GetArmor() - self.bonus)
+    self.caster.bonusSecondaryStats.armor = self.caster.bonusSecondaryStats.armor - self.bonus
+    self.caster:ApplyStats()
 end
 
 function DrainLight:Drain(target)
-    local toStealNow = (target.toSteal - target.stolen) * self.period / self.stealTimeLeft
+    local toStealNow = (target.toSteal - target.stolen) * self.period / self.duration
     target.unit:SetArmor(target.unit:GetArmor() + target.stolen)
     target.stolen = target.stolen + toStealNow
     target.unit:SetArmor(target.unit:GetArmor() - target.stolen)
-    if self.bonus < self.bonusLimit then
-        local toBonus = math.min(self.bonusLimit - self.bonus, toStealNow * target.toBonus)
-        self.caster:SetArmor(self.caster:GetArmor() - self.bonus)
+    if self.bonus < self.gainLimit then
+        local toBonus = math.min(self.gainLimit - self.bonus, toStealNow * target.toBonus)
+        self.caster.bonusSecondaryStats.armor = self.caster.bonusSecondaryStats.armor + toBonus
+        self.caster:ApplyStats()
         self.bonus = self.bonus + toBonus
-        self.caster:SetArmor(self.caster:GetArmor() + self.bonus)
     end
     if self.damage > 0 then
         local damagePerTick = self.period * self.damage
-        self.caster:DamageTarget(target.unit, damagePerTick, false, true, ATTACK_TYPE_HERO, DAMAGE_TYPE_MAGIC, WEAPON_TYPE_WHOKNOWS)
+        local damage = self.caster:DealDamage(target.unit, { value = damagePerTick, isAttack = false, })
         if self.healed < self.healLimit * self.period then
-            local toHeal = math.min(self.healLimit * self.period - self.healed, self.toSteal * damagePerTick)
+            local toHeal = math.min(self.healLimit * self.period - self.healed, self.stealPercentage * damage)
             self.healed = self.healed + toHeal
             self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.caster:GetHP() + toHeal))
         end
     end
-end
-
-function HeavySlash:ctor(definition, caster)
-    self.caster = caster
-    self.radius = definition:radius(caster)
-    self.distance = definition:distance(caster)
-    self.baseDamage = definition:baseDamage(caster)
-    self.baseSlow = definition:baseSlow(caster)
-    self.slowDuration = definition:slowDuration(caster)
-    self.manaBurn = definition:manaBurn(caster)
-    self.vampirism = definition:vampirism(caster)
-    self:Cast()
 end
 
 function HeavySlash:Cast()
@@ -245,9 +242,9 @@ function HeavySlash:Cast()
 
     Unit.EnumInRange(x, y, self.radius, function(unit)
         if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
-            self.caster:DamageTarget(unit, self.baseDamage, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_METAL_MEDIUM_SLICE)
+            local damage = self.caster:DealDamage(unit, { value = self.baseDamage, isAttack = true, })
             if self.manaBurn > 0 then unit:SetMana(math.max(0, unit:GetMana() - self.manaBurn)) end
-            if self.vampirism > 0 then self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.vampirism * self.baseDamage)) end
+            if self.vampirism > 0 then self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.vampirism * damage)) end
 
             if unit:IsA(UHDUnit) then
                 affected[unit] = true
@@ -267,17 +264,6 @@ function HeavySlash:Cast()
             unit:ApplyStats()
         end
     end)
-end
-
-function ShadowLeap:ctor(definition, caster)
-    self.caster = caster
-    self.period = definition:period(caster)
-    self.duration = definition:duration(caster)
-    self.distance = definition:distance(caster)
-    self.baseDamage = definition:baseDamage(caster)
-    self.push = definition:push(caster)
-    self.pushDuration = definition:pushDuration(caster)
-    self:Cast()
 end
 
 function ShadowLeap:Cast()
@@ -308,7 +294,7 @@ function ShadowLeap:Cast()
                         y = self.push * math.sin(angle) / pushTicks,
                         ticksLeft = pushTicks,
                     }
-                    self.caster:DamageTarget(unit, self.baseDamage, false, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_METAL_MEDIUM_SLICE)
+                    self.caster:DealDamage(unit, { value = self.baseDamage, isAttack = true, })
                 end
             end)
         end
@@ -322,17 +308,6 @@ function ShadowLeap:Cast()
             end
         end
     end)
-end
-
-function DarkMend:ctor(definition, caster)
-    self.caster = caster
-    self.baseHeal = definition:baseHeal(caster)
-    self.duration = definition:duration(caster)
-    self.percentHeal = definition:percentHeal(caster)
-    self.period = definition:period(caster)
-    self.instantHeal = definition:instantHeal(caster)
-    self.healOverTime = definition:healOverTime(caster)
-    self:Cast()
 end
 
 function DarkMend:Cast()

@@ -1,4 +1,4 @@
-local Class = Require("Class")
+local Class = require("Class")
 
 local Verbosity = {
     Fatal = 1,
