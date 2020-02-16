@@ -287,10 +287,20 @@ local verbosityNames = {
     "Trace",
 }
 
+local verbosityColors = {
+    [Verbosity.Fatal] = { start = "|cffff0000", end_ = "|r", },
+    [Verbosity.Critical] = { start = "|cffff0000", end_ = "|r", },
+    [Verbosity.Error] = { start = "|cffff0000", end_ = "|r", },
+    [Verbosity.Warning] = { start = "|cffffff33", end_ = "|r", },
+    [Verbosity.Message] = { start = "", end_ = "", },
+    [Verbosity.Info] = { start = "", end_ = "", },
+    [Verbosity.Trace] = { start = "", end_ = "", },
+}
+
 local function LogInternal(category, verbosity, ...)
     if verbosity <= math.max(category.printVerbosity, category.fileVerbosity) then
         if verbosity <= category.printVerbosity then
-            print("[" .. verbosityNames[verbosity] .. "] " .. category.name .. ": ", ...)
+            print(verbosityColors[verbosity].start .. "[" .. verbosityNames[verbosity] .. "] " .. category.name .. ": ", ..., verbosityColors[verbosity].end_)
         end
         if verbosity <= category.fileVerbosity then
             category.buffer = category.buffer .. "\n[" .. verbosityNames[verbosity] .. "]"
@@ -742,14 +752,21 @@ function HeroPreset:Spawn(owner, x, y, facing)
 
     for _, ability in pairs(self.abilities) do
         if ability.availableFromStart then
-            hero:AddAbility(ability.id)
-            hero:SetAbilityLevel(ability.id, 1)
+            if type(ability.id) == "table" then
+                hero:AddAbility(ability.id[1])
+            else
+                hero:AddAbility(ability.id)
+            end
         end
     end
 
     if TestBuild then
         hero:AddTalentPoint()
         hero:AddTalentPoint()
+    end
+
+    for tech, level in pairs(self.initialTechs or {}) do
+        owner:SetTechLevel(tech, level)
     end
 
     return hero
@@ -765,9 +782,18 @@ function HeroPreset:Cast(hero)
     local abilityId = GetSpellAbilityId()
 
     for _, ability in pairs(self.abilities) do
-        if ability.id == abilityId then
-            ability:handler(hero)
-            break
+        if type(ability.id) == "table" then
+            for _, id in pairs(ability.id) do
+                if id == abilityId then
+                    ability:handler(hero)
+                    break
+                end
+            end
+        else
+            if ability.id == abilityId then
+                ability:handler(hero)
+                break
+            end
         end
     end
 end
@@ -934,6 +960,9 @@ Module("Core.UHDUnit", function()
 local Class = require("Class")
 local Stats = require("Core.Stats")
 local WC3 = require("WC3.All")
+local Log = require("Log")
+
+local logUnit = Log.Category("Core\\Unit")
 
 local UHDUnit = Class(WC3.Unit)
 
@@ -998,10 +1027,12 @@ function UHDUnit:ApplyStats()
 end
 
 function UHDUnit:DamageDealt()
+    logUnit:Warning("hit processing: from source")
     local args = {
         source = self
     }
     for handler in pairs(self.onDamageDealt) do
+        logUnit:Warning("hit processing: from source, invoking")
         handler(args)
     end
 end
@@ -1027,7 +1058,8 @@ local unitDamaging = WC3.Trigger()
 for i=0,23 do unitDamaging:RegisterPlayerUnitDamaging(WC3.Player.Get(i)) end
 unitDamaging:AddAction(function()
     local source = WC3.Unit.GetEventDamageSource()
-    if source.IsA(UHDUnit) then source:DamageDealt() end
+    logUnit:Warning("hit processing: from " .. source:GetName())
+    if source:IsA(UHDUnit) then source:DamageDealt() end
 end)
 
 return UHDUnit
@@ -1635,13 +1667,16 @@ local Class = require("Class")
 local HeroPreset = require("Core.HeroPreset")
 local WC3 = require("WC3.All")
 local Spell = require "Core.Spell"
+local Log = require "Log"
+
+local logMutant = Log.Category("Heroes\\Mutant")
 
 local Mutant = Class(HeroPreset)
 
 local BashingStrikes = Class(Spell)
 local TakeCover = Class(Spell)
+local Meditate = Class(Spell)
 local Rage = Class(Spell)
-local Meditation = Class(Spell)
 
 function Mutant:ctor()
     HeroPreset.ctor(self)
@@ -1652,6 +1687,7 @@ function Mutant:ctor()
         bashingStrikes = {
             id = FourCC('MT_0'),
             handler = BashingStrikes,
+            availableFromStart = true,
             params = {
                 attacks = function(_) return 3 end,
                 attackSpeedBonus = function(_) return 0.5 end,
@@ -1659,7 +1695,7 @@ function Mutant:ctor()
             },
         },
         takeCover = {
-            id = FourCC('MT_1'),
+            id = { FourCC('MT_1'), FourCC('MTD1'), },
             handler = TakeCover,
             availableFromStart = true,
             params = {
@@ -1667,8 +1703,16 @@ function Mutant:ctor()
                 redirectPerRage = function(_) return 0.02 end,
             },
         },
-        rage = {
+        meditate = {
             id = FourCC('MT_2'),
+            handler = Meditate,
+            availableFromStart = true,
+            params = {
+                healPerRage = function(_) return 0.06 end,
+            },
+        },
+        rage = {
+            id = FourCC('MT_3'),
             handler = Rage,
             availableFromStart = true,
             params = {
@@ -1678,14 +1722,11 @@ function Mutant:ctor()
                 startingStacks = function(_) return 3 end,
             },
         },
-        meditation = {
-            id = FourCC('MT_3'),
-            handler = Meditation,
-            availableFromStart = true,
-            params = {
-                healPerRage = function(_) return 0.06 end,
-            },
-        },
+    }
+
+    self.initialTechs = {
+        [FourCC("MTU0")] = 0,
+        [FourCC("R001")] = 1,
     }
 
     self.talentBooks = {
@@ -1720,18 +1761,41 @@ function Mutant:ctor()
 end
 
 function BashingStrikes:Cast()
-    self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed + self.attackSpeedBonus
+    self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed * (1 + self.attackSpeedBonus)
+    logMutant:Warning("Bashing strikes start")
 
     local function handler()
+        logMutant:Warning("Bashing strikes hit")
         self:SetHP(math.min(self.caster.secondaryStats.health, self:GetHP() + self.healPerHit * self.caster.secondaryStats.health))
         self.hitsLeft = self.hitsLeft - 1
         if self.hitsLeft < 0 then
+            logMutant:Warning("Bashing strikes end")
             self.caster.onDamageDealt[handler] = nil
-            self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed - self.attackSpeedBonus
+            self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed / (1 + self.attackSpeedBonus)
         end
     end
 
     self.caster.onDamageDealt[handler] = true
+end
+
+function TakeCover:Cast()
+    if not self.caster.effects["mt.cover"] then
+        self.caster:RemoveAbility(FourCC('MT_1'))
+        self.caster:AddAbility(FourCC('MTD1'))
+        self.caster:SetCooldownRemaining(FourCC('MTD1'), 5)
+        self.caster.effects["mt.cover"] = true
+    else
+        self.caster:RemoveAbility(FourCC('MTD1'))
+        self.caster:AddAbility(FourCC('MT_1'))
+        self.caster:SetCooldownRemaining(FourCC('MT_1'), 5)
+        self.caster.effects["mt.cover"] = nil
+    end
+end
+
+function Meditate:Cast()
+end
+
+function Rage:Cast()
 end
 
 return Mutant
@@ -2315,6 +2379,15 @@ function Unit:AddAbility(id)
     end
 end
 
+function Unit:RemoveAbility(id)
+    if math.type(id) then
+        return UnitRemoveAbility(self.handle, math.tointeger(id))
+    else
+        error("Abilityid should be an integer (" .. type(id) .. ")", 2)
+        return false
+    end
+end
+
 function Unit.AddToAllStock(unitId, currentStock, stockMax)
     if math.type(unitId) ~= "integer" then
         error("unitId should be an integer", 2)
@@ -2416,6 +2489,10 @@ end
 
 function Unit:SetCooldown(abilityId, level, value)
     return BlzSetUnitAbilityCooldown(self.handle, abilityId, level, value)
+end
+
+function Unit:SetCooldownRemaining(abilityId, value)
+    return BlzStartUnitAbilityCooldown(self.handle, abilityId, value)
 end
 
 function Unit:GetName() return GetUnitName(self.handle) end

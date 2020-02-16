@@ -726,3 +726,250 @@ STRING 152
 Q
 }
 
+
+STRING 154
+// Abilities: T000 (Ward Drain), Tip (Tooltip - Normal)
+{
+Ward Drain
+}
+
+STRING 155
+// Abilities: T002 (Drain of Will), Tip (Tooltip - Normal)
+{
+Drain of Will
+}
+
+STRING 156
+// Units: H_DK (Dusk Knight), Tip (Tooltip - Basic)
+{
+Summon Dusk Knight
+}
+
+STRING 157
+// Units: H_MT (Mutant), Name (Name)
+{
+Mutant
+}
+
+STRING 158
+// Units: H_MT (Mutant), Tip (Tooltip - Basic)
+{
+Summon Mutant
+}
+
+STRING 160
+// Abilities: MT_0 (Bashing Strikes), Name (Name)
+{
+Bashing Strikes
+}
+
+STRING 162
+// Abilities: MT_1 (Take Cover), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 163
+// Abilities: MT_0 (Bashing Strikes), Tip (Tooltip - Normal)
+{
+Bashing Strikes
+}
+
+STRING 165
+// Abilities: MT_1 (Take Cover), Name (Name)
+{
+Take Cover
+}
+
+STRING 166
+// Abilities: MT_2 (Meditate), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 167
+// Abilities: MT_1 (Take Cover), Tip (Tooltip - Normal)
+{
+Take Cover - |cff00ff00Enable|r
+}
+
+STRING 168
+// Abilities: MT_1 (Take Cover), Ubertip (Tooltip - Normal - Extended)
+{
+Redirects 30% + 2% per rage stack of received damage to a nearest ally hero in 500 range. Burns 1% mana per 1% of max HP damage redirected.|nToggle. 5 sec. cooldown.
+}
+
+STRING 169
+// Abilities: MT_1 (Take Cover), Hotkey (Hotkey - Normal)
+{
+W
+}
+
+STRING 170
+// Abilities: MT_1 (Take Cover), Unhotkey (Hotkey - Turn Off)
+{
+W
+}
+
+STRING 171
+// Abilities: MT_1 (Take Cover), Unubertip (Tooltip - Turn Off - Extended)
+{
+Redirects 30% + 2% per rage stack of received damage to a nearest ally hero in 500 range. Burns 1% mana per 1% of max HP damage redirected.|nToggle. 5 sec. cooldown.
+}
+
+STRING 172
+// Abilities: MT_1 (Take Cover), Untip (Tooltip - Turn Off)
+{
+Take Cover - |cffff0000Disable|r
+}
+
+STRING 173
+// Abilities: DK_2 (Shadow Leap), Hotkey (Hotkey - Normal)
+{
+E
+}
+
+STRING 174
+// Abilities: DK_3 (Dark Mend), Hotkey (Hotkey - Normal)
+{
+R
+}
+
+STRING 175
+// Abilities: MT_2 (Meditate), Name (Name)
+{
+Meditate
+}
+
+STRING 176
+// Abilities: MT_2 (Meditate), Hotkey (Hotkey - Normal)
+{
+E
+}
+
+STRING 177
+// Abilities: MT_3 (Rage), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 178
+// Abilities: MT_2 (Meditate), Tip (Tooltip - Normal)
+{
+Meditate
+}
+
+STRING 179
+// Abilities: MT_2 (Meditate), Ubertip (Tooltip - Normal - Extended)
+{
+In 2 seconds charging removes all rage stacks, healing 6% of missing health per stack removed.|n20 seconds cooldown from rage start.
+}
+
+STRING 180
+// Abilities: MT_3 (Rage), Name (Name)
+{
+Rage
+}
+
+STRING 181
+// Abilities: MT_3 (Rage), Hotkey (Hotkey - Normal)
+{
+R
+}
+
+STRING 182
+// Abilities: MTD1 (Take Cover - Disable), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 183
+// Abilities: MT_3 (Rage), Tip (Tooltip - Normal)
+{
+Rage
+}
+
+STRING 184
+// Abilities: MT_3 (Rage), Ubertip (Tooltip - Normal - Extended)
+{
+Each attack gives +1 weapon damage and -1 armor. Starts with 3 statks. Every 2 seconds 1 stack is removed. Ends when reaches 0 stacks.|nLimit: 10 stacks.|nCooldown: 20 seconds from end.
+}
+
+STRING 185
+// Upgrades: MTU0 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Rage active
+}
+
+STRING 186
+// Upgrades: R001 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Rage inactive
+}
+
+STRING 188
+// Abilities: MT_0 (Bashing Strikes), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 189
+// Abilities: MTD1 (Take Cover - Disable), Tip (Tooltip - Normal)
+{
+Take Cover - |cffff0000Disable|r
+}
+
+STRING 190
+// Abilities: MTD1 (Take Cover - Disable), Ubertip (Tooltip - Normal - Extended)
+{
+Redirects 30% + 2% per rage stack of received damage to a nearest ally hero in 500 range. Burns 1% mana per 1% of max HP damage redirected.|nToggle. 5 sec. cooldown.
+}
+
+STRING 191
+// Abilities: MTD1 (Take Cover - Disable), Hotkey (Hotkey - Normal)
+{
+W
+}
+
+STRING 192
+// Abilities: MTD1 (Take Cover - Disable), Unhotkey (Hotkey - Turn Off)
+{
+W
+}
+
+STRING 193
+// Abilities: MTD1 (Take Cover - Disable), Unubertip (Tooltip - Turn Off - Extended)
+{
+Redirects 30% + 2% per rage stack of received damage to a nearest ally hero in 500 range. Burns 1% mana per 1% of max HP damage redirected.|nToggle. 5 sec. cooldown.
+}
+
+STRING 194
+// Abilities: MTD1 (Take Cover - Disable), Untip (Tooltip - Turn Off)
+{
+Take Cover - |cffff0000Disable|r
+}
+
+STRING 195
+// Abilities: MTD1 (Take Cover - Disable), Name (Name)
+{
+Take Cover - Disable
+}
+
+STRING 199
+// Abilities: MT_0 (Bashing Strikes), Ubertip (Tooltip - Normal - Extended)
+{
+Next 3 attacks have +50% attack speed and heal 5% max HP each.
+}
+
+STRING 200
+// Upgrades: R002 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Already in effect
+}
+
+STRING 201
+// Upgrades: R002 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
+{
+(Bashing strikes)
+}
+

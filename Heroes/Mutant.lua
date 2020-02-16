@@ -2,6 +2,9 @@ local Class = require("Class")
 local HeroPreset = require("Core.HeroPreset")
 local WC3 = require("WC3.All")
 local Spell = require "Core.Spell"
+local Log = require "Log"
+
+local logMutant = Log.Category("Heroes\\Mutant")
 
 local Mutant = Class(HeroPreset)
 
@@ -93,14 +96,17 @@ function Mutant:ctor()
 end
 
 function BashingStrikes:Cast()
-    self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed + self.attackSpeedBonus
+    self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed * (1 + self.attackSpeedBonus)
+    logMutant:Warning("Bashing strikes start")
 
     local function handler()
-        self:SetHP(math.min(self.caster.secondaryStats.health, self:GetHP() + self.healPerHit * self.caster.secondaryStats.health))
-        self.hitsLeft = self.hitsLeft - 1
-        if self.hitsLeft < 0 then
+        logMutant:Warning("Bashing strikes hit")
+        self.caster:SetHP(math.min(self.caster.secondaryStats.health, self.caster:GetHP() + self.healPerHit * self.caster.secondaryStats.health))
+        self.attacks = self.attacks - 1
+        if self.attacks < 0 then
+            logMutant:Warning("Bashing strikes end")
             self.caster.onDamageDealt[handler] = nil
-            self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed - self.attackSpeedBonus
+            self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed / (1 + self.attackSpeedBonus)
         end
     end
 
