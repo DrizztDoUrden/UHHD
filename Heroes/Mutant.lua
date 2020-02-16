@@ -55,11 +55,23 @@ function Mutant:ctor()
             availableFromStart = true,
             params = {
                 ragePerAttack = function(_) return 1 end,
-                damagePerRage = function(_) return 1 end,
-                armorPerRage = function(_) return -1 end,
+                damagePerRage = function(_, caster)
+                    local value = 1
+                    if caster:HasTalent("T130") then value = value + 0.2 end
+                    return value
+                end,
+                armorPerRage = function(_, caster)
+                    local value = -1
+                    if caster:HasTalent("T131") then value = value + 0.2 end
+                    return value
+                end,
                 startingStacks = function(_) return 3 end,
-                maxStacks = function(_) return 3 end,
-                stackDecayTime = function(_) return 4 end, -- todo: update ability desc
+                maxStacks = function(_) return 10 end,
+                stackDecayTime = function(_, caster)
+                    local value = 3 -- todo: update ability desc
+                    if caster:HasTalent("T132") then value = value + 1.5 end
+                    return value
+                end,
             },
         },
     }
