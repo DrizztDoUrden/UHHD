@@ -5,6 +5,7 @@ local Mutant = require("Heroes.Mutant")
 local WaveObserver = require("Core.WaveObserver")
 local Core = require("Core.Core")
 local Tavern = require("Core.Tavern")
+local Timer = require("WC3.Timer")
 
 local logMain = Log.Category("Main")
 
@@ -28,6 +29,10 @@ end
 Core(WC3.Player.Get(8), -2300, -3800, 0)
 Tavern(WC3.Player.Get(0), 1600, -3800, 0, heroPresets)
 
-WaveObserver(WC3.Player.Get(9))
+local timerwaveObserver = Timer()
+timerwaveObserver:Start(25, false,
+    function() WaveObserver(WC3.Player.Get(9)) 
+end)
+
 
 logMain:Message("Game initialized successfully")
