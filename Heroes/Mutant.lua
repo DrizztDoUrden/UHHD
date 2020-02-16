@@ -57,8 +57,17 @@ function Mutant:ctor()
             availableFromStart = true,
             params = {
                 castTime = function(_) return 2 end,
-                castSlow = function(_) return -0.7 end,
-                healPerRage = function(_) return 0.06 end,
+                castSlow = function(_, caster)
+                    local value = -0.7
+                    if caster:HasTalent("T121") then value = 0 end
+                    return value
+                end,
+                healPerRage = function(_) return 0.05 end, --todo: update tooltip
+                manaHealPerRage = function(_, caster)
+                    local value = 0
+                    if caster:HasTalent("T120") then value = value + 0.025 end
+                    return value
+                end,
             },
         },
         rage = {
@@ -80,8 +89,13 @@ function Mutant:ctor()
                     return value
                 end,
                 stackDecayTime = function(_, caster)
-                    local value = 3 -- todo: update ability desc
+                    local value = 3 -- todo: update tooltip
                     if caster:HasTalent("T132") then value = value + 1.5 end
+                    return value
+                end,
+                meditationCooldown = function(_, caster)
+                    local value = 20
+                    if caster:HasTalent("T122") then value = value - 10 end
                     return value
                 end,
             },
@@ -230,6 +244,11 @@ function Meditate:Cast()
             local percentHealed = rage.stacks * self.healPerRage
             local heal = (self.caster.secondaryStats.health - curHp) * percentHealed
             self.caster:SetHP(curHp + heal)
+            if self.manaHealPerRage then
+                local manaHealPart = self.manaHealPerRage * rage.stacks
+                local curMp = self.caster:GetMana()
+                self.caster:SetMana(curMp + manaHealPart * (self.caster:GetMaxMana() - curMp))
+            end
             rage:SetStacks(0)
         end
     end)
@@ -239,7 +258,7 @@ function Rage:Cast()
     self.caster:GetOwner():SetTechLevel(FourCC("R001"), 0)
     self.caster:GetOwner():SetTechLevel(FourCC("MTU0"), 1)
     self.caster:SetCooldownRemaining(FourCC('MT_3'), 0)
-    self.caster:SetCooldownRemaining(FourCC('MT_2'), 2)
+    self.caster:SetCooldownRemaining(FourCC('MT_2'), self.meditationCooldown)
     self.caster.effects["Mutant.Rage"] = self
     self:SetStacks(self.startingStacks)
 
