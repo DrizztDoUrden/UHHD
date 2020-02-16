@@ -384,12 +384,6 @@ STRING 90
 Ward Drain
 }
 
-STRING 91
-// Abilities: T000 (Ward Drain), Tip (Tooltip - Normal)
-{
-Ward Drain (Not implented)
-}
-
 STRING 92
 // Abilities: T000 (Ward Drain), Ubertip (Tooltip - Normal - Extended)
 {
@@ -472,12 +466,6 @@ STRING 105
 // Abilities: T002 (Drain of Will), Name (Name)
 {
 Drain of Will
-}
-
-STRING 106
-// Abilities: T002 (Drain of Will), Tip (Tooltip - Normal)
-{
-Drain of Will (Not implemented)
 }
 
 STRING 107
@@ -754,5 +742,23 @@ STRING 152
 // Abilities: DK_3 (Dark Mend), Hotkey (Hotkey - Normal)
 {
 Q
+}
+
+STRING 153
+// Upgrades: R000 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Not Impelement
+}
+
+STRING 154
+// Abilities: T000 (Ward Drain), Tip (Tooltip - Normal)
+{
+Ward Drain
+}
+
+STRING 155
+// Abilities: T002 (Drain of Will), Tip (Tooltip - Normal)
+{
+Drain of Will
 }
 
