@@ -37,6 +37,9 @@ do
             return table.unpack(coroutine.yield(resume, id))
         end
 
+        local oldClassicReqire = require
+        require = Require
+
         while #modules > 0 do
             local anyFound = false
             for moduleId, module in pairs(modules) do
@@ -92,9 +95,11 @@ do
                 break
             end
         end
+
         modules = nil
         readyModules = nil
         Require = oldRequire
+        require = oldClassicReqire
         Module = function (id, definition)
             Log("Module loading has already finished. Can't load " .. id)
         end
@@ -128,11 +133,7 @@ local function Class(base, ctor)
     if not ctor and type(base) == 'function' then
         ctor = base
         base = nil
-<<<<<<< HEAD
-        elseif type(base) == 'table' then
-=======
     elseif type(base) == 'table' then
->>>>>>> develop
         for i,v in pairs(base) do
             class[i] = v
         end
@@ -176,13 +177,8 @@ end)
 -- End of file Class.lua
 -- Start of file Initialization.lua
 Module("Initialization", function()
-<<<<<<< HEAD
-local Log = Require("Log")
-local Timer = Require("WC3.Timer")
-=======
 local Log = require("Log")
 local Timer = require("WC3.Timer")
->>>>>>> develop
 
 local handlers = {
     initGlobals = { funcs = {}, executed = false, },
@@ -269,11 +265,7 @@ end)
 -- End of file Initialization.lua
 -- Start of file Log.lua
 Module("Log", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-=======
 local Class = require("Class")
->>>>>>> develop
 
 local Verbosity = {
     Fatal = 1,
@@ -380,17 +372,10 @@ end)
 -- End of file Log.lua
 -- Start of file Core\Core.lua
 Module("Core.Core", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-local Unit = Require("WC3.Unit")
-local Trigger = Require("WC3.Trigger")
-local Player = Require("WC3.Player")
-=======
 local Class = require("Class")
 local Unit = require("WC3.Unit")
 local Trigger = require("WC3.Trigger")
 local Player = require("WC3.Player")
->>>>>>> develop
 
 local wcplayer = Class(Player)
 local Core = Class(Unit)
@@ -415,15 +400,9 @@ end)
 -- End of file Core\Core.lua
 -- Start of file Core\Creep.lua
 Module("Core.Creep", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-local UHDUnit = Require("Core.UHDUnit")
-local Timer = Require("WC3.Timer")
-=======
 local Class = require("Class")
 local UHDUnit = require("Core.UHDUnit")
 local Timer = require("WC3.Timer")
->>>>>>> develop
 local Creep = Class(UHDUnit)
 
     function Creep:Destroy()
@@ -439,17 +418,10 @@ end)
 -- End of file Core\Creep.lua
 -- Start of file Core\CreepPreset.lua
 Module("Core.CreepPreset", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-local Log = Require("Log")
-local Stats = Require("Core.Stats")
-local Creep = Require("Core.Creep")
-=======
 local Class = require("Class")
 local Log = require("Log")
 local Stats = require("Core.Stats")
 local Creep = require("Core.Creep")
->>>>>>> develop
 
 
 local CreepPreset = Class()
@@ -489,15 +461,6 @@ end)
 -- End of file Core\CreepPreset.lua
 -- Start of file Core\Hero.lua
 Module("Core.Hero", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-local Stats = Require("Core.Stats")
-local UHDUnit = Require("Core.UHDUnit")
-local Trigger = Require("WC3.Trigger")
-local Unit = Require("WC3.Unit")
-local Log = Require("Log")
-local WCPlayer = Require("WC3.Player")
-=======
 local Class = require("Class")
 local Stats = require("Core.Stats")
 local UHDUnit = require("Core.UHDUnit")
@@ -505,7 +468,6 @@ local Trigger = require("WC3.Trigger")
 local Unit = require("WC3.Unit")
 local Log = require("Log")
 local WCPlayer = require("WC3.Player")
->>>>>>> develop
 
 local logHero = Log.Category("Core\\Hero")
 
@@ -546,8 +508,6 @@ function Hero:ctor(...)
     self.skillUpgrades = {}
     self.talentBooks = {}
     self.talents = {}
-<<<<<<< HEAD
-=======
 
 
     self.baseSecondaryStats.health = 100
@@ -584,7 +544,6 @@ function Hero:ctor(...)
     self.bonusSecondaryStats.spellResist = 0
 
     self.bonusSecondaryStats.movementSpeed = 0
->>>>>>> develop
 end
 
 function Hero:Destroy()
@@ -597,16 +556,10 @@ function Hero:OnLevel()
     for _ = 1,Hero.StatsPerLevel do
         self:AddStatPoint()
     end
-<<<<<<< HEAD
-    -- if self:GetLevel() Hero.LevelsForTalent == 0 then
-        self:AddTalentPoint()
-    -- end
-=======
     local div = self:GetLevel() / Hero.LevelsForTalent
     if math.floor(div) == div then
         self:AddTalentPoint()
     end
->>>>>>> develop
 end
 
 function Hero:AddStatPoint()
@@ -655,10 +608,6 @@ function Hero:AddTalentPoint()
         talentHelper:Destroy()
         local spellId = GetSpellAbilityId()
         self:SelectNextHelper(false)
-<<<<<<< HEAD
-        logHero:Info(FourCC("T030"), spellId)
-=======
->>>>>>> develop
         local talent = self.talents[spellId]
         talent.learned = true
         if talent.onTaken then talent:onTaken(self) end
@@ -668,10 +617,7 @@ end
 
 function Hero:SelectNextHelper(prefferStats)
     if self:GetOwner() == WCPlayer.Local then
-<<<<<<< HEAD
-=======
         ClearSelection()
->>>>>>> develop
         if prefferStats then
             for helper in pairs(self.statUpgrades) do helper:Select() return end
             for helper in pairs(self.skillUpgrades) do helper:Select() return end
@@ -679,12 +625,8 @@ function Hero:SelectNextHelper(prefferStats)
             for helper in pairs(self.skillUpgrades) do helper:Select() return end
             for helper in pairs(self.statUpgrades) do helper:Select() return end
         end
-<<<<<<< HEAD
-        self:Select()
-=======
         -- todo: fix selection
         -- self:Select()
->>>>>>> develop
     end
 end
 
@@ -693,11 +635,7 @@ local function BonusBeforePow(base, pow, stat, bonus)
 end
 
 local function BonusMul(base, pow, stat, bonus)
-<<<<<<< HEAD
-    return base * pow^stat * (1 + bonus)
-=======
     return base * pow^stat * bonus
->>>>>>> develop
 end
 
 local function ProbabilityBased(base, pow, stat, bonus)
@@ -724,17 +662,6 @@ function Hero:UpdateSecondaryStats()
 
     self.secondaryStats.ccResist = ProbabilityBased(self.baseSecondaryStats.ccResist, ltoBase, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
     self.secondaryStats.spellResist = ProbabilityBased(self.baseSecondaryStats.ccResist, ltoBase, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
-<<<<<<< HEAD
-end
-
-function Hero:SetBasicStats(value)
-    self.basicStats = value
-    self:UpdateSecondaryStats()
-    self:ApplyStats()
-end
-
-function Hero:ApplyStats()
-=======
 
     self.secondaryStats.movementSpeed = self.baseSecondaryStats.movementSpeed + self.bonusSecondaryStats.movementSpeed
     self.secondaryStats.armor = self.baseSecondaryStats.armor + self.bonusSecondaryStats.armor
@@ -742,7 +669,6 @@ end
 
 function Hero:ApplyStats()
     self:UpdateSecondaryStats()
->>>>>>> develop
     self:SetStr(self.basicStats.strength, true)
     self:SetAgi(self.basicStats.agility, true)
     self:SetInt(self.basicStats.intellect, true)
@@ -759,19 +685,11 @@ end)
 -- End of file Core\Hero.lua
 -- Start of file Core\HeroPreset.lua
 Module("Core.HeroPreset", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-local Trigger = Require("WC3.Trigger")
-local Stats = Require("Core.Stats")
-local Hero = Require("Core.Hero")
-local Log = Require("Log")
-=======
 local Class = require("Class")
 local Trigger = require("WC3.Trigger")
 local Stats = require("Core.Stats")
 local Hero = require("Core.Hero")
 local Log = require("Log")
->>>>>>> develop
 
 local HeroPreset = Class()
 
@@ -808,12 +726,8 @@ function HeroPreset:Spawn(owner, x, y, facing)
     local hero = Hero(owner, self.unitid, x, y, facing);
 
     hero.baseSecondaryStats = self.secondaryStats
-<<<<<<< HEAD
-    hero:SetBasicStats(self.basicStats)
-=======
     hero.basicStats = self.basicStats
     hero:ApplyStats()
->>>>>>> develop
     hero.talents = {}
     hero.talentBooks = {}
 
@@ -862,11 +776,6 @@ return HeroPreset
 
 end)
 -- End of file Core\HeroPreset.lua
-<<<<<<< HEAD
--- Start of file Core\Stats.lua
-Module("Core.Stats", function()
-local Class = Require("Class")
-=======
 -- Start of file Core\Spell.lua
 Module("Core.Spell", function()
 local Class = require "Class"
@@ -888,7 +797,6 @@ end)
 -- Start of file Core\Stats.lua
 Module("Core.Stats", function()
 local Class = require("Class")
->>>>>>> develop
 local StatsBase = Class()
 
 function StatsBase:EnumerateNames()
@@ -970,15 +878,6 @@ end
 return Stats
 end)
 -- End of file Core\Stats.lua
-<<<<<<< HEAD
--- Start of file Core\UHDUnit.lua
-Module("Core.UHDUnit", function()
-local Class = Require("Class")
-local Stats = Require("Core.Stats")
-local Unit = Require("WC3.Unit")
-
-local UHDUnit = Class(Unit)
-=======
 -- Start of file Core\Tavern.lua
 Module("Core.Tavern", function()
 local Class = require("Class")
@@ -1037,23 +936,16 @@ local Stats = require("Core.Stats")
 local WC3 = require("WC3.All")
 
 local UHDUnit = Class(WC3.Unit)
->>>>>>> develop
 
 local hpRegenAbility = FourCC('_HPR')
 local mpRegenAbility = FourCC('_MPR')
 
-<<<<<<< HEAD
-function UHDUnit:ctor(...)
-    Unit.ctor(self, ...)
-    self.secondaryStats = Stats.Secondary()
-=======
 UHDUnit.armorValue = 0.06
 
 function UHDUnit:ctor(...)
     WC3.Unit.ctor(self, ...)
     self.secondaryStats = Stats.Secondary()
     self.effects = {}
->>>>>>> develop
 
     self.secondaryStats.health = 100
     self.secondaryStats.mana = 100
@@ -1067,20 +959,13 @@ function UHDUnit:ctor(...)
 
     self.secondaryStats.armor = 0
     self.secondaryStats.evasion = 0.05
-<<<<<<< HEAD
-    self.secondaryStats.block = 0
-=======
->>>>>>> develop
     self.secondaryStats.ccResist = 0
     self.secondaryStats.spellResist = 0
 
     self.secondaryStats.movementSpeed = 1
 
-<<<<<<< HEAD
-=======
     self.onDamageDealt = {}
 
->>>>>>> develop
     self:AddAbility(hpRegenAbility)
     self:AddAbility(mpRegenAbility)
 end
@@ -1112,8 +997,6 @@ function UHDUnit:ApplyStats()
     end
 end
 
-<<<<<<< HEAD
-=======
 function UHDUnit:DamageDealt()
     local args = {
         source = self
@@ -1147,22 +1030,11 @@ unitDamaging:AddAction(function()
     if source.IsA(UHDUnit) then source:DamageDealt() end
 end)
 
->>>>>>> develop
 return UHDUnit
 end)
 -- End of file Core\UHDUnit.lua
 -- Start of file Core\WaveObserver.lua
 Module("Core.WaveObserver", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-local Log = Require("Log")
-local Timer = Require("WC3.Timer")
-local Trigger = Require("WC3.Trigger")
-local Creep = Require("Core.Creep")
-local PathNode = Require("Core.Node.PathNode")
-local CreepSpawner = Require("Core.Node.CreepSpawner")
-local wcplayer = Require("WC3.Player")
-=======
 local Class = require("Class")
 local Log = require("Log")
 local Timer = require("WC3.Timer")
@@ -1171,7 +1043,6 @@ local Creep = require("Core.Creep")
 local PathNode = require("Core.Node.PathNode")
 local CreepSpawner = require("Core.Node.CreepSpawner")
 local wcplayer = require("WC3.Player")
->>>>>>> develop
 
 local logWaveObserver = Log.Category("WaveObserver\\WaveObserver", {
      printVerbosity = Log.Verbosity.Trace,
@@ -1208,11 +1079,7 @@ function WaveObserver:ctor(owner)
 
     Log(" Create Timer")
     
-<<<<<<< HEAD
-    wavetimer:Start(5, true, function()
-=======
     wavetimer:Start(15, true, function()
->>>>>>> develop
         if creepSpawner1:IsANextWave(level) then
             logWaveObserver:Info("WAVE"..level)
             creepcount = creepcount + creepSpawner1:SpawnNewWave(level)
@@ -1226,11 +1093,8 @@ function WaveObserver:ctor(owner)
             end
         end
     end)
-<<<<<<< HEAD
-=======
 
 
->>>>>>> develop
 end
 return WaveObserver
 
@@ -1238,11 +1102,7 @@ end)
 -- End of file Core\WaveObserver.lua
 -- Start of file Core\WaveSpecification.lua
 Module("Core.WaveSpecification", function()
-<<<<<<< HEAD
-local Log = Require("Log")
-=======
 local Log = require("Log")
->>>>>>> develop
 
 local levelCreepCompositon = {
     {"MagicDragon"},
@@ -1271,15 +1131,9 @@ end)
 -- End of file Core\WaveSpecification.lua
 -- Start of file Core\Creeps\MagicDragon.lua
 Module("Core.Creeps.MagicDragon", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-local CreepPreset = Require("Core.CreepPreset")
-local Log = Require("Log")
-=======
 local Class = require("Class")
 local CreepPreset = require("Core.CreepPreset")
 local Log = require("Log")
->>>>>>> develop
 
 local MagicDragon = Class(CreepPreset)
 
@@ -1289,11 +1143,7 @@ function MagicDragon:ctor()
     self.secondaryStats.mana = 5
     self.secondaryStats.weaponDamage = 3
 
-<<<<<<< HEAD
-    self.unitid = FourCC('C_MD')
-=======
     self.unitid = FourCC('e000')
->>>>>>> develop
 end
 Log("MagicDragon load successfull")
 
@@ -1302,19 +1152,11 @@ end)
 -- End of file Core\Creeps\MagicDragon.lua
 -- Start of file Core\Node\CreepSpawner.lua
 Module("Core.Node.CreepSpawner", function()
-<<<<<<< HEAD
-local Log = Require("Log")
-local Class = Require("Class")
-local Node = Require("Core.Node.Node")
-local levelCreepsComopsion, nComposion, aComposition, maxlevel = Require("Core.WaveSpecification")
-local CreepClasses = { MagicDragon = Require("Core.Creeps.MagicDragon") }
-=======
 local Log = require("Log")
 local Class = require("Class")
 local Node = require("Core.Node.Node")
 local levelCreepsComopsion, nComposion, aComposition, maxlevel = require("Core.WaveSpecification")
 local CreepClasses = { MagicDragon = require("Core.Creeps.MagicDragon") }
->>>>>>> develop
 
 local CreepSpawner = Class(Node)
 
@@ -1371,13 +1213,8 @@ end)
 -- End of file Core\Node\CreepSpawner.lua
 -- Start of file Core\Node\Node.lua
 Module("Core.Node.Node", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-local Log = Require("Log")
-=======
 local Class = require("Class")
 local Log = require("Log")
->>>>>>> develop
 
 local Node = Class()
 
@@ -1397,15 +1234,6 @@ end)
 -- End of file Core\Node\Node.lua
 -- Start of file Core\Node\PathNode.lua
 Module("Core.Node.PathNode", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-local Log = Require("Log")
-
-local Trigger = Require("WC3.Trigger")
-local Unit = Require("WC3.Unit")
-local Creep = Require("Core.Creep")
-local RectNode = Require("Core.Node.RectNode")
-=======
 local Class = require("Class")
 local Log = require("Log")
 
@@ -1413,7 +1241,6 @@ local Trigger = require("WC3.Trigger")
 local Unit = require("WC3.Unit")
 local Creep = require("Core.Creep")
 local RectNode = require("Core.Node.RectNode")
->>>>>>> develop
 local PathNode = Class(RectNode)
 function PathNode:ctor(x, y, prev)
     RectNode.ctor(self, 100, 100, x, y, prev)
@@ -1441,19 +1268,11 @@ end)
 -- End of file Core\Node\PathNode.lua
 -- Start of file Core\Node\RectNode.lua
 Module("Core.Node.RectNode", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-local Log = Require("Log")
-local WCRect = Require("WC3.Rect")
-local Region = Require("WC3.Region")
-local Node = Require("Core.Node.Node")
-=======
 local Class = require("Class")
 local Log = require("Log")
 local WCRect = require("WC3.Rect")
 local Region = require("WC3.Region")
 local Node = require("Core.Node.Node")
->>>>>>> develop
 
 local RectNode = Class(Node)
 
@@ -1475,15 +1294,6 @@ end)
 -- End of file Core\Node\RectNode.lua
 -- Start of file Heroes\DuskKnight.lua
 Module("Heroes.DuskKnight", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-local Timer = Require("WC3.Timer")
-local Trigger = Require("WC3.Trigger")
-local Unit = Require("WC3.Unit")
-local HeroPreset = Require("Core.HeroPreset")
-local UHDUnit = Require("Core.UHDUnit")
-local Log = Require("Log")
-=======
 local Class = require("Class")
 local Timer = require("WC3.Timer")
 local Trigger = require("WC3.Trigger")
@@ -1492,7 +1302,6 @@ local HeroPreset = require("Core.HeroPreset")
 local UHDUnit = require("Core.UHDUnit")
 local Log = require("Log")
 local Spell = require "Core.Spell"
->>>>>>> develop
 
 local logDuskKnight = Log.Category("Heroes\\Dusk Knight", {
     printVerbosity = Log.Verbosity.Trace,
@@ -1501,17 +1310,10 @@ local logDuskKnight = Log.Category("Heroes\\Dusk Knight", {
 
 local DuskKnight = Class(HeroPreset)
 
-<<<<<<< HEAD
-local DrainLight = Class()
-local HeavySlash = Class()
-local ShadowLeap = Class()
-local DarkMend = Class()
-=======
 local DrainLight = Class(Spell)
 local HeavySlash = Class(Spell)
 local ShadowLeap = Class(Spell)
 local DarkMend = Class(Spell)
->>>>>>> develop
 
 function DuskKnight:ctor()
     HeroPreset.ctor(self)
@@ -1523,20 +1325,6 @@ function DuskKnight:ctor()
             id = FourCC('DK_0'),
             handler = DrainLight,
             availableFromStart = true,
-<<<<<<< HEAD
-            radius = function(_) return 300 end,
-            duration = function(_) return 2 end,
-            period = function(_) return 0.1 end,
-            effectDuration = function(_) return 10 end,
-            armorRemoved = function(_) return 10 end,
-            gainLimit = function(_) return 30 end,
-            stealPercentage = function(_) return 0.25 end,
-            damage = function(_, caster)
-                if caster:HasTalent("T001") then return 5 * caster.secondaryStats.spellDamage end
-                return 0
-            end,
-            healLimit = function(_, caster) return 10 * caster.secondaryStats.spellDamage end
-=======
             params = {
                 radius = function(_) return 300 end,
                 duration = function(_) return 2 end,
@@ -1551,35 +1339,11 @@ function DuskKnight:ctor()
                 end,
                 healLimit = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
             },
->>>>>>> develop
         },
         heavySlash = {
             id = FourCC('DK_1'),
             handler = HeavySlash,
             availableFromStart = true,
-<<<<<<< HEAD
-            radius = function(_, caster)
-                local value = 125
-                if caster:HasTalent("T010") then value = value + 50 end
-                return value
-            end,
-            distance = function(_) return 100 end,
-            baseDamage = function(_, caster)
-                local value = 20
-                if caster:HasTalent("T011") then value = value + 15 end
-                return value * caster.secondaryStats.physicalDamage
-            end,
-            baseSlow = function(_) return 0.3 end,
-            slowDuration = function(_) return 3 end,
-            manaBurn = function(_, caster)
-                if caster:HasTalent("T010") then return 20 end
-                return 0
-            end,
-            vampirism = function(_, caster)
-                if caster:HasTalent("T012") then return 0.15 end
-                return 0
-            end,
-=======
             params = {
                 radius = function(_) return 125 end,
                 distance = function(_) return 100 end,
@@ -1599,20 +1363,11 @@ function DuskKnight:ctor()
                     return 0
                 end,
             },
->>>>>>> develop
         },
         shadowLeap = {
             id = FourCC('DK_2'),
             handler = ShadowLeap,
             availableFromStart = true,
-<<<<<<< HEAD
-            period = function(_) return 0.05 end,
-            duration = function(_) return 0.5 end,
-            distance = function(_) return 300 end,
-            baseDamage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
-            push = function(_) return 100 end,
-            pushDuration = function(_) return 0.5 end,
-=======
             params = {
                 period = function(_) return 0.05 end,
                 duration = function(_) return 0.5 end,
@@ -1621,34 +1376,11 @@ function DuskKnight:ctor()
                 push = function(_) return 100 end,
                 pushDuration = function(_) return 0.5 end,
             },
->>>>>>> develop
         },
         darkMend = {
             id = FourCC('DK_3'),
             handler = DarkMend,
             availableFromStart = true,
-<<<<<<< HEAD
-            baseHeal = function(_, caster)
-                local value = 20
-                if caster:HasTalent("T030") then value = value * 0.75 end
-                return value * caster.secondaryStats.spellDamage
-            end,
-            duration = function(_) return 4 end,
-            percentHeal = function(_, caster)
-                local value = 0.1
-                if caster:HasTalent("T030") then value = value * 0.75 end
-                return value
-            end,
-            period = function(_) return 0.1 end,
-            instantHeal = function(_, caster)
-                if caster:HasTalent("T030") then return 0.5 end
-                return 0
-            end,
-            healOverTime = function(_, caster)
-                if caster:HasTalent("T030") then return 0.75 end
-                return 1
-            end,
-=======
             params = {
                 baseHeal = function(_, caster)
                     local value = 20
@@ -1671,18 +1403,13 @@ function DuskKnight:ctor()
                     return 1
                 end,
             },
->>>>>>> develop
         },
     }
 
     self.talentBooks = {
         FourCC("DKT0"),
         FourCC("DKT1"),
-<<<<<<< HEAD
-        -- FourCC("DKT2"),
-=======
         FourCC("DKT2"),
->>>>>>> develop
         FourCC("DKT3"),
     }
 
@@ -1711,26 +1438,9 @@ function DuskKnight:ctor()
 end
 
 function DrainLight:ctor(definition, caster)
-<<<<<<< HEAD
-    self.caster = caster
-    self.affected = {}
-    self.bonus = 0
-    self.bonusLimit = definition:gainLimit(caster)
-    self.duration = definition:effectDuration(caster)
-    self.toSteal = definition:armorRemoved(caster)
-    self.radius = definition:radius(caster)
-    self.stealTimeLeft = definition:duration(caster)
-    self.period = definition:period(caster)
-    self.toBonus = definition:stealPercentage(caster)
-    self.damage = definition:damage(caster)
-    self.healLimit = definition:healLimit(caster)
-
-    self:Cast()
-=======
     self.affected = {}
     self.bonus = 0
     Spell.ctor(self, definition, caster)
->>>>>>> develop
 end
 
 function DrainLight:Cast()
@@ -1741,15 +1451,9 @@ function DrainLight:Cast()
             table.insert(self.affected, {
                 unit = unit,
                 stolen = 0,
-<<<<<<< HEAD
-                toSteal = self.toSteal,
-                toReturn = self.toSteal,
-                toBonus = 0.25,
-=======
                 toSteal = self.armorRemoved,
                 toReturn = self.armorRemoved,
                 toBonus = self.stealPercentage,
->>>>>>> develop
             })
         end
     end)
@@ -1761,16 +1465,6 @@ function DrainLight:Cast()
             return
         end
 
-<<<<<<< HEAD
-        self.stealTimeLeft = self.stealTimeLeft - self.period
-        self.healed = 0
-
-        for _, target in pairs(self.affected) do
-            self:Drain(target)
-        end
-
-        if self.stealTimeLeft <= 0 then
-=======
         self.duration = self.duration - self.period
         self.healed = 0
 
@@ -1781,7 +1475,6 @@ function DrainLight:Cast()
         end
 
         if self.duration <= 0 then
->>>>>>> develop
             timer:Destroy()
             self:Effect()
         end
@@ -1800,11 +1493,7 @@ function DrainLight:Effect()
         self:End()
     end)
 
-<<<<<<< HEAD
-    timer:Start(self.duration, false, function()
-=======
     timer:Start(self.effectDuration, false, function()
->>>>>>> develop
         timer:Destroy()
         trigger:Destroy()
         self:End()
@@ -1815,28 +1504,6 @@ function DrainLight:End()
     for _, target in pairs(self.affected) do
         target.unit:SetArmor(target.unit:GetArmor() + target.toReturn)
     end
-<<<<<<< HEAD
-    self.caster:SetArmor(self.caster:GetArmor() - self.bonus)
-end
-
-function DrainLight:Drain(target)
-    local parts = math.floor(self.stealTimeLeft / self.period)
-    local toStealNow = (target.toSteal - target.stolen) / parts
-    target.unit:SetArmor(target.unit:GetArmor() + target.stolen)
-    target.stolen = target.stolen + toStealNow
-    target.unit:SetArmor(target.unit:GetArmor() - target.stolen)
-    if self.bonus < self.bonusLimit then
-        local toBonus = math.min(self.bonusLimit - self.bonus, toStealNow * target.toBonus)
-        self.caster:SetArmor(self.caster:GetArmor() - self.bonus)
-        self.bonus = self.bonus + toBonus
-        self.caster:SetArmor(self.caster:GetArmor() + self.bonus)
-    end
-    if self.damage > 0 then
-        local damagePerTick = self.period * self.damage
-        self.caster:DamageTarget(target.unit, damagePerTick, false, true, ATTACK_TYPE_HERO, DAMAGE_TYPE_MAGIC, WEAPON_TYPE_WHOKNOWS)
-        if self.healed < self.healLimit * self.period then
-            local toHeal = math.min(self.healLimit * self.period - self.healed, self.toSteal * damagePerTick)
-=======
     self.caster.bonusSecondaryStats.armor = self.caster.bonusSecondaryStats.armor - self.bonus
     self.caster:ApplyStats()
 end
@@ -1857,28 +1524,12 @@ function DrainLight:Drain(target)
         local damage = self.caster:DealDamage(target.unit, { value = damagePerTick, isAttack = false, })
         if self.healed < self.healLimit * self.period then
             local toHeal = math.min(self.healLimit * self.period - self.healed, self.stealPercentage * damage)
->>>>>>> develop
             self.healed = self.healed + toHeal
             self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.caster:GetHP() + toHeal))
         end
     end
 end
 
-<<<<<<< HEAD
-function HeavySlash:ctor(definition, caster)
-    self.caster = caster
-    self.radius = definition:radius(caster)
-    self.distance = definition:distance(caster)
-    self.baseDamage = definition:baseDamage(caster)
-    self.baseSlow = definition:baseSlow(caster)
-    self.slowDuration = definition:slowDuration(caster)
-    self.manaBurn = definition:manaBurn(caster)
-    self.vampirism = definition:vampirism(caster)
-    self:Cast()
-end
-
-=======
->>>>>>> develop
 function HeavySlash:Cast()
     local facing = self.caster:GetFacing() * math.pi / 180
     local x = self.caster:GetX() + math.cos(facing) * self.distance
@@ -1887,15 +1538,9 @@ function HeavySlash:Cast()
 
     Unit.EnumInRange(x, y, self.radius, function(unit)
         if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
-<<<<<<< HEAD
-            self.caster:DamageTarget(unit, self.baseDamage, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_METAL_MEDIUM_SLICE)
-            if self.manaBurn > 0 then unit:SetMana(math.max(0, unit:GetMana() - self.manaBurn)) end
-            if self.vampirism > 0 then self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.vampirism * self.baseDamage)) end
-=======
             local damage = self.caster:DealDamage(unit, { value = self.baseDamage, isAttack = true, })
             if self.manaBurn > 0 then unit:SetMana(math.max(0, unit:GetMana() - self.manaBurn)) end
             if self.vampirism > 0 then self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.vampirism * damage)) end
->>>>>>> develop
 
             if unit:IsA(UHDUnit) then
                 affected[unit] = true
@@ -1917,20 +1562,6 @@ function HeavySlash:Cast()
     end)
 end
 
-<<<<<<< HEAD
-function ShadowLeap:ctor(definition, caster)
-    self.caster = caster
-    self.period = definition:period(caster)
-    self.duration = definition:duration(caster)
-    self.distance = definition:distance(caster)
-    self.baseDamage = definition:baseDamage(caster)
-    self.push = definition:push(caster)
-    self.pushDuration = definition:pushDuration(caster)
-    self:Cast()
-end
-
-=======
->>>>>>> develop
 function ShadowLeap:Cast()
     local timer = Timer()
     local timeLeft = self.duration
@@ -1959,11 +1590,7 @@ function ShadowLeap:Cast()
                         y = self.push * math.sin(angle) / pushTicks,
                         ticksLeft = pushTicks,
                     }
-<<<<<<< HEAD
-                    self.caster:DamageTarget(unit, self.baseDamage, false, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_METAL_MEDIUM_SLICE)
-=======
                     self.caster:DealDamage(unit, { value = self.baseDamage, isAttack = true, })
->>>>>>> develop
                 end
             end)
         end
@@ -1979,30 +1606,12 @@ function ShadowLeap:Cast()
     end)
 end
 
-<<<<<<< HEAD
-function DarkMend:ctor(definition, caster)
-    self.caster = caster
-    self.baseHeal = definition:baseHeal(caster)
-    self.duration = definition:duration(caster)
-    self.percentHeal = definition:percentHeal(caster)
-    self.period = definition:period(caster)
-    self.instantHeal = definition:instantHeal(caster)
-    self.healOverTime = definition:healOverTime(caster)
-    self:Cast()
-end
-
-=======
->>>>>>> develop
 function DarkMend:Cast()
     local timer = Timer()
     local timeLeft = self.duration
     local curHp = self.caster:GetHP();
     local part = 1 / math.floor(self.period / self.duration)
-<<<<<<< HEAD
-    self.caster:SetHP(math.min(self.caster:GetMaxHP(), curHp + (curHp * self.percentHeal + self.baseHeal) * self.instantHeal))
-=======
     self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * self.instantHeal)
->>>>>>> develop
     timer:Start(self.period, true, function()
         local curHp = self.caster:GetHP();
         if curHp <= 0 then
@@ -2010,11 +1619,7 @@ function DarkMend:Cast()
             return
         end
         timeLeft = timeLeft - self.period
-<<<<<<< HEAD
-        self.caster:SetHP(math.min(self.caster:GetMaxHP(), curHp + (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime))
-=======
         self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime)
->>>>>>> develop
         if timeLeft <= 0 then
             timer:Destroy()
         end
@@ -2024,12 +1629,6 @@ end
 return DuskKnight
 end)
 -- End of file Heroes\DuskKnight.lua
-<<<<<<< HEAD
--- Start of file Tests\Initialization.lua
-Module("Tests.Initialization", function()
-local Log = Require("Log")
-local Init = Require("Initialization")
-=======
 -- Start of file Heroes\Mutant.lua
 Module("Heroes.Mutant", function()
 local Class = require("Class")
@@ -2142,7 +1741,6 @@ end)
 Module("Tests.Initialization", function()
 local Log = require("Log")
 local Init = require("Initialization")
->>>>>>> develop
 
 if ExtensiveLog and TestBuild then
     local globalInit = "false";
@@ -2175,22 +1773,6 @@ end)
 -- End of file Tests\Initialization.lua
 -- Start of file Tests\Main.lua
 Module("Tests.Main", function()
-<<<<<<< HEAD
-local Log = Require("Log")
-local WCPlayer = Require("WC3.Player")
-local DuskKnight = Require("Heroes.DuskKnight")
-local WaveObserver = Require("Core.WaveObserver")
-local Core = Require("Core.Core")
-
-local testHeroPreset = DuskKnight()
-local core = Core(WCPlayer.Get(8), 0, -1800, 0)
-
-for i = 0,1 do
-    testHeroPreset:Spawn(WCPlayer.Get(i), 0, -1600, 0)
-end
-
-local testWaveObserver = WaveObserver(WCPlayer.Get(9))
-=======
 local Log = require("Log")
 local WCPlayer = require("WC3.Player")
 local DuskKnight = require("Heroes.DuskKnight")
@@ -2214,25 +1796,20 @@ end
 ]]
 
 Core(WCPlayer.Get(8), 0, -1800, 0)
-Tavern(WCPlayer.Get(8), 0, -2000, 0, heroPresets)
+Tavern(WCPlayer.Get(0), 0, -2000, 0, heroPresets)
 
 for i = 0,1 do
     heroPresets[2]:Spawn(WCPlayer.Get(i), 0, -1600, 0)
 end
 
 WaveObserver(WCPlayer.Get(9))
->>>>>>> develop
 
 Log("Game initialized successfully")
 end)
 -- End of file Tests\Main.lua
 -- Start of file WC3\AbilityInstance.lua
 Module("WC3.AbilityInstance", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-=======
 local Class = require("Class")
->>>>>>> develop
 
 local AbilityInstance = Class()
 
@@ -2251,11 +1828,6 @@ end
 return AbilityInstance
 end)
 -- End of file WC3\AbilityInstance.lua
-<<<<<<< HEAD
--- Start of file WC3\Location.lua
-Module("WC3.Location", function()
-local Class = Require("Class")
-=======
 -- Start of file WC3\All.lua
 Module("WC3.All", function()
 local WC3 = {
@@ -2275,7 +1847,6 @@ end)
 -- Start of file WC3\Location.lua
 Module("WC3.Location", function()
 local Class = require("Class")
->>>>>>> develop
 
 local Location = Class()
 
@@ -2301,13 +1872,8 @@ end)
 -- End of file WC3\Location.lua
 -- Start of file WC3\Player.lua
 Module("WC3.Player", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-local Timer = Require("WC3.Timer")
-=======
 local Class = require("Class")
 local Timer = require("WC3.Timer")
->>>>>>> develop
 
 local WCPlayer = Class()
 local players = {}
@@ -2397,11 +1963,7 @@ end)
 -- End of file WC3\Player.lua
 -- Start of file WC3\Rect.lua
 Module("WC3.Rect", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-=======
 local Class = require("Class")
->>>>>>> develop
 
 local WCRect = Class()
 
@@ -2419,11 +1981,7 @@ end)
 -- End of file WC3\Rect.lua
 -- Start of file WC3\Region.lua
 Module("WC3.Region", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-=======
 local Class = require("Class")
->>>>>>> develop
 
 local Region = Class()
 local regions = {}
@@ -2469,13 +2027,8 @@ end)
 -- End of file WC3\Region.lua
 -- Start of file WC3\Timer.lua
 Module("WC3.Timer", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-local Log = Require("Log")
-=======
 local Class = require("Class")
 local Log = require("Log")
->>>>>>> develop
 
 local Timer = Class()
 
@@ -2501,15 +2054,9 @@ end)
 -- End of file WC3\Timer.lua
 -- Start of file WC3\Trigger.lua
 Module("WC3.Trigger", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-local Log = Require("Log")
-local Unit = Require("WC3.Unit")
-=======
 local Class = require("Class")
 local Log = require("Log")
 local Unit = require("WC3.Unit")
->>>>>>> develop
 
 local Trigger = Class()
 
@@ -2535,13 +2082,10 @@ function Trigger:RegisterPlayerUnitEvent(player, event, filter)
     return TriggerRegisterPlayerUnitEvent(self.handle, player.handle, event, Filter(filter))
 end
 
-<<<<<<< HEAD
-=======
 function Trigger:RegisterUnitSold(unit)
     TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SELL)
 end
 
->>>>>>> develop
 function Trigger:RegisterUnitDeath(unit)
     return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_DEATH)
 end
@@ -2554,8 +2098,6 @@ function Trigger:RegisterHeroLevel(unit)
     return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_HERO_LEVEL)
 end
 
-<<<<<<< HEAD
-=======
 function Trigger:RegisterPlayerUnitDamaging(player, filter)
     if filter then
         filter = function()
@@ -2570,7 +2112,6 @@ function Trigger:RegisterPlayerUnitDamaging(player, filter)
     return TriggerRegisterPlayerUnitEvent(self.handle, player.handle, EVENT_PLAYER_UNIT_DAMAGING, Filter(filter))
 end
 
->>>>>>> develop
 function Trigger:RegisterEnterRegion(region, filter)
     if filter then
         filter = function ()
@@ -2599,15 +2140,9 @@ end)
 -- End of file WC3\Trigger.lua
 -- Start of file WC3\Unit.lua
 Module("WC3.Unit", function()
-<<<<<<< HEAD
-local Class = Require("Class")
-local WCPlayer = Require("WC3.Player")
-local Log = Require("Log")
-=======
 local Class = require("Class")
 local WCPlayer = require("WC3.Player")
 local Log = require("Log")
->>>>>>> develop
 
 local Unit = Class()
 
@@ -2629,13 +2164,10 @@ function Unit.GetDying()
     return Get(GetDyingUnit())
 end
 
-<<<<<<< HEAD
-=======
 function Unit.GetSold()
     return Get(GetBuyingUnit())
 end
 
->>>>>>> develop
 function Unit.GetEntering()
     return Get(GetEnteringUnit())
 end
@@ -2644,13 +2176,10 @@ function Unit.GetLeveling()
     return Get(GetLevelingUnit())
 end
 
-<<<<<<< HEAD
-=======
 function Unit.GetEventDamageSource()
     return Get(GetEventDamageSource())
 end
 
->>>>>>> develop
 function Unit.EnumInRange(x, y, radius, handler)
     local group = CreateGroup()
     GroupEnumUnitsInRange(group, x, y, radius, Filter(function()
@@ -2786,8 +2315,6 @@ function Unit:AddAbility(id)
     end
 end
 
-<<<<<<< HEAD
-=======
 function Unit.AddToAllStock(unitId, currentStock, stockMax)
     if math.type(unitId) ~= "integer" then
         error("unitId should be an integer", 2)
@@ -2830,7 +2357,6 @@ function Unit:AddUnitToStock(unitId, currentStock, stockMax)
     AddUnitToStock(self.handle, unitId, currentStock, stockMax)
 end
 
->>>>>>> develop
 function Unit:SetAbilityLevel(abilityId, level)
     return SetUnitAbilityLevel(self.handle, abilityId, level)
 end
@@ -2908,10 +2434,7 @@ function Unit:GetArmor() return BlzGetUnitArmor(self.handle) end
 function Unit:GetFacing() return GetUnitFacing(self.handle) end
 function Unit:GetAbility(id) return BlzGetUnitAbility(self.handle, id) end
 function Unit:GetLevel() return GetHeroLevel(self.handle) end
-<<<<<<< HEAD
-=======
 function Unit:GetTypeId() return GetUnitTypeId(self.handle) end
->>>>>>> develop
 
 return Unit
 end)

@@ -21,7 +21,7 @@ end
 ]]
 
 Core(WCPlayer.Get(8), 0, -1800, 0)
-Tavern(WCPlayer.Get(8), 0, -2000, 0, heroPresets)
+Tavern(WCPlayer.Get(0), 0, -2000, 0, heroPresets)
 
 for i = 0,1 do
     heroPresets[2]:Spawn(WCPlayer.Get(i), 0, -1600, 0)
