@@ -35,6 +35,7 @@ function UHDUnit:ctor(...)
     self.secondaryStats.movementSpeed = 1
 
     self.onDamageDealt = {}
+    self.onDamageReceived = {}
 
     self:AddAbility(hpRegenAbility)
     self:AddAbility(mpRegenAbility)
@@ -67,11 +68,14 @@ function UHDUnit:ApplyStats()
     end
 end
 
-function UHDUnit:DamageDealt()
-    local args = {
-        source = self
-    }
+function UHDUnit:DamageDealt(args)
     for handler in pairs(self.onDamageDealt) do
+        handler(args)
+    end
+end
+
+function UHDUnit:DamageReceived(args)
+    for handler in pairs(self.onDamageReceived) do
         handler(args)
     end
 end
@@ -88,8 +92,17 @@ function UHDUnit:DealDamage(target, damage)
         hpAfterDamage = 0
         dmg = dmg + hpAfterDamage
     end
+    local args = {
+        source = self,
+        target = target,
+        recursion = damage.recursion or {},
+        isAttack = damage.isAttack,
+        GetDamage = function() return dmg end,
+        SetDamage = function(_, value) dmg = value end,
+    }
+    self:DamageDealt(args)
+    if target:IsA(UHDUnit) then target:DamageDealt(args) end
     target:SetHP(hpAfterDamage)
-    self:DamageDealt()
     return dmg
 end
 
@@ -97,7 +110,17 @@ local unitDamaging = WC3.Trigger()
 for i=0,23 do unitDamaging:RegisterPlayerUnitDamaging(WC3.Player.Get(i)) end
 unitDamaging:AddAction(function()
     local source = WC3.Unit.GetEventDamageSource()
-    if source:IsA(UHDUnit) then source:DamageDealt() end
+    local target = WC3.Unit.GetEventDamageTarget()
+    local args = {
+        source = source,
+        target = target,
+        recursion = {},
+        isAttack = true, --todo
+        GetDamage = function() return GetEventDamage() end,
+        SetDamage = function(_, value) BlzSetEventDamage(value) end
+    }
+    if source:IsA(UHDUnit) then source:DamageDealt(args) end
+    if target:IsA(UHDUnit) then target:DamageReceived(args) end
 end)
 
 return UHDUnit

@@ -42,6 +42,10 @@ function Unit.GetEventDamageSource()
     return Get(GetEventDamageSource())
 end
 
+function Unit.GetEventDamageTarget()
+    return Get(BlzGetEventDamageTarget())
+end
+
 function Unit.EnumInRange(x, y, radius, handler)
     local group = CreateGroup()
     GroupEnumUnitsInRange(group, x, y, radius, Filter(function()
@@ -310,5 +314,6 @@ function Unit:GetFacing() return GetUnitFacing(self.handle) end
 function Unit:GetAbility(id) return BlzGetUnitAbility(self.handle, id) end
 function Unit:GetLevel() return GetHeroLevel(self.handle) end
 function Unit:GetTypeId() return GetUnitTypeId(self.handle) end
+function Unit:IsHero() return IsHeroUnitId(self:GetTypeId()) end
 
 return Unit

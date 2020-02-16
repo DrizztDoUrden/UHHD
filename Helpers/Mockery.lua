@@ -214,6 +214,9 @@ function RemoveUnit(whichUnit) end
 ---@param unit unit
 ---@return id
 function GetUnitTypeId(unit) end
+---@param id id
+---@return boolean
+function IsHeroUnitId(id) end
 
 function IssuePointOrderById(whichUnit, order, x, y) end
 ---@param whichHero unit
@@ -369,6 +372,12 @@ function GetLevelingUnit() end
 function GetEventDamageSource() end
 ---@return region
 function GetTriggeringRegion() end
+---@return unit
+function BlzGetEventDamageTarget() end
+---@return number
+function GetEventDamage() end
+---@param value number
+function BlzSetEventDamage(value) end
 
 ---@param minx number
 ---@param miny number
