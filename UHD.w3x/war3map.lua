@@ -1058,7 +1058,7 @@ end
 function UHDUnit:DealDamage(target, damage)
     local dmg = damage.value
     if damage.isAttack then
-        dmg = damage.value * (1 - math.pow(UHDUnit.armorValue, target.secondaryStats.armor))
+        dmg = damage.value * (1 - UHDUnit.armorValue^target.secondaryStats.armor)
     else
         dmg = damage.value * (1 - target.secondaryStats.spellResist)
     end
@@ -1148,12 +1148,12 @@ function WaveObserver:ctor(owner)
     Log(" Create Timer")
     
     wavetimer:Start(15, true, function()
-        if creepSpawner1:IsANextWave(level) then
+        if creepSpawner1:HasNextWave(level) then
             logWaveObserver:Info("WAVE"..level)
             creepcount = creepcount + creepSpawner1:SpawnNewWave(level)
             creepcount = creepcount + creepSpawner2:SpawnNewWave(level)
             level = level + 1
-            if not creepSpawner1:IsANextWave(level) then
+            if not creepSpawner1:HasNextWave(level) then
                 Log("level "..level)
                 self.needtokillallcreep = true
                 logWaveObserver:Info("No waves")
@@ -1174,50 +1174,69 @@ local Log = require("Log")
 
     local waveComposition = { 
         [1] = {{
-            count = 5,
-            unit = "MagicDragon",
-            ability = nil}},
+            count = 4,
+            unit = "Ghoul",
+            ability = nil
+        }},
         [2] = {{
             count = 5,
-            unit = "MagicDragon",
-            ability = nil}},
+            unit = "Ghoul",
+            ability = nil
+        }},
         [3] = {{
             count = 5,
             unit = "MagicDragon",
             ability = nil
         }},
         [4] = {{
-            count = 5,
+            count = 2,
+            unit = "Ghoul",
+            ability = nil
+        },
+        {
+            count = 3,
             unit = "MagicDragon",
             ability = nil
         }},
         [5] = {{
             count = 5,
-            unit = "MagicDragon",
+            unit = "Necromant",
             ability = nil
         }},
         [6] = {{
             count = 5,
-            unit = "MagicDragon",
+            unit = "Necromant",
             ability = nil
         }},
         [7] = {{
             count = 5,
-            unit = "MagicDragon",
-            ability = nil
-        }},
-        [7] = {{
-            count = 5,
-            unit = "MagicDragon",
+            unit = "Faceless",
             ability = nil
         }},
         [8] = {{
-            count = 5,
-            unit = "MagicDragon",
+            count = 3,
+            unit = "Faceless",
+            ability = nil
+        },{
+            count = 3,
+            unit = "Necromant",
             ability = nil
         }},
         [9] = {{
-            count = 5,
+            count = 2,
+            unit = "Faceless",
+            ability = nil
+        },
+        {
+            count = 2,
+            unit = "Ghoul",
+            ability = nil
+        },{
+            count = 2,
+            unit = "Necromant",
+            ability = nil
+        },{
+            count = 3,
             unit = "MagicDragon",
             ability = nil
         }},
@@ -1227,6 +1246,49 @@ Log("WaveSpecification is load")
 return waveComposition
 end)
 -- End of file Core\WaveSpecification.lua
+-- Start of file Core\Creeps\Faceless.lua
+Module("Core.Creeps.Faceless", function()
+local Class = require("Class")
+local CreepPreset = require("Core.CreepPreset")
+local Log = require("Log")
+
+local MagicDragon = Class(CreepPreset)
+
+function MagicDragon:ctor()
+    CreepPreset.ctor(self)
+    self.secondaryStats.health = 25
+    self.secondaryStats.mana = 10
+    self.secondaryStats.weaponDamage = 4
+    self.secondaryStats.evasion = 15
+    
+    self.unitid = FourCC('e004')
+end
+Log("MagicDragon load successfull")
+
+return MagicDragon
+end)
+-- End of file Core\Creeps\Faceless.lua
+-- Start of file Core\Creeps\Ghoul.lua
+Module("Core.Creeps.Ghoul", function()
+local Class = require("Class")
+local CreepPreset = require("Core.CreepPreset")
+local Log = require("Log")
+
+local MagicDragon = Class(CreepPreset)
+
+function MagicDragon:ctor()
+    CreepPreset.ctor(self)
+    self.secondaryStats.health = 35
+    self.secondaryStats.mana = 0
+    self.secondaryStats.weaponDamage = 1
+
+    self.unitid = FourCC('e002')
+end
+Log("MagicDragon load successfull")
+
+return MagicDragon
+end)
+-- End of file Core\Creeps\Ghoul.lua
 -- Start of file Core\Creeps\MagicDragon.lua
 Module("Core.Creeps.MagicDragon", function()
 local Class = require("Class")
@@ -1237,10 +1299,10 @@ local MagicDragon = Class(CreepPreset)
 
 function MagicDragon:ctor()
     CreepPreset.ctor(self)
-    self.secondaryStats.health = 15
+    self.secondaryStats.health = 10
     self.secondaryStats.mana = 5
     self.secondaryStats.weaponDamage = 3
-
+    self.secondaryStats.evasion = 10
     self.unitid = FourCC('e000')
 end
 Log("MagicDragon load successfull")
@@ -1248,13 +1310,38 @@ Log("MagicDragon load successfull")
 return MagicDragon
 end)
 -- End of file Core\Creeps\MagicDragon.lua
+-- Start of file Core\Creeps\Necromant.lua
+Module("Core.Creeps.Necromant", function()
+local Class = require("Class")
+local CreepPreset = require("Core.CreepPreset")
+local Log = require("Log")
+
+local MagicDragon = Class(CreepPreset)
+
+function MagicDragon:ctor()
+    CreepPreset.ctor(self)
+    self.secondaryStats.health = 20
+    self.secondaryStats.mana = 5
+    self.secondaryStats.weaponDamage = 3
+    self.secondaryStats.evasion = 0
+    self.unitid = FourCC('e003')
+end
+Log("MagicDragon load successfull")
+
+return MagicDragon
+end)
+-- End of file Core\Creeps\Necromant.lua
 -- Start of file Core\Node\CreepSpawner.lua
 Module("Core.Node.CreepSpawner", function()
 local Log = require("Log")
 local Class = require("Class")
 local Node = require("Core.Node.Node")
 local waveComopsion = require("Core.WaveSpecification")
-local CreepClasses = { MagicDragon = require("Core.Creeps.MagicDragon") }
+local CreepClasses = {
+    MagicDragon = require("Core.Creeps.MagicDragon"), 
+    Faceless = require("Core.Creeps.Faceless"),
+    Ghoul = require("Core.Creeps.Ghoul"),
+    Necromant = require("Core.Creeps.Necromant")}
 
 local CreepSpawner = Class(Node)
 
@@ -1277,11 +1364,8 @@ function CreepSpawner:GetWaveSpecification(level)
     return wave
 end
 
-function CreepSpawner:IsANextWave(level)
-    if level < self.maxlevel then
-        return true
-    end
-    return false
+function CreepSpawner:HasNextWave(level)
+    return level < self.maxlevel
 end
 
 function CreepSpawner:SpawnNewWave(level)
@@ -1804,7 +1888,7 @@ function Mutant:ctor()
                     if caster:HasTalent("T121") then value = 0 end
                     return value
                 end,
-                healPerRage = function(_) return 0.05 end, --todo: update tooltip
+                healPerRage = function(_) return 0.05 end,
                 manaHealPerRage = function(_, caster)
                     local value = 0
                     if caster:HasTalent("T120") then value = value + 0.025 end
@@ -1831,7 +1915,7 @@ function Mutant:ctor()
                     return value
                 end,
                 stackDecayTime = function(_, caster)
-                    local value = 3 -- todo: update tooltip
+                    local value = 3
                     if caster:HasTalent("T132") then value = value + 1.5 end
                     return value
                 end,
@@ -1851,10 +1935,10 @@ function Mutant:ctor()
     }
 
     self.talentBooks = {
-        -- FourCC("MTT0"),
-        -- FourCC("MTT1"),
-        -- FourCC("MTT2"),
-        -- FourCC("MTT3"),
+        FourCC("MTT0"),
+        FourCC("MTT1"),
+        FourCC("MTT2"),
+        FourCC("MTT3"),
     }
 
     self:AddTalent("1", "00")
@@ -1870,9 +1954,8 @@ function Mutant:ctor()
     self:AddTalent("1", "22")
 
     self:AddTalent("1", "30")
-    self:AddTalent("1", "31") -- .onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
+    self:AddTalent("1", "31")
     self:AddTalent("1", "32")
-
 
     self.basicStats.strength = 16
     self.basicStats.agility = 6

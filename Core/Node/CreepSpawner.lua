@@ -2,7 +2,11 @@ local Log = require("Log")
 local Class = require("Class")
 local Node = require("Core.Node.Node")
 local waveComopsion = require("Core.WaveSpecification")
-local CreepClasses = { MagicDragon = require("Core.Creeps.MagicDragon") }
+local CreepClasses = {
+    MagicDragon = require("Core.Creeps.MagicDragon"), 
+    Faceless = require("Core.Creeps.Faceless"),
+    Ghoul = require("Core.Creeps.Ghoul"),
+    Necromant = require("Core.Creeps.Necromant")}
 
 local CreepSpawner = Class(Node)
 

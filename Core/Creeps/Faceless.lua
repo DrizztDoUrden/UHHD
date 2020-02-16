@@ -6,9 +6,9 @@ local MagicDragon = Class(CreepPreset)
 
 function MagicDragon:ctor()
     CreepPreset.ctor(self)
-    self.secondaryStats.health = 30
+    self.secondaryStats.health = 25
     self.secondaryStats.mana = 10
-    self.secondaryStats.weaponDamage = 5
+    self.secondaryStats.weaponDamage = 4
     self.secondaryStats.evasion = 15
     
     self.unitid = FourCC('e004')
