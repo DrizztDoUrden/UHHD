@@ -1,6 +1,5 @@
 local Class = require("Class")
-local Unit = require("WC3.Unit")
-local Trigger = require("WC3.Trigger")
+local WC3 = require("WC3.All")
 local Log = require("Log")
 
 local logTavern = Log.Category("Core\\Tavern")
@@ -8,28 +7,29 @@ local logTavern = Log.Category("Core\\Tavern")
 local heroSpawnX = -2300
 local heroSpawnY = -3400
 
-local Tavern = Class(Unit)
+local Tavern = Class(WC3.Unit)
 
 
 function Tavern:ctor(owner, x, y, facing, heroPresets)
-    Unit.ctor(self, owner, FourCC("n000"), x, y, facing)
+    WC3.Unit.ctor(self, owner, FourCC("n000"), x, y, facing)
+
+    heroPresets[1]:Spawn(WC3.Player.Get(8), heroSpawnX, heroSpawnY, 0)
 
     self.owner = owner
     self.heroPresets = heroPresets
-    logTavern:Info("add unit")
     self:AddTrigger()
 end
 
 function Tavern:AddTrigger()
-    local trigger = Trigger()
+    local trigger = WC3.Trigger()
     self.toDestroy[trigger] = true
     trigger:RegisterUnitSold(self)
     trigger:AddAction(function()
-        local buying = Unit.GetBying()
-        local sold = Unit.GetSold()
+        local buying = WC3.Unit.GetBying()
+        local sold = WC3.Unit.GetSold()
         local whichOwner = sold:GetOwner()
         local id = sold:GetTypeId()
-        logTavern:Info("Unit bought with id "..id)
+        logTavern:Trace("Unit bought with id "..id)
         for _, hero in pairs(self.heroPresets) do
             if hero.unitid == id then
                 hero:Spawn(whichOwner, heroSpawnX, heroSpawnY, 0)

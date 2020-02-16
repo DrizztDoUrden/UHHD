@@ -66,6 +66,10 @@ function Category:ctor(name, options)
         self.fileVerbosity = options.fileVerbosity or Verbosity.Message
     end
     self.buffer = ""
+    PreloadGenClear()
+    PreloadStart()
+    Preload("")
+    PreloadGenEnd("Logs\\" .. self.name .. ".txt")
 end
 
 function Category:Log(verbosity, ...)

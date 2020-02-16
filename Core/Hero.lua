@@ -1,10 +1,8 @@
 local Class = require("Class")
 local Stats = require("Core.Stats")
 local UHDUnit = require("Core.UHDUnit")
-local Trigger = require("WC3.Trigger")
-local Unit = require("WC3.Unit")
+local WC3 = require("WC3.All")
 local Log = require("Log")
-local WCPlayer = require("WC3.Player")
 
 local logHero = Log.Category("Core\\Hero")
 
@@ -32,12 +30,12 @@ function Hero:ctor(...)
     self.baseSecondaryStats = Stats.Secondary()
     self.bonusSecondaryStats = Stats.Secondary()
 
-    self.leveling = Trigger()
+    self.leveling = WC3.Trigger()
     self.leveling:RegisterHeroLevel(self)
     self.leveling:AddAction(function() self:OnLevel() end)
     self.toDestroy[self.leveling] = true
 
-    self.abilities = Trigger()
+    self.abilities = WC3.Trigger()
     self.abilities:RegisterUnitSpellEffect(self)
     self.toDestroy[self.abilities] = true
 
@@ -100,14 +98,14 @@ function Hero:OnLevel()
 end
 
 function Hero:AddStatPoint()
-    local statHelper = Unit(self:GetOwner(), statsHelperId, statsX, statsY, 0)
+    local statHelper = WC3.Unit(self:GetOwner(), statsHelperId, statsX, statsY, 0)
     self.statUpgrades[statHelper] = true
 
     for _, id in pairs(statUpgrades) do
         statHelper:AddAbility(id)
     end
 
-    local trigger = Trigger()
+    local trigger = WC3.Trigger()
     statHelper.toDestroy[trigger] = true
 
     trigger:RegisterUnitSpellEffect(statHelper)
@@ -129,14 +127,14 @@ function Hero:AddStatPoint()
 end
 
 function Hero:AddTalentPoint()
-    local talentHelper = Unit(self:GetOwner(), talentsHelperId, statsX, statsY, 0)
+    local talentHelper = WC3.Unit(self:GetOwner(), talentsHelperId, statsX, statsY, 0)
     self.skillUpgrades[talentHelper] = true
 
     for _, id in pairs(self.talentBooks) do
         talentHelper:AddAbility(id)
     end
 
-    local trigger = Trigger()
+    local trigger = WC3.Trigger()
     talentHelper.toDestroy[trigger] = true
 
     trigger:RegisterUnitSpellEffect(talentHelper)
@@ -153,7 +151,7 @@ function Hero:AddTalentPoint()
 end
 
 function Hero:SelectNextHelper(prefferStats)
-    if self:GetOwner() == WCPlayer.Local then
+    if self:GetOwner() == WC3.Player.Local then
         ClearSelection()
         if prefferStats then
             for helper in pairs(self.statUpgrades) do helper:Select() return end

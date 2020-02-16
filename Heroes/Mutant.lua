@@ -91,7 +91,7 @@ function Mutant:ctor()
             availableFromStart = true,
             params = {
                 ragePerAttack = function(_) return 1 end,
-                damagePerRage = function(_) end,
+                damagePerRage = function(_) return 1 end,
                 armorPerRage = function(_, caster)
                     local value = -1
                     if caster:HasTalent("T130") then value = value + 0.2 end
@@ -227,14 +227,14 @@ function TakeCover:Enable()
         end
 
         self.caster:SetMana(curMp - mpBurned)
-        args:SetDamage((damage - redirected) * self.damageReduction)
+        args:SetDamage((damage - redirected) * (1 - self.damageReduction))
 
         do
             local recursion = { ["Mutant.TakeCover"] = true, }
             for k, v in pairs(args.recursion) do recursion[k] = v end
 
             local toAlly = {
-                value = redirected * self.damageReduction,
+                value = redirected * (1 - self.damageReduction),
                 isAttack = false,
                 recursion = recursion,
             }

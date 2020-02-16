@@ -2,6 +2,8 @@ local Class = require("Class")
 local Log = require("Log")
 local Unit = require("WC3.Unit")
 
+local logTrigger = Log.Category("WC3\\Trigger")
+
 local Trigger = Class()
 
 function Trigger:ctor()
@@ -17,7 +19,7 @@ function Trigger:RegisterPlayerUnitEvent(player, event, filter)
         filter = function()
             local result, errOrRet = pcall(filter, Unit.Get(GetFilterUnit()))
             if not result then
-                Log("Error filtering player units for and event: " .. errOrRet)
+                logTrigger:Error("Error filtering player units for and event: " .. errOrRet)
                 return false
             end
             return errOrRet
@@ -47,7 +49,7 @@ function Trigger:RegisterPlayerUnitDamaging(player, filter)
         filter = function()
             local result, errOrRet = pcall(filter, Unit.Get(GetFilterUnit()))
             if not result then
-                Log("Error filtering player units for and event: " .. errOrRet)
+                logTrigger:Error("Error filtering player units for and event: " .. errOrRet)
                 return false
             end
             return errOrRet
@@ -61,7 +63,7 @@ function Trigger:RegisterEnterRegion(region, filter)
         filter = function ()
             local result, errOrRet
             if not result then
-                Log("Error filtering Region for and event: "..errOrRet)
+                logTrigger:Error("Error filtering Region for and event: "..errOrRet)
                 return false
             end
             return errOrRet
@@ -74,7 +76,7 @@ function Trigger:AddAction(action)
     return TriggerAddAction(self.handle, function()
         local result, err = pcall(action)
         if not result then
-            Log("Error running trigger action: " .. err)
+            logTrigger:Error("Error running trigger action: " .. err)
         end
     end)
 end

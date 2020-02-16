@@ -6,6 +6,8 @@ local Unit = Class()
 
 local units = {}
 
+local logUnit = Log.Category("WC3\\Unit")
+
 local function Get(handle)
     local existing = units[handle]
     if existing then
@@ -51,7 +53,7 @@ function Unit.EnumInRange(x, y, radius, handler)
     GroupEnumUnitsInRange(group, x, y, radius, Filter(function()
         local result, err = pcall(handler, Unit.GetFiltered())
         if not result then
-            Log("Error enumerating units in range: " .. err)
+            logUnit:Error("Error enumerating units in range: " .. err)
         end
     end))
     DestroyGroup(group)
@@ -71,7 +73,7 @@ end
 
 function Unit:Register()
     if units[self.handle] then
-        error("Attempt to reregister a unit")
+        error("Attempt to reregister a unit", 3)
     end
     units[self.handle] = self
 end

@@ -1,11 +1,12 @@
 local Log = require("Log")
-local WCPlayer = require("WC3.Player")
+local WC3 = require("WC3.All")
 local DuskKnight = require("Heroes.DuskKnight")
 local Mutant = require("Heroes.Mutant")
-local Unit = require("WC3.Unit")
 local WaveObserver = require("Core.WaveObserver")
 local Core = require("Core.Core")
 local Tavern = require("Core.Tavern")
+
+local logMain = Log.Category("Main")
 
 local heroPresets = {
     DuskKnight(),
@@ -22,13 +23,11 @@ end
 ]]
 for i = 0, 7, 1 do
     local shiftx = 1300 + i * 100
-    local unit = Unit(WCPlayer.Get(i), FourCC("e001"), shiftx, -3600, 0)
-    unit:SetMoveSpeed(0)
+    local unit = WC3.Unit(WC3.Player.Get(i), FourCC("e001"), shiftx, -3600, 0)
 end
-Core(WCPlayer.Get(8), -2300, -3800, 0)
-Tavern(WCPlayer.Get(0), 1600, -3800, 0, heroPresets)
+Core(WC3.Player.Get(8), -2300, -3800, 0)
+Tavern(WC3.Player.Get(0), 1600, -3800, 0, heroPresets)
 
+WaveObserver(WC3.Player.Get(9))
 
-WaveObserver(WCPlayer.Get(9))
-
-Log("Game initialized successfully")
+logMain:Message("Game initialized successfully")
