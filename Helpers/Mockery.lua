@@ -316,6 +316,8 @@ function TriggerRegisterPlayerUnitEvent(trigger, player, event, filter) end
 
 function GetBuyingUnit() end
 
+function GetSoldUnit() end
+
 function GetDyingUnit() end
 ---@param whichTrigger trigger
 ---@param actionFunc function

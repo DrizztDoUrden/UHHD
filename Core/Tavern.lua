@@ -10,17 +10,13 @@ local heroSpawnY = -1600
 
 local Tavern = Class(Unit)
 
+
 function Tavern:ctor(owner, x, y, facing, heroPresets)
     Unit.ctor(self, owner, FourCC("n000"), x, y, facing)
 
     self.owner = owner
     self.heroPresets = heroPresets
-
-    for _, hero in pairs(heroPresets) do
-        logTavern:Info(hero.unitid, "==", FourCC("H_DK"), " is ", hero.unitid == FourCC("H_DK"))
-        logTavern:Info(self:GetTypeId(), "==", FourCC("n000"), " is ", self:GetTypeId() == FourCC("n000"))
-        self:AddUnitToStock(hero.unitid)
-    end
+    logTavern:Info("add unit")
     self:AddTrigger()
 end
 
@@ -29,16 +25,19 @@ function Tavern:AddTrigger()
     self.toDestroy[trigger] = true
     trigger:RegisterUnitSold(self)
     trigger:AddAction(function()
-        local whicUnit = Unit.GetSold()
-        local whichOwner = whicUnit:GetOwner()
-        local id = whicUnit:GetTypeId()
-        whicUnit:Destroy()
+        local buying = Unit.GetBying()
+        local sold = Unit.GetSold()
+        local whichOwner = sold:GetOwner()
+        local id = sold:GetTypeId()
+        logTavern:Info("Unit bought with id "..id)
         for _, hero in pairs(self.heroPresets) do
             if hero.unitid == id then
                 hero:Spawn(whichOwner, heroSpawnX, heroSpawnY, 0)
-                return
+                break
             end
         end
+        buying:Destroy()
+        sold:Destroy()
     end)
 end
 

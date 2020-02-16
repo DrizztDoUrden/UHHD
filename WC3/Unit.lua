@@ -22,8 +22,12 @@ function Unit.GetDying()
     return Get(GetDyingUnit())
 end
 
-function Unit.GetSold()
+function Unit.GetBying()
     return Get(GetBuyingUnit())
+end
+
+function Unit.GetSold()
+    return Get(GetSoldUnit())
 end
 
 function Unit.GetEntering()
