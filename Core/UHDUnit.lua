@@ -83,7 +83,7 @@ end
 function UHDUnit:DealDamage(target, damage)
     local dmg = damage.value
     if damage.isAttack then
-        dmg = damage.value * (1 - math.pow(UHDUnit.armorValue, target.secondaryStats.armor))
+        dmg = damage.value * (1 - UHDUnit.armorValue^target.secondaryStats.armor)
     else
         dmg = damage.value * (1 - target.secondaryStats.spellResist)
     end
