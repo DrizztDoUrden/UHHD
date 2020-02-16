@@ -5,8 +5,8 @@ local Log = require("Log")
 
 local logTavern = Log.Category("Core\\Tavern")
 
-local heroSpawnX = 100
-local heroSpawnY = -1600
+local heroSpawnX = -2300
+local heroSpawnY = -3400
 
 local Tavern = Class(Unit)
 
