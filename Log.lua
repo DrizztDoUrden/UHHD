@@ -20,10 +20,20 @@ local verbosityNames = {
     "Trace",
 }
 
+local verbosityColors = {
+    [Verbosity.Fatal] = { start = "|cffff0000", end_ = "|r", },
+    [Verbosity.Critical] = { start = "|cffff0000", end_ = "|r", },
+    [Verbosity.Error] = { start = "|cffff0000", end_ = "|r", },
+    [Verbosity.Warning] = { start = "|cffffff33", end_ = "|r", },
+    [Verbosity.Message] = { start = "", end_ = "", },
+    [Verbosity.Info] = { start = "", end_ = "", },
+    [Verbosity.Trace] = { start = "", end_ = "", },
+}
+
 local function LogInternal(category, verbosity, ...)
     if verbosity <= math.max(category.printVerbosity, category.fileVerbosity) then
         if verbosity <= category.printVerbosity then
-            print("[" .. verbosityNames[verbosity] .. "] " .. category.name .. ": ", ...)
+            print(verbosityColors[verbosity].start .. "[" .. verbosityNames[verbosity] .. "] " .. category.name .. ": ", ..., verbosityColors[verbosity].end_)
         end
         if verbosity <= category.fileVerbosity then
             category.buffer = category.buffer .. "\n[" .. verbosityNames[verbosity] .. "]"
