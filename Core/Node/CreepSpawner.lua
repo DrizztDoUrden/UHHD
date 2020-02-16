@@ -1,7 +1,7 @@
 local Log = require("Log")
 local Class = require("Class")
 local Node = require("Core.Node.Node")
-local levelCreepsComopsion, nComposion, aComposition, maxlevel = require("Core.WaveSpecification")
+local waveComopsion = require("Core.WaveSpecification")
 local CreepClasses = { MagicDragon = require("Core.Creeps.MagicDragon") }
 
 local CreepSpawner = Class(Node)
@@ -15,36 +15,29 @@ function CreepSpawner:ctor(owner,  x, y, prevnode, facing)
     Node.ctor(self, x, y, prevnode)
     self.owner = owner
     self.facing = facing
-    Log("Max level: "..maxlevel)
-    self.levelCreepsComopsion = levelCreepsComopsion
-    self.nComposion = nComposion
-    self.maxlevel = maxlevel
-    self.aComposition = aComposition
+    self.maxlevel = #waveComopsion
+    logCreepSpawner:Info("Max level: "..self.maxlevel)
+    self.waveComopsion = waveComopsion
 end
 
 function CreepSpawner:GetWaveSpecification(level)
-    local result_CreepsComposition = self.levelCreepsComopsion[level]
-    local result_nComposion = self.nComposion[level]
-    local result_aComposion = self.aComposition[level]
-    return result_CreepsComposition, result_nComposion, result_aComposion
+    local wave = self.waveComopsion[level]
+    return wave
 end
 
-function CreepSpawner:IsANextWave(level)
-    if level < self.maxlevel then
-        return true
-    end
-    return false
+function CreepSpawner:HasNextWave(level)
+    return level < self.maxlevel
 end
 
 function CreepSpawner:SpawnNewWave(level)
     -- logCreepSpawner:Info("WAVE "..self.level + 1)
-    local CreepsComposition, nComposion, aComposition = self:GetWaveSpecification(level)
+    local wave = self:GetWaveSpecification(level)
     local acc = 0
-    for i, CreepName in pairs(CreepsComposition) do
-        for j = 1, nComposion[i] do
-            local creepPresetClass = CreepClasses[CreepName]
+    for i, unit in pairs(wave) do
+        for j = 1, unit["count"] do
+            local creepPresetClass = CreepClasses[unit["unit"]]
             local creepPreset = creepPresetClass()
-            local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing)
+            local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing, level)
             local x, y = self.prev:GetCenter()
             creep:IssueAttackPoint(x, y)
             acc = acc + 1

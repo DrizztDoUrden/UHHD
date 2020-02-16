@@ -188,13 +188,15 @@ local handlers = {
     gameStart = { funcs = {}, executed = false, },
 }
 
+local logInitialization = Log.Category("Initialization")
+
 local function FunctionRegistar(table)
     return setmetatable({}, {
         __index = {
             Add = function(_, func)
                 if table.executed then
                     local result, err = pcall(func)
-                    if not result then Log(err) end
+                    if not result then logInitialization:Error(err) end
                 else
                     table.funcs[func] = true
                 end
@@ -214,7 +216,7 @@ local Init = {
 local function RunHandlers(table)
     for handler in pairs(handlers[table].funcs) do
         local result, err = pcall(handler)
-        if not result then Log(err) end
+        if not result then logInitialization:Error(err) end
     end
     handlers[table].funcs = nil
     handlers[table].executed = true
@@ -333,6 +335,10 @@ function Category:ctor(name, options)
         self.fileVerbosity = options.fileVerbosity or Verbosity.Message
     end
     self.buffer = ""
+    PreloadGenClear()
+    PreloadStart()
+    Preload("")
+    PreloadGenEnd("Logs\\" .. self.name .. ".txt")
 end
 
 function Category:Log(verbosity, ...)
@@ -425,6 +431,14 @@ local Creep = Class(UHDUnit)
         end)
     end
 
+    function Creep:Scale(level)
+        local mult = (1 + 0.1 * level)
+        self.secondaryStats.health = mult * self.secondaryStats.health
+        self.secondaryStats.physicalDamage = mult * self.secondaryStats.physicalDamage
+        self.secondaryStats.armor = mult * self.secondaryStats.armor
+    end
+
+
 return Creep
 end)
 -- End of file Core\Creep.lua
@@ -460,12 +474,15 @@ function CreepPreset:ctor()
     self.secondaryStats.movementSpeed = 1
 end
 
-function CreepPreset:Spawn(owner, x, y, facing)
+function CreepPreset:Spawn(owner, x, y, facing, level)
     local creep = Creep(owner, self.unitid, x, y, facing);
     creep.secondaryStats = self.secondaryStats
+    creep:Scale(level)
     creep:ApplyStats()
     return creep
 end
+
+
 
 Log("Creep load succsesfull")
 return CreepPreset
@@ -476,10 +493,8 @@ Module("Core.Hero", function()
 local Class = require("Class")
 local Stats = require("Core.Stats")
 local UHDUnit = require("Core.UHDUnit")
-local Trigger = require("WC3.Trigger")
-local Unit = require("WC3.Unit")
+local WC3 = require("WC3.All")
 local Log = require("Log")
-local WCPlayer = require("WC3.Player")
 
 local logHero = Log.Category("Core\\Hero")
 
@@ -507,12 +522,12 @@ function Hero:ctor(...)
     self.baseSecondaryStats = Stats.Secondary()
     self.bonusSecondaryStats = Stats.Secondary()
 
-    self.leveling = Trigger()
+    self.leveling = WC3.Trigger()
     self.leveling:RegisterHeroLevel(self)
     self.leveling:AddAction(function() self:OnLevel() end)
     self.toDestroy[self.leveling] = true
 
-    self.abilities = Trigger()
+    self.abilities = WC3.Trigger()
     self.abilities:RegisterUnitSpellEffect(self)
     self.toDestroy[self.abilities] = true
 
@@ -575,14 +590,14 @@ function Hero:OnLevel()
 end
 
 function Hero:AddStatPoint()
-    local statHelper = Unit(self:GetOwner(), statsHelperId, statsX, statsY, 0)
+    local statHelper = WC3.Unit(self:GetOwner(), statsHelperId, statsX, statsY, 0)
     self.statUpgrades[statHelper] = true
 
     for _, id in pairs(statUpgrades) do
         statHelper:AddAbility(id)
     end
 
-    local trigger = Trigger()
+    local trigger = WC3.Trigger()
     statHelper.toDestroy[trigger] = true
 
     trigger:RegisterUnitSpellEffect(statHelper)
@@ -604,14 +619,14 @@ function Hero:AddStatPoint()
 end
 
 function Hero:AddTalentPoint()
-    local talentHelper = Unit(self:GetOwner(), talentsHelperId, statsX, statsY, 0)
+    local talentHelper = WC3.Unit(self:GetOwner(), talentsHelperId, statsX, statsY, 0)
     self.skillUpgrades[talentHelper] = true
 
     for _, id in pairs(self.talentBooks) do
         talentHelper:AddAbility(id)
     end
 
-    local trigger = Trigger()
+    local trigger = WC3.Trigger()
     talentHelper.toDestroy[trigger] = true
 
     trigger:RegisterUnitSpellEffect(talentHelper)
@@ -628,7 +643,7 @@ function Hero:AddTalentPoint()
 end
 
 function Hero:SelectNextHelper(prefferStats)
-    if self:GetOwner() == WCPlayer.Local then
+    if self:GetOwner() == WC3.Player.Local then
         ClearSelection()
         if prefferStats then
             for helper in pairs(self.statUpgrades) do helper:Select() return end
@@ -909,8 +924,7 @@ end)
 -- Start of file Core\Tavern.lua
 Module("Core.Tavern", function()
 local Class = require("Class")
-local Unit = require("WC3.Unit")
-local Trigger = require("WC3.Trigger")
+local WC3 = require("WC3.All")
 local Log = require("Log")
 
 local logTavern = Log.Category("Core\\Tavern")
@@ -918,28 +932,29 @@ local logTavern = Log.Category("Core\\Tavern")
 local heroSpawnX = -2300
 local heroSpawnY = -3400
 
-local Tavern = Class(Unit)
+local Tavern = Class(WC3.Unit)
 
 
 function Tavern:ctor(owner, x, y, facing, heroPresets)
-    Unit.ctor(self, owner, FourCC("n000"), x, y, facing)
+    WC3.Unit.ctor(self, owner, FourCC("n000"), x, y, facing)
+
+    heroPresets[1]:Spawn(WC3.Player.Get(8), heroSpawnX, heroSpawnY, 0)
 
     self.owner = owner
     self.heroPresets = heroPresets
-    logTavern:Info("add unit")
     self:AddTrigger()
 end
 
 function Tavern:AddTrigger()
-    local trigger = Trigger()
+    local trigger = WC3.Trigger()
     self.toDestroy[trigger] = true
     trigger:RegisterUnitSold(self)
     trigger:AddAction(function()
-        local buying = Unit.GetBying()
-        local sold = Unit.GetSold()
+        local buying = WC3.Unit.GetBying()
+        local sold = WC3.Unit.GetSold()
         local whichOwner = sold:GetOwner()
         local id = sold:GetTypeId()
-        logTavern:Info("Unit bought with id "..id)
+        logTavern:Trace("Unit bought with id "..id)
         for _, hero in pairs(self.heroPresets) do
             if hero.unitid == id then
                 hero:Spawn(whichOwner, heroSpawnX, heroSpawnY, 0)
@@ -1157,29 +1172,59 @@ end)
 Module("Core.WaveSpecification", function()
 local Log = require("Log")
 
-local levelCreepCompositon = {
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},
-    {"MagicDragon"},}
-    local nComposition = {
-        {5},
-        {5},
-        {5},
-        {5},
-        {5},
-    }
-    local aComposition = {
-        {nil},
-        {nil},
-        {nil},
-        {nil},
-        {nil}
-    }
+    local waveComposition = { 
+        [1] = {{
+            count = 5,
+            unit = "MagicDragon",
+            ability = nil}},
+        [2] = {{
+            count = 5,
+            unit = "MagicDragon",
+            ability = nil}},
+        [3] = {{
+            count = 5,
+            unit = "MagicDragon",
+            ability = nil
+        }},
+        [4] = {{
+            count = 5,
+            unit = "MagicDragon",
+            ability = nil
+        }},
+        [5] = {{
+            count = 5,
+            unit = "MagicDragon",
+            ability = nil
+        }},
+        [6] = {{
+            count = 5,
+            unit = "MagicDragon",
+            ability = nil
+        }},
+        [7] = {{
+            count = 5,
+            unit = "MagicDragon",
+            ability = nil
+        }},
+        [7] = {{
+            count = 5,
+            unit = "MagicDragon",
+            ability = nil
+        }},
+        [8] = {{
+            count = 5,
+            unit = "MagicDragon",
+            ability = nil
+        }},
+        [9] = {{
+            count = 5,
+            unit = "MagicDragon",
+            ability = nil
+        }},
 
+    }
 Log("WaveSpecification is load")
-return levelCreepCompositon, nComposition, aComposition, 5
+return waveComposition
 end)
 -- End of file Core\WaveSpecification.lua
 -- Start of file Core\Creeps\MagicDragon.lua
@@ -1208,7 +1253,7 @@ Module("Core.Node.CreepSpawner", function()
 local Log = require("Log")
 local Class = require("Class")
 local Node = require("Core.Node.Node")
-local levelCreepsComopsion, nComposion, aComposition, maxlevel = require("Core.WaveSpecification")
+local waveComopsion = require("Core.WaveSpecification")
 local CreepClasses = { MagicDragon = require("Core.Creeps.MagicDragon") }
 
 local CreepSpawner = Class(Node)
@@ -1222,18 +1267,14 @@ function CreepSpawner:ctor(owner,  x, y, prevnode, facing)
     Node.ctor(self, x, y, prevnode)
     self.owner = owner
     self.facing = facing
-    Log("Max level: "..maxlevel)
-    self.levelCreepsComopsion = levelCreepsComopsion
-    self.nComposion = nComposion
-    self.maxlevel = maxlevel
-    self.aComposition = aComposition
+    self.maxlevel = #waveComopsion
+    logCreepSpawner:Info("Max level: "..self.maxlevel)
+    self.waveComopsion = waveComopsion
 end
 
 function CreepSpawner:GetWaveSpecification(level)
-    local result_CreepsComposition = self.levelCreepsComopsion[level]
-    local result_nComposion = self.nComposion[level]
-    local result_aComposion = self.aComposition[level]
-    return result_CreepsComposition, result_nComposion, result_aComposion
+    local wave = self.waveComopsion[level]
+    return wave
 end
 
 function CreepSpawner:IsANextWave(level)
@@ -1245,13 +1286,13 @@ end
 
 function CreepSpawner:SpawnNewWave(level)
     -- logCreepSpawner:Info("WAVE "..self.level + 1)
-    local CreepsComposition, nComposion, aComposition = self:GetWaveSpecification(level)
+    local wave = self:GetWaveSpecification(level)
     local acc = 0
-    for i, CreepName in pairs(CreepsComposition) do
-        for j = 1, nComposion[i] do
-            local creepPresetClass = CreepClasses[CreepName]
+    for i, unit in pairs(wave) do
+        for j = 1, unit["count"] do
+            local creepPresetClass = CreepClasses[unit["unit"]]
             local creepPreset = creepPresetClass()
-            local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing)
+            local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing, level)
             local x, y = self.prev:GetCenter()
             creep:IssueAttackPoint(x, y)
             acc = acc + 1
@@ -1777,7 +1818,7 @@ function Mutant:ctor()
             availableFromStart = true,
             params = {
                 ragePerAttack = function(_) return 1 end,
-                damagePerRage = function(_) end,
+                damagePerRage = function(_) return 1 end,
                 armorPerRage = function(_, caster)
                     local value = -1
                     if caster:HasTalent("T130") then value = value + 0.2 end
@@ -1913,14 +1954,14 @@ function TakeCover:Enable()
         end
 
         self.caster:SetMana(curMp - mpBurned)
-        args:SetDamage((damage - redirected) * self.damageReduction)
+        args:SetDamage((damage - redirected) * (1 - self.damageReduction))
 
         do
             local recursion = { ["Mutant.TakeCover"] = true, }
             for k, v in pairs(args.recursion) do recursion[k] = v end
 
             local toAlly = {
-                value = redirected * self.damageReduction,
+                value = redirected * (1 - self.damageReduction),
                 isAttack = false,
                 recursion = recursion,
             }
@@ -2030,7 +2071,9 @@ Module("Tests.Initialization", function()
 local Log = require("Log")
 local Init = require("Initialization")
 
-if ExtensiveLog and TestBuild then
+local logTimer = Log.Category("Tests\\Initialization")
+
+if TestBuild then
     local globalInit = "false";
     local customTriggerInit = "false";
     local initializtion = "false";
@@ -2049,11 +2092,11 @@ if ExtensiveLog and TestBuild then
         blizz = "true"
     end)
     Init.GameStart:Add(function()
-        Log("GameStart: true")
-        Log("InitGlobals: " .. globalInit)
-        Log("InitCustomTriggers: " .. customTriggerInit)
-        Log("RunInitializationTriggers: " .. initializtion)
-        Log("InitBlizzard: " .. blizz)
+        logTimer:Trace("GameStart: true")
+        logTimer:Trace("InitGlobals: " .. globalInit)
+        logTimer:Trace("InitCustomTriggers: " .. customTriggerInit)
+        logTimer:Trace("RunInitializationTriggers: " .. initializtion)
+        logTimer:Trace("InitBlizzard: " .. blizz)
     end)
 end
 
@@ -2062,13 +2105,14 @@ end)
 -- Start of file Tests\Main.lua
 Module("Tests.Main", function()
 local Log = require("Log")
-local WCPlayer = require("WC3.Player")
+local WC3 = require("WC3.All")
 local DuskKnight = require("Heroes.DuskKnight")
 local Mutant = require("Heroes.Mutant")
-local Unit = require("WC3.Unit")
 local WaveObserver = require("Core.WaveObserver")
 local Core = require("Core.Core")
 local Tavern = require("Core.Tavern")
+
+local logMain = Log.Category("Main")
 
 local heroPresets = {
     DuskKnight(),
@@ -2085,16 +2129,14 @@ end
 ]]
 for i = 0, 7, 1 do
     local shiftx = 1300 + i * 100
-    local unit = Unit(WCPlayer.Get(i), FourCC("e001"), shiftx, -3600, 0)
-    unit:SetMoveSpeed(0)
+    local unit = WC3.Unit(WC3.Player.Get(i), FourCC("e001"), shiftx, -3600, 0)
 end
-Core(WCPlayer.Get(8), -2300, -3800, 0)
-Tavern(WCPlayer.Get(0), 1600, -3800, 0, heroPresets)
+Core(WC3.Player.Get(8), -2300, -3800, 0)
+Tavern(WC3.Player.Get(0), 1600, -3800, 0, heroPresets)
 
+WaveObserver(WC3.Player.Get(9))
 
-WaveObserver(WCPlayer.Get(9))
-
-Log("Game initialized successfully")
+logMain:Message("Game initialized successfully")
 end)
 -- End of file Tests\Main.lua
 -- Start of file WC3\AbilityInstance.lua
@@ -2322,6 +2364,8 @@ local Log = require("Log")
 
 local Timer = Class()
 
+local logTimer = Log.Category("WC3\\Timer")
+
 function Timer:ctor()
     self.handle = CreateTimer()
 end
@@ -2334,7 +2378,7 @@ function Timer:Start(period, periodic, onEnd)
     TimerStart(self.handle, period, periodic, function()
         local result, err = pcall(onEnd)
         if not result then
-            Log("Error running timer handler: " .. err)
+            logTimer:Error("Error running timer handler: " .. err)
         end
     end)
 end
@@ -2347,6 +2391,8 @@ Module("WC3.Trigger", function()
 local Class = require("Class")
 local Log = require("Log")
 local Unit = require("WC3.Unit")
+
+local logTrigger = Log.Category("WC3\\Trigger")
 
 local Trigger = Class()
 
@@ -2363,7 +2409,7 @@ function Trigger:RegisterPlayerUnitEvent(player, event, filter)
         filter = function()
             local result, errOrRet = pcall(filter, Unit.Get(GetFilterUnit()))
             if not result then
-                Log("Error filtering player units for and event: " .. errOrRet)
+                logTrigger:Error("Error filtering player units for and event: " .. errOrRet)
                 return false
             end
             return errOrRet
@@ -2393,7 +2439,7 @@ function Trigger:RegisterPlayerUnitDamaging(player, filter)
         filter = function()
             local result, errOrRet = pcall(filter, Unit.Get(GetFilterUnit()))
             if not result then
-                Log("Error filtering player units for and event: " .. errOrRet)
+                logTrigger:Error("Error filtering player units for and event: " .. errOrRet)
                 return false
             end
             return errOrRet
@@ -2407,7 +2453,7 @@ function Trigger:RegisterEnterRegion(region, filter)
         filter = function ()
             local result, errOrRet
             if not result then
-                Log("Error filtering Region for and event: "..errOrRet)
+                logTrigger:Error("Error filtering Region for and event: "..errOrRet)
                 return false
             end
             return errOrRet
@@ -2420,7 +2466,7 @@ function Trigger:AddAction(action)
     return TriggerAddAction(self.handle, function()
         local result, err = pcall(action)
         if not result then
-            Log("Error running trigger action: " .. err)
+            logTrigger:Error("Error running trigger action: " .. err)
         end
     end)
 end
@@ -2437,6 +2483,8 @@ local Log = require("Log")
 local Unit = Class()
 
 local units = {}
+
+local logUnit = Log.Category("WC3\\Unit")
 
 local function Get(handle)
     local existing = units[handle]
@@ -2483,7 +2531,7 @@ function Unit.EnumInRange(x, y, radius, handler)
     GroupEnumUnitsInRange(group, x, y, radius, Filter(function()
         local result, err = pcall(handler, Unit.GetFiltered())
         if not result then
-            Log("Error enumerating units in range: " .. err)
+            logUnit:Error("Error enumerating units in range: " .. err)
         end
     end))
     DestroyGroup(group)
@@ -2503,7 +2551,7 @@ end
 
 function Unit:Register()
     if units[self.handle] then
-        error("Attempt to reregister a unit")
+        error("Attempt to reregister a unit", 3)
     end
     units[self.handle] = self
 end

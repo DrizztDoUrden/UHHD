@@ -48,7 +48,7 @@ function WaveObserver:ctor(owner)
             creepcount = creepcount + creepSpawner1:SpawnNewWave(level)
             creepcount = creepcount + creepSpawner2:SpawnNewWave(level)
             level = level + 1
-            if not creepSpawner1:IsANextWave(level) then
+            if not creepSpawner1:HasNextWave(level) then
                 Log("level "..level)
                 self.needtokillallcreep = true
                 logWaveObserver:Info("No waves")
