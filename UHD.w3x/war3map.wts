@@ -1056,3 +1056,27 @@ STRING 218
 In 2 seconds charging removes all rage stacks, healing 5% of missing health per stack removed.|n20 seconds cooldown from rage start.
 }
 
+STRING 219
+// Abilities: T100 (Ward Drain), Name (Name)
+{
+Ward Drain
+}
+
+STRING 220
+// Abilities: T100 (Ward Drain), Tip (Tooltip - Normal)
+{
+Ward Drain
+}
+
+STRING 221
+// Abilities: T100 (Ward Drain), Ubertip (Tooltip - Normal - Extended)
+{
+Dark mend also reduces spell resist, but both with 75% efficiency
+}
+
+STRING 222
+// Abilities: T100 (Ward Drain), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
