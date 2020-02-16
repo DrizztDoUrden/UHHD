@@ -1,7 +1,9 @@
 local Log = require("Log")
 local Init = require("Initialization")
 
-if ExtensiveLog and TestBuild then
+local logTimer = Log.Category("Tests\\Initialization")
+
+if TestBuild then
     local globalInit = "false";
     local customTriggerInit = "false";
     local initializtion = "false";
@@ -20,10 +22,10 @@ if ExtensiveLog and TestBuild then
         blizz = "true"
     end)
     Init.GameStart:Add(function()
-        Log("GameStart: true")
-        Log("InitGlobals: " .. globalInit)
-        Log("InitCustomTriggers: " .. customTriggerInit)
-        Log("RunInitializationTriggers: " .. initializtion)
-        Log("InitBlizzard: " .. blizz)
+        logTimer:Trace("GameStart: true")
+        logTimer:Trace("InitGlobals: " .. globalInit)
+        logTimer:Trace("InitCustomTriggers: " .. customTriggerInit)
+        logTimer:Trace("RunInitializationTriggers: " .. initializtion)
+        logTimer:Trace("InitBlizzard: " .. blizz)
     end)
 end

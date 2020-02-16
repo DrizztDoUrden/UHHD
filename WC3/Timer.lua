@@ -3,6 +3,8 @@ local Log = require("Log")
 
 local Timer = Class()
 
+local logTimer = Log.Category("WC3\\Timer")
+
 function Timer:ctor()
     self.handle = CreateTimer()
 end
@@ -15,7 +17,7 @@ function Timer:Start(period, periodic, onEnd)
     TimerStart(self.handle, period, periodic, function()
         local result, err = pcall(onEnd)
         if not result then
-            Log("Error running timer handler: " .. err)
+            logTimer:Error("Error running timer handler: " .. err)
         end
     end)
 end

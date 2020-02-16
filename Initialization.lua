@@ -9,13 +9,15 @@ local handlers = {
     gameStart = { funcs = {}, executed = false, },
 }
 
+local logInitialization = Log.Category("Initialization")
+
 local function FunctionRegistar(table)
     return setmetatable({}, {
         __index = {
             Add = function(_, func)
                 if table.executed then
                     local result, err = pcall(func)
-                    if not result then Log(err) end
+                    if not result then logInitialization:Error(err) end
                 else
                     table.funcs[func] = true
                 end
@@ -35,7 +37,7 @@ local Init = {
 local function RunHandlers(table)
     for handler in pairs(handlers[table].funcs) do
         local result, err = pcall(handler)
-        if not result then Log(err) end
+        if not result then logInitialization:Error(err) end
     end
     handlers[table].funcs = nil
     handlers[table].executed = true
