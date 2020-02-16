@@ -300,7 +300,7 @@ Dark Mend heals 50% instantly and 75% over time.
 }
 
 STRING 75
-// Upgrades: U030 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U030 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
@@ -571,151 +571,151 @@ STRING 123
 }
 
 STRING 124
-// Upgrades: U000 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U000 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 125
-// Upgrades: U001 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U001 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 126
-// Upgrades: U002 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U002 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 127
-// Upgrades: U010 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U010 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 128
-// Upgrades: U011 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U011 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 129
-// Upgrades: U012 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U012 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 130
-// Upgrades: U020 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U020 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 131
-// Upgrades: U021 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U021 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 132
-// Upgrades: U022 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U022 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 133
-// Upgrades: U023 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U023 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 134
-// Upgrades: U031 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U031 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 135
-// Upgrades: U032 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U032 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 136
-// Upgrades: U030 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U030 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 030
 }
 
 STRING 137
-// Upgrades: U000 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U000 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 000
 }
 
 STRING 138
-// Upgrades: U001 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U001 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 001
 }
 
 STRING 139
-// Upgrades: U002 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U002 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 002
 }
 
 STRING 140
-// Upgrades: U010 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U010 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 010
 }
 
 STRING 141
-// Upgrades: U011 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U011 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 011
 }
 
 STRING 142
-// Upgrades: U012 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U012 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 012
 }
 
 STRING 143
-// Upgrades: U020 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U020 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 020
 }
 
 STRING 144
-// Upgrades: U021 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U021 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 021
 }
 
 STRING 145
-// Upgrades: U022 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U022 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 022
 }
 
 STRING 146
-// Upgrades: U023 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U023 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 023
 }
 
 STRING 147
-// Upgrades: U031 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U031 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 031
 }
 
 STRING 148
-// Upgrades: U032 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U032 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 032
 }
@@ -858,12 +858,6 @@ STRING 178
 Meditate
 }
 
-STRING 179
-// Abilities: MT_2 (Meditate), Ubertip (Tooltip - Normal - Extended)
-{
-In 2 seconds charging removes all rage stacks, healing 6% of missing health per stack removed.|n20 seconds cooldown from rage start.
-}
-
 STRING 180
 // Abilities: MT_3 (Rage), Name (Name)
 {
@@ -888,20 +882,14 @@ STRING 183
 Rage
 }
 
-STRING 184
-// Abilities: MT_3 (Rage), Ubertip (Tooltip - Normal - Extended)
-{
-Each attack gives +1 weapon damage and -1 armor. Starts with 3 statks. Every 2 seconds 1 stack is removed. Ends when reaches 0 stacks.|nLimit: 10 stacks.|nCooldown: 20 seconds from end.
-}
-
 STRING 185
-// Upgrades: MTU0 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: MTU0 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Rage active
 }
 
 STRING 186
-// Upgrades: R001 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: R001 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Rage inactive
 }
@@ -961,14 +949,134 @@ Next 3 attacks have +50% attack speed and heal 5% max HP each.
 }
 
 STRING 200
-// Upgrades: R002 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: R002 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already in effect
 }
 
 STRING 201
-// Upgrades: R002 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: R002 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 (Bashing strikes)
+}
+
+STRING 202
+// Abilities: DKT2 (Shadow Leap Talents), Name (Name)
+{
+Shadow Leap Talents
+}
+
+STRING 203
+// Abilities: DKT2 (Shadow Leap Talents), EditorSuffix (Editor Suffix)
+{
+(Dusk Knight)
+}
+
+STRING 204
+// Abilities: MTT0 (Bashing Strikes Talents), Name (Name)
+{
+Bashing Strikes Talents
+}
+
+STRING 205
+// Abilities: MTT0 (Bashing Strikes Talents), Tip (Tooltip - Normal)
+{
+Bashing Strikes Talents
+}
+
+STRING 206
+// Abilities: MTT0 (Bashing Strikes Talents), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 207
+// Abilities: MTT1 (Take Cover Talents), Name (Name)
+{
+Take Cover Talents
+}
+
+STRING 208
+// Abilities: MTT1 (Take Cover Talents), Tip (Tooltip - Normal)
+{
+Take Cover Talents
+}
+
+STRING 209
+// Abilities: MTT1 (Take Cover Talents), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 211
+// Abilities: MTT2 (Meditate Talents), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 212
+// Abilities: MTT2 (Meditate Talents), Name (Name)
+{
+Meditate Talents
+}
+
+STRING 213
+// Abilities: MTT2 (Meditate Talents), Tip (Tooltip - Normal)
+{
+Meditate Talents
+}
+
+STRING 214
+// Abilities: MTT3 (Rage Talents), Name (Name)
+{
+Rage Talents
+}
+
+STRING 215
+// Abilities: MTT3 (Rage Talents), Tip (Tooltip - Normal)
+{
+Rage Talents
+}
+
+STRING 216
+// Abilities: MTT3 (Rage Talents), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 217
+// Abilities: MT_3 (Rage), Ubertip (Tooltip - Normal - Extended)
+{
+Each attack gives +1 weapon damage and -1 armor. Starts with 3 statks. Every 3 seconds 1 stack is removed. Ends when reaches 0 stacks.|nLimit: 10 stacks.|nCooldown: 20 seconds from end.
+}
+
+STRING 218
+// Abilities: MT_2 (Meditate), Ubertip (Tooltip - Normal - Extended)
+{
+In 2 seconds charging removes all rage stacks, healing 5% of missing health per stack removed.|n20 seconds cooldown from rage start.
+}
+
+STRING 219
+// Abilities: T100 (Ward Drain), Name (Name)
+{
+Ward Drain
+}
+
+STRING 220
+// Abilities: T100 (Ward Drain), Tip (Tooltip - Normal)
+{
+Ward Drain
+}
+
+STRING 221
+// Abilities: T100 (Ward Drain), Ubertip (Tooltip - Normal - Extended)
+{
+Dark mend also reduces spell resist, but both with 75% efficiency
+}
+
+STRING 222
+// Abilities: T100 (Ward Drain), EditorSuffix (Editor Suffix)
+{
+(Mutant)
 }
 
