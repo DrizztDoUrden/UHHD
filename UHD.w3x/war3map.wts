@@ -984,3 +984,15 @@ STRING 199
 Next 3 attacks have +50% attack speed and heal 5% max HP each.
 }
 
+STRING 200
+// Upgrades: R002 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
+{
+Already in effect
+}
+
+STRING 201
+// Upgrades: R002 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
+{
+(Bashing strikes)
+}
+
