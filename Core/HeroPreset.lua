@@ -75,9 +75,9 @@ function HeroPreset:Spawn(owner, x, y, facing)
     return hero
 end
 
-function HeroPreset:AddTalent(id)
-    local talent = { tech = FourCC("U" .. id), }
-    self.talents[FourCC("T" .. id)] = talent
+function HeroPreset:AddTalent(heroId, id)
+    local talent = { tech = FourCC("U0" .. id), }
+    self.talents[FourCC("T" .. heroId .. id)] = talent
     return talent
 end
 

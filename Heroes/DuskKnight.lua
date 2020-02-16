@@ -117,21 +117,21 @@ function DuskKnight:ctor()
         FourCC("DKT3"),
     }
 
-    self:AddTalent("000")
-    self:AddTalent("001")
-    self:AddTalent("002")
+    self:AddTalent("0", "00")
+    self:AddTalent("0", "01")
+    self:AddTalent("0", "02")
 
-    self:AddTalent("010")
-    self:AddTalent("011")
-    self:AddTalent("012")
+    self:AddTalent("0", "10")
+    self:AddTalent("0", "11")
+    self:AddTalent("0", "12")
 
-    self:AddTalent("020")
-    self:AddTalent("021")
-    self:AddTalent("022")
+    self:AddTalent("0", "20")
+    self:AddTalent("0", "21")
+    self:AddTalent("0", "22")
 
-    self:AddTalent("030")
-    self:AddTalent("031").onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
-    self:AddTalent("032")
+    self:AddTalent("0", "30")
+    self:AddTalent("0", "31").onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
+    self:AddTalent("0", "32")
 
     self.basicStats.strength = 12
     self.basicStats.agility = 6

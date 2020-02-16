@@ -43,6 +43,8 @@ function Mutant:ctor()
             handler = Meditate,
             availableFromStart = true,
             params = {
+                castTime = function(_) return 2 end,
+                castSlow = function(_) return -0.7 end,
                 healPerRage = function(_) return 0.06 end,
             },
         },
@@ -55,6 +57,8 @@ function Mutant:ctor()
                 damagePerRage = function(_) return 1 end,
                 armorPerRage = function(_) return -1 end,
                 startingStacks = function(_) return 3 end,
+                maxStacks = function(_) return 3 end,
+                stackDecayTime = function(_) return 2 end,
             },
         },
     }
@@ -62,6 +66,7 @@ function Mutant:ctor()
     self.initialTechs = {
         [FourCC("MTU0")] = 0,
         [FourCC("R001")] = 1,
+        [FourCC("R002")] = 1,
     }
 
     self.talentBooks = {
@@ -71,21 +76,22 @@ function Mutant:ctor()
         -- FourCC("MTT3"),
     }
 
-    -- self:AddTalent("100")
-    -- self:AddTalent("101")
-    -- self:AddTalent("102")
+    self:AddTalent("0", "00")
+    self:AddTalent("0", "01")
+    self:AddTalent("0", "02")
 
-    -- self:AddTalent("110")
-    -- self:AddTalent("111")
-    -- self:AddTalent("112")
+    self:AddTalent("0", "10")
+    self:AddTalent("0", "11")
+    self:AddTalent("0", "12")
 
-    -- self:AddTalent("120")
-    -- self:AddTalent("121")
-    -- self:AddTalent("122")
+    self:AddTalent("0", "20")
+    self:AddTalent("0", "21")
+    self:AddTalent("0", "22")
 
-    -- self:AddTalent("130")
-    -- self:AddTalent("131").onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
-    -- self:AddTalent("132")
+    self:AddTalent("0", "30")
+    self:AddTalent("0", "31") -- .onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
+    self:AddTalent("0", "32")
+
 
     self.basicStats.strength = 16
     self.basicStats.agility = 6
@@ -97,16 +103,19 @@ end
 
 function BashingStrikes:Cast()
     self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed * (1 + self.attackSpeedBonus)
-    logMutant:Warning("Bashing strikes start")
+    self.caster:ApplyStats()
+    self.caster:GetOwner():SetTechLevel(FourCC("R002"), 0)
+    self.caster:SetCooldownRemaining(FourCC("MT_0"), 0)
 
     local function handler()
-        logMutant:Warning("Bashing strikes hit")
         self.caster:SetHP(math.min(self.caster.secondaryStats.health, self.caster:GetHP() + self.healPerHit * self.caster.secondaryStats.health))
         self.attacks = self.attacks - 1
-        if self.attacks < 0 then
-            logMutant:Warning("Bashing strikes end")
+        if self.attacks <= 0 then
+            self.caster:GetOwner():SetTechLevel(FourCC("R002"), 1)
+            self.caster:SetCooldownRemaining(FourCC("MT_0"), 10)
             self.caster.onDamageDealt[handler] = nil
             self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed / (1 + self.attackSpeedBonus)
+            self.caster:ApplyStats()
         end
     end
 
@@ -114,23 +123,83 @@ function BashingStrikes:Cast()
 end
 
 function TakeCover:Cast()
-    if not self.caster.effects["mt.cover"] then
+    if not self.caster.effects["Mutant.TakeCover"] then
         self.caster:RemoveAbility(FourCC('MT_1'))
         self.caster:AddAbility(FourCC('MTD1'))
         self.caster:SetCooldownRemaining(FourCC('MTD1'), 5)
-        self.caster.effects["mt.cover"] = true
+        self.caster.effects["Mutant.TakeCover"] = true
     else
         self.caster:RemoveAbility(FourCC('MTD1'))
         self.caster:AddAbility(FourCC('MT_1'))
         self.caster:SetCooldownRemaining(FourCC('MT_1'), 5)
-        self.caster.effects["mt.cover"] = nil
+        self.caster.effects["Mutant.TakeCover"] = nil
     end
 end
 
 function Meditate:Cast()
+    local timer = WC3.Timer()
+    self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed * (1 + self.castSlow)
+    self.caster:ApplyStats()
+
+    timer:Start(self.castTime, false, function()
+        timer:Destroy()
+        self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed * (1 - self.castSlow)
+        self.caster:ApplyStats()
+        local rage = self.caster.effects["Mutant.Rage"]
+        if rage then
+            local curHp = self.caster:GetHP()
+            local percentHealed = rage.stacks * self.healPerRage
+            local heal = (self.caster.secondaryStats.health - curHp) * percentHealed
+            self.caster:SetHP(curHp + heal)
+            rage:SetStacks(0)
+        end
+    end)
 end
 
 function Rage:Cast()
+    self.caster:GetOwner():SetTechLevel(FourCC("R001"), 0)
+    self.caster:GetOwner():SetTechLevel(FourCC("MTU0"), 1)
+    self.caster:SetCooldownRemaining(FourCC('MT_3'), 0)
+    self.caster:SetCooldownRemaining(FourCC('MT_2'), 2)
+    self.caster.effects["Mutant.Rage"] = self
+    self:SetStacks(self.startingStacks)
+
+    self.handler = function()
+        self:SetStacks(self.stacks + self.ragePerAttack)
+    end
+
+    self.timer = WC3.Timer()
+
+    self.timer:Start(self.stackDecayTime, true, function()
+        self:SetStacks(self.stacks - 1)
+    end)
+
+    self.caster.onDamageDealt[self.handler] = true
+end
+
+function Rage:SetStacks(value)
+    value = math.min(self.maxStacks, value)
+    if self.stacks == value then return end
+    if self.stacks then
+        self.caster.bonusSecondaryStats.weaponDamage = self.caster.bonusSecondaryStats.weaponDamage - self.damagePerRage * self.stacks
+        self.caster.bonusSecondaryStats.armor = self.caster.bonusSecondaryStats.armor - self.armorPerRage * self.stacks
+    end
+    self.stacks = value
+    self.caster.bonusSecondaryStats.weaponDamage = self.caster.bonusSecondaryStats.weaponDamage + self.damagePerRage * self.stacks
+    self.caster.bonusSecondaryStats.armor = self.caster.bonusSecondaryStats.armor + self.armorPerRage * self.stacks
+    self.caster:ApplyStats()
+    if self.stacks <= 0 then
+        self:Destroy()
+    end
+end
+
+function Rage:Destroy()
+    self.timer:Destroy()
+    self.caster.onDamageDealt[self.handler] = nil
+    self.caster:GetOwner():SetTechLevel(FourCC("R001"), 1)
+    self.caster:GetOwner():SetTechLevel(FourCC("MTU0"), 0)
+    self.caster:SetCooldownRemaining(FourCC('MT_3'), 20)
+    self.caster.effects["Mutant.Rage"] = nil
 end
 
 return Mutant
