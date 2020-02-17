@@ -113,13 +113,21 @@ function UHDUnit:DealDamage(target, damage)
     }
     self:DamageDealt(args)
     if target:IsA(UHDUnit) then target:DamageDealt(args) end
-    target:SetHP(hpAfterDamage)
+    self:DamageTarget(target, dmg, false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_UNKNOWN, WEAPON_TYPE_WHOKNOWS)
     return dmg
+end
+
+function UHDUnit:Heal(target, value)
+    target:SetHP(math.min(self.secondaryStats.health, target:GetHP() + value))
 end
 
 local unitDamaging = WC3.Trigger()
 for i=0,23 do unitDamaging:RegisterPlayerUnitDamaging(WC3.Player.Get(i)) end
 unitDamaging:AddAction(function()
+    local damageType = BlzGetEventDamageType()
+    if damageType == DAMAGE_TYPE_UNKNOWN then
+        return
+    end
     local source = WC3.Unit.GetEventDamageSource()
     local target = WC3.Unit.GetEventDamageTarget()
     local args = {

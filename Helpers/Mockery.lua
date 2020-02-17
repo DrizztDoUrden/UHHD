@@ -25,9 +25,6 @@ ExtensiveLog = false
 ---@class rect
 ---@class location
 
-DAMAGE_TYPE_MAGIC = {}
-WEAPON_TYPE_WHOKNOWS = {}
-
 PLAYER_GAME_RESULT_VICTORY = {}
 PLAYER_GAME_RESULT_DEFEAT = {}
 
@@ -49,10 +46,14 @@ UNIT_STATE_MAX_LIFE = {}
 UNIT_STATE_MAX_MANA = {}
 
 WEAPON_TYPE_METAL_MEDIUM_SLICE = {}
+WEAPON_TYPE_WHOKNOWS = {}
 
 ATTACK_TYPE_HERO = {}
+ATTACK_TYPE_NORMAL = {}
 
 DAMAGE_TYPE_NORMAL = {}
+DAMAGE_TYPE_MAGIC = {}
+DAMAGE_TYPE_UNKNOWN = {}
 
 ABILITY_ILF_HIT_POINTS_REGENERATED_PER_SECOND = {}
 UNIT_RF_MANA_REGENERATION = {}
@@ -407,6 +408,8 @@ function GetSpellTargetX() end
 function GetSpellTargetY() end
 ---@return location
 function GetSpellTargetLoc() end
+---@return damageType
+function BlzGetEventDamageType() end
 
 ---@param loc location
 function GetLocationX(loc) end

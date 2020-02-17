@@ -229,7 +229,7 @@ function DrainLight:Drain(target)
         if self.healed < self.healLimit * self.period then
             local toHeal = math.min(self.healLimit * self.period - self.healed, self.stealPercentage * damage)
             self.healed = self.healed + toHeal
-            self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.caster:GetHP() + toHeal))
+            self.caster:Heal(self.caster, toHeal)
         end
     end
 end
@@ -244,7 +244,7 @@ function HeavySlash:Cast()
         if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             local damage = self.caster:DealDamage(unit, { value = self.baseDamage, isAttack = true, })
             if self.manaBurn > 0 then unit:SetMana(math.max(0, unit:GetMana() - self.manaBurn)) end
-            if self.vampirism > 0 then self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.vampirism * damage)) end
+            if self.vampirism > 0 then self.caster:Heal(self.caster, self.vampirism * damage) end
 
             if unit:IsA(UHDUnit) then
                 affected[unit] = true
@@ -323,7 +323,7 @@ function DarkMend:Cast()
             return
         end
         timeLeft = timeLeft - self.period
-        self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime)
+        self.caster:Heal(self.caster, (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime)
         if timeLeft <= 0 then
             timer:Destroy()
         end
