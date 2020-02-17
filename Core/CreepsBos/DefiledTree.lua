@@ -1,21 +1,21 @@
 local Class = require("Class")
-local BoosPreset = require("Core.BoosPreset")
+local BosPreset = require("Core.BosPreset")
 local WC3 = require("WC3.All")
 local Spell = require "Core.Spell"
 local Unit = require("WC3.Unit")
 local Log = require("Log")
-local treeLog = Log.Category("Boos\\DefiledTree", {
+local treeLog = Log.Category("Bos\\DefiledTree", {
     printVerbosity = Log.Verbosity.Trace,
     fileVerbosity = Log.Verbosity.Trace,
     })
 
 local DrainMana = Class(Spell)
 
-local DefiledTree = Class(BoosPreset)
+local DefiledTree = Class(BosPreset)
 
 
 function DefiledTree:ctor()
-    BoosPreset.ctor(self)
+    BosPreset.ctor(self)
     self.secondaryStats.health = 375
     self.secondaryStats.mana = 110
     self.secondaryStats.weaponDamage = 4
@@ -26,11 +26,12 @@ function DefiledTree:ctor()
             handler = DrainMana,
             availableFromStart = true,
             params = {
-                radius = function (_) return 400 end,
+                radius = function (_) return 150 end,
                 duration = function (_) return 10 end,
                 period = function (_) return 0.5 end,
-                stealMana = function (_) return 3 end,
-                wampireHp = function (_) return 6 end
+                leachMana = function (_) return 3 * self.secondaryStats.spellDamage end,
+                leachHP = function (_) return 6 * self.secondaryStats.spellDamage end,
+                dummySpeed = function (_) return 0.6 end
             }
         }
     }
@@ -49,7 +50,8 @@ function DrainMana:Cast()
     local x, y = self.target:GetX(), self.target:GetY()
     treeLog:Info("Pos "..x.." "..y)
     --treeLog:Info("Caster Owner "..self.caster:GetOwner().handle)
-    self.spellunit = WC3.Unit(self.caster:GetOwner(), FourCC("bs00") , x, y, 0)
+    self.dummy = WC3.Unit(self.caster:GetOwner(), FourCC("bs00") , x, y, 0)
+    self.dummy:SetMoveSpeed(self.dummySpeed)
     local timer = WC3.Timer()
     timer:Start(self.period, true, function()
         if self.caster:GetHP() <= 0 then
@@ -71,32 +73,28 @@ function DrainMana:Cast()
 end
 
 function DrainMana:Effect()
-    WC3.Unit.EnumInRange(self.spellunit:GetX(), self.spellunit:GetY(), self.radius, function(unit)
+    WC3.Unit.EnumInRange(self.dummy:GetX(), self.dummy:GetY(), self.radius, function(unit)
         if self.caster ~= unit and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
         table.insert(self.affected,{unit = unit})
         end
     end)
     local x, y = self.target:GetX(), self.target:GetY()
-    self.spellunit:IssuePointOrderById(851986, x, y)
+    self.dummy:IssuePointOrderById(851986, x, y)
 end
 
 function DrainMana:Drain()
-    local towampire = self.caster:GetHP()
+    local sumHP = 0
     for _, target in pairs(self.affected) do
-        local residualMana = target.unit:GetMana() - self.stealMana
-        local stolenMana = self.stealMana
-        if residualMana <= 0 then
-            stolenMana = stolenMana + residualMana
-            residualMana = 0
-        end
-        towampire = self.wampireHp + towampire * (stolenMana / self.stealMana)
+        local currentMana = target.unit:GetMana()
+        local residualMana = math.max(currentMana - self.leachMana * self.period, 0)
+        sumHP =  sumHP + self.leachHP * self.period * ((currentMana - residualMana)/ self.leachMana)
         target.unit:SetMana(residualMana)
     end
-    self.caster:SetHP(towampire)
+    self.caster:SetHP(self.caster:GetHP() + sumHP)
 end
 
 function DrainMana:End()
-    self.spellunit:Destroy()
+    self.dummy:Destroy()
 end
 
 return DefiledTree

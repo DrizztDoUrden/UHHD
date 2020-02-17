@@ -219,6 +219,8 @@ function GetUnitTypeId(unit) end
 ---@return boolean
 function IsHeroUnitId(id) end
 
+function IssueTargetOrderById(whichUnit, order, targetWidget) end
+
 function IssuePointOrderById(whichUnit, order, x, y) end
 ---@param whichHero unit
 ---@param value integer

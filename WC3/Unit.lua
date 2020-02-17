@@ -267,6 +267,12 @@ function Unit:IssuePointOrderById(order, x, y)
     end
 end
 
+function Unit:IssueTargetOrderById(order, target)
+    if math.type(order) == "integer" then
+        local result = IssueTargetOrderById(self.handle, order, target.handle)
+    end
+end
+
 function Unit:IssueAttackPoint(x, y)
     return self:IssuePointOrderById(851983, x, y)
 end

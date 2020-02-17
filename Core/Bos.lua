@@ -1,0 +1,59 @@
+local Class = require("Class")
+local UHDUnit = require("Core.UHDUnit")
+local WC3 = require("WC3.All")
+local Timer = require("WC3.Timer")
+local Unit = require("Core.Unit")
+
+local Log = require("Log")
+
+
+local BosLog = Log.Category("Bos\\Bos", {
+    printVerbosity = Log.Verbosity.Trace,
+    fileVerbosity = Log.Verbosity.Trace,
+    })
+
+    local Bos= Class(UHDUnit)
+
+    function Bos:ctor(...)
+        UHDUnit.ctor(self, ...)
+        self.abilities = WC3.Trigger()
+        self.abilities:RegisterUnitSpellEffect(self)
+        self.toDestroy[self.abilities] = true
+        self.aggroBehavier = WC3.Trigger()
+        self.agrotimer = Timer()
+        self.toDestroy[self.agrotimer] = true
+        self.toDestroy[self.aggroBehavier] = true
+    end
+
+
+    function Bos:Destroy()
+        local timer = WC3.Timer()
+        timer:Start(15, false, function()
+            UHDUnit.Destroy(self)
+            timer:Destroy()
+        end)
+    end
+
+    function Bos:SelectbyMinMana()
+        local x, y = self:GetX(), self:GetY()
+        local bosOwner = self:GetOwner()
+        local targets = {}
+        Unit.EnumInRange(x, y, 800, function(unit)
+            if bosOwner:IsAEnemy(unit:GetOwner()) then
+                table.insert(targets, {unit = unit})
+            end
+        end)
+        local minMana = targets[1].unit:GetMana()
+        local unitWithMinMana = targets[1].unit
+        for _, unit in pairs(self.targets) do
+            local mana = unit.unit:GetMana()
+            if minMana < mana then
+                unitWithMinMana = unit.unit
+                minMana = mana
+            end
+        end
+        return unitWithMinMana
+    end
+
+
+return Bos

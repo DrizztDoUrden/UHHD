@@ -6,7 +6,7 @@ local WaveObserver = require("Core.WaveObserver")
 local Core = require("Core.Core")
 local Tavern = require("Core.Tavern")
 local Timer = require("WC3.Timer")
-local DefiledTree = require("Core.CreepsBoos.DefiledTree")
+local DefiledTree = require("Core.CreepsBos.DefiledTree")
 local logMain = Log.Category("Main")
 
 local heroPresets = {
@@ -32,7 +32,7 @@ heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
 heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
 Core(WC3.Player.Get(8), -2300, -3800, 0)
 Tavern(WC3.Player.Get(0), 1600, -3800, 0, heroPresets)
-local boos = DefiledTree():Spawn(WC3.Player.Get(0), -2300, -3500, 0)
+local Bos = DefiledTree():Spawn(WC3.Player.Get(0), -2300, -3500, 0)
 local timerwaveObserver = Timer()
 timerwaveObserver:Start(25, false,
     function() WaveObserver(WC3.Player.Get(9))
