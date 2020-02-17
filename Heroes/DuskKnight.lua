@@ -229,9 +229,6 @@ function DrainLight:Drain(target)
         if self.healed < self.healLimit * self.period then
             local toHeal = math.min(self.healLimit * self.period - self.healed, self.stealPercentage * damage)
             self.healed = self.healed + toHeal
-            if toHeal < 0 then
-                logDuskKnight:Error("Negative heal: " .. toHeal .. ", " .. self.healLimit * self.period - self.healed, self.stealPercentage * damage)
-            end
             self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.caster:GetHP() + toHeal))
         end
     end
