@@ -33,7 +33,7 @@ function CreepSpawner:HasNextWave(level)
     return level < self.maxlevel
 end
 
-function CreepSpawner:SpawnNewWave(level)
+function CreepSpawner:SpawnNewWave(level, herocount)
     -- logCreepSpawner:Info("WAVE "..self.level + 1)
     local wave = self:GetWaveSpecification(level)
     local acc = 0
@@ -41,7 +41,7 @@ function CreepSpawner:SpawnNewWave(level)
         for j = 1, unit["count"] do
             local creepPresetClass = CreepClasses[unit["unit"]]
             local creepPreset = creepPresetClass()
-            local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing, level)
+            local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing, level, herocount)
             local x, y = self.prev:GetCenter()
             creep:IssueAttackPoint(x, y)
             acc = acc + 1

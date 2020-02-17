@@ -431,8 +431,8 @@ local Creep = Class(UHDUnit)
         end)
     end
 
-    function Creep:Scale(level)
-        local mult = (1 + 0.1 * level)
+    function Creep:Scale(level, heroesCount)
+        local mult = (1 + 0.05 * (0.7 * heroesCount +  0) * (level - 1))
         self.secondaryStats.health = mult * self.secondaryStats.health
         self.secondaryStats.physicalDamage = mult * self.secondaryStats.physicalDamage
         self.secondaryStats.armor = mult * self.secondaryStats.armor
@@ -474,10 +474,10 @@ function CreepPreset:ctor()
     self.secondaryStats.movementSpeed = 1
 end
 
-function CreepPreset:Spawn(owner, x, y, facing, level)
+function CreepPreset:Spawn(owner, x, y, facing, level, herocount)
     local creep = Creep(owner, self.unitid, x, y, facing);
     creep.secondaryStats = self.secondaryStats
-    creep:Scale(level)
+    creep:Scale(level, herocount)
     creep:ApplyStats()
     return creep
 end
@@ -1147,11 +1147,11 @@ function WaveObserver:ctor(owner)
 
     Log(" Create Timer")
     
-    wavetimer:Start(15, true, function()
+    wavetimer:Start(30, true, function()
         if creepSpawner1:HasNextWave(level) then
             logWaveObserver:Info("WAVE"..level)
-            creepcount = creepcount + creepSpawner1:SpawnNewWave(level)
-            creepcount = creepcount + creepSpawner2:SpawnNewWave(level)
+            creepcount = creepcount + creepSpawner1:SpawnNewWave(level, 2)
+            creepcount = creepcount + creepSpawner2:SpawnNewWave(level, 2)
             level = level + 1
             if not creepSpawner1:HasNextWave(level) then
                 Log("level "..level)
@@ -1368,7 +1368,7 @@ function CreepSpawner:HasNextWave(level)
     return level < self.maxlevel
 end
 
-function CreepSpawner:SpawnNewWave(level)
+function CreepSpawner:SpawnNewWave(level, herocount)
     -- logCreepSpawner:Info("WAVE "..self.level + 1)
     local wave = self:GetWaveSpecification(level)
     local acc = 0
@@ -1376,7 +1376,7 @@ function CreepSpawner:SpawnNewWave(level)
         for j = 1, unit["count"] do
             local creepPresetClass = CreepClasses[unit["unit"]]
             local creepPreset = creepPresetClass()
-            local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing, level)
+            local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing, level, herocount)
             local x, y = self.prev:GetCenter()
             creep:IssueAttackPoint(x, y)
             acc = acc + 1
@@ -2194,6 +2194,7 @@ local Mutant = require("Heroes.Mutant")
 local WaveObserver = require("Core.WaveObserver")
 local Core = require("Core.Core")
 local Tavern = require("Core.Tavern")
+local Timer = require("WC3.Timer")
 
 local logMain = Log.Category("Main")
 
@@ -2217,7 +2218,11 @@ end
 Core(WC3.Player.Get(8), -2300, -3800, 0)
 Tavern(WC3.Player.Get(0), 1600, -3800, 0, heroPresets)
 
-WaveObserver(WC3.Player.Get(9))
+local timerwaveObserver = Timer()
+timerwaveObserver:Start(25, false,
+    function() WaveObserver(WC3.Player.Get(9)) 
+end)
+
 
 logMain:Message("Game initialized successfully")
 end)

@@ -28,10 +28,10 @@ function CreepPreset:ctor()
     self.secondaryStats.movementSpeed = 1
 end
 
-function CreepPreset:Spawn(owner, x, y, facing, level)
+function CreepPreset:Spawn(owner, x, y, facing, level, herocount)
     local creep = Creep(owner, self.unitid, x, y, facing);
     creep.secondaryStats = self.secondaryStats
-    creep:Scale(level)
+    creep:Scale(level, herocount)
     creep:ApplyStats()
     return creep
 end
