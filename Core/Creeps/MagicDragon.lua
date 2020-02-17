@@ -9,7 +9,7 @@ function MagicDragon:ctor()
     self.secondaryStats.health = 10
     self.secondaryStats.mana = 5
     self.secondaryStats.weaponDamage = 3
-    self.secondaryStats.evasion = 10
+    self.secondaryStats.evasion = 0.1
     self.unitid = FourCC('e000')
 end
 Log("MagicDragon load successfull")

@@ -20,10 +20,10 @@ function CreepPreset:ctor()
     self.secondaryStats.spellDamage = 1
 
     self.secondaryStats.armor = 5
-    self.secondaryStats.evasion = 30
+    self.secondaryStats.evasion = 0.3
     self.secondaryStats.block = 0
     self.secondaryStats.ccResist = 0
-    self.secondaryStats.spellResist = 30
+    self.secondaryStats.spellResist = 0.3
 
     self.secondaryStats.movementSpeed = 1
 end

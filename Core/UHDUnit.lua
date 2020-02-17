@@ -41,11 +41,22 @@ function UHDUnit:ctor(...)
     self:AddAbility(mpRegenAbility)
 end
 
+function UHDUnit:CheckSecondaryStat0_1(name)
+    if self.secondaryStats[name] < 0 or self.secondaryStats[name] > 1 then
+        logUnit:Error("Value of " .. name .. " of " .. self:GetName() .. " can't be outside of [0;1]")
+        self.secondaryStats[name] = math.min(1, math.max(0, self.secondaryStats[name]))
+    end
+end
+
 function UHDUnit:ApplyStats()
     local oldMaxHp = self:GetMaxHP()
     local oldMaxMana = self:GetMaxMana()
     local oldHp = self:GetHP()
     local oldMana = self:GetMana()
+
+    self:CheckSecondaryStat0_1("evasion")
+    self:CheckSecondaryStat0_1("ccResist")
+    self:CheckSecondaryStat0_1("spellResist")
 
     self:SetMaxHealth(self.secondaryStats.health)
     self:SetMaxMana(self.secondaryStats.mana)
