@@ -406,6 +406,8 @@ function SelectUnit(whichUnit, value) end
 function GetSpellTargetX() end
 ---@return number
 function GetSpellTargetY() end
+---@return number
+function GetSpellTargetUnit() end
 ---@return location
 function GetSpellTargetLoc() end
 ---@return damageType

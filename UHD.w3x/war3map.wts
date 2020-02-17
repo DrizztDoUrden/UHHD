@@ -1080,3 +1080,39 @@ STRING 222
 (Mutant)
 }
 
+STRING 223
+// Abilities: BS00 (Mana Drain), Name (Name)
+{
+Mana Drain
+}
+
+STRING 224
+// Abilities: BS00 (Mana Drain), Hotkey (Hotkey - Normal)
+{
+Q
+}
+
+STRING 225
+// Abilities: BS00 (Mana Drain), EditorSuffix (Editor Suffix)
+{
+(DefiledTree)
+}
+
+STRING 226
+// Abilities: BS00 (Mana Drain), Tip (Tooltip - Normal)
+{
+Mana Drain
+}
+
+STRING 227
+// Abilities: BS00 (Mana Drain), Ubertip (Tooltip - Normal - Extended)
+{
+Create arear where drain mana from enemy heroes
+}
+
+STRING 228
+// Units: bu01 (DifiledTree), Name (Name)
+{
+DifiledTree
+}
+

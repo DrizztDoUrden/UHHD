@@ -388,6 +388,124 @@ local Log = setmetatable({}, mt)
 return Log
 end)
 -- End of file Log.lua
+-- Start of file Core\Boos.lua
+Module("Core.Boos", function()
+local Class = require("Class")
+local UHDUnit = require("Core.UHDUnit")
+local WC3 = require("WC3.All")
+
+local Log = require("Log")
+
+
+local boosLog = Log.Category("Boos\\Boos", {
+    printVerbosity = Log.Verbosity.Trace,
+    fileVerbosity = Log.Verbosity.Trace,
+    })
+
+    local Boos= Class(UHDUnit)
+
+    function Boos:ctor(...)
+        UHDUnit.ctor(self, ...)
+        self.abilities = WC3.Trigger()
+        self.abilities:RegisterUnitSpellEffect(self)
+        self.toDestroy[self.abilities] = true
+        self.aggroBehavier = WC3.Trigger()
+        self.toDestroy[self.aggroBehavier] = true
+    end
+
+
+    function Boos:Destroy()
+        local timer = WC3.Timer()
+        timer:Start(15, false, function()
+            UHDUnit.Destroy(self)
+            timer:Destroy()
+        end)
+    end
+
+
+return Boos
+end)
+-- End of file Core\Boos.lua
+-- Start of file Core\BoosPreset.lua
+Module("Core.BoosPreset", function()
+local Class = require("Class")
+local Log = require("Log")
+local Stats = require("Core.Stats")
+local Boos = require("Core.Boos")
+
+local boosPresetLog = Log.Category("Boos\\BoosPreset", {
+    printVerbosity = Log.Verbosity.Trace,
+    fileVerbosity = Log.Verbosity.Trace,
+    })
+
+local BoosPreset = Class()
+
+function BoosPreset:ctor()
+    self.secondaryStats = Stats.Secondary()
+
+    self.abilities = {}
+
+    self.secondaryStats.health = 50
+    self.secondaryStats.mana = 2
+    self.secondaryStats.healthRegen = 1
+    self.secondaryStats.manaRegen = 1
+
+    self.secondaryStats.weaponDamage = 15
+    self.secondaryStats.attackSpeed = 0.5
+    self.secondaryStats.physicalDamage = 1
+    self.secondaryStats.spellDamage = 1
+
+    self.secondaryStats.armor = 5
+    self.secondaryStats.evasion = 0.3
+    self.secondaryStats.block = 0
+    self.secondaryStats.ccResist = 0
+    self.secondaryStats.spellResist = 0.3
+
+    self.secondaryStats.movementSpeed = 1
+end
+
+function BoosPreset:Spawn(owner, x, y, facing)
+    local boos = Boos(owner, self.unitid, x, y, facing);
+
+    boos.secondaryStats = self.secondaryStats
+    boos:ApplyStats()
+    boos.abilities:AddAction(function() self:Cast(boos) end)
+
+    for i, ability in pairs(self.abilities) do
+        boosPresetLog:Info("Number "..i)
+        if ability.availableFromStart then
+            boosPresetLog:Info("Try to add ability")
+            boos:AddAbility(ability.id)
+        end
+    end
+    return boos
+end
+
+function BoosPreset:Cast(boos)
+    local abilityId = GetSpellAbilityId()
+    for _, ability in pairs(self.abilities) do
+        if type(ability.id) == "table" then
+            for _, id in pairs(ability.id) do
+                if id == abilityId then
+                    ability:handler(boos)
+                    break
+                end
+            end
+        else
+            if ability.id == abilityId then
+                ability:handler(boos)
+                break
+            end
+        end
+    end
+end
+
+
+
+Log("Creep load succsesfull")
+return BoosPreset
+end)
+-- End of file Core\BoosPreset.lua
 -- Start of file Core\Core.lua
 Module("Core.Core", function()
 local Class = require("Class")
@@ -438,7 +556,7 @@ local creepLog = Log.Category("CreepSpawner\\CreepSpawnerr", {
 
     function Creep:Scale(level, heroesCount)
         local mult = (1 + 0.05 * (0.7 * heroesCount +  0) * (level - 1))
-        creepLog:Info("multiplier "..mult)
+        --creepLog:Info("multiplier "..mult)
         self.secondaryStats.health = mult * self.secondaryStats.health
         self.secondaryStats.physicalDamage = mult * self.secondaryStats.physicalDamage
         self.secondaryStats.armor = mult * self.secondaryStats.armor
@@ -472,10 +590,10 @@ function CreepPreset:ctor()
     self.secondaryStats.spellDamage = 1
 
     self.secondaryStats.armor = 5
-    self.secondaryStats.evasion = 30
+    self.secondaryStats.evasion = 0.3
     self.secondaryStats.block = 0
     self.secondaryStats.ccResist = 0
-    self.secondaryStats.spellResist = 30
+    self.secondaryStats.spellResist = 0.3
 
     self.secondaryStats.movementSpeed = 1
 end
@@ -1022,11 +1140,22 @@ function UHDUnit:ctor(...)
     self:AddAbility(mpRegenAbility)
 end
 
+function UHDUnit:CheckSecondaryStat0_1(name)
+    if self.secondaryStats[name] < 0 or self.secondaryStats[name] > 1 then
+        logUnit:Error("Value of " .. name .. " of " .. self:GetName() .. " can't be outside of [0;1]")
+        self.secondaryStats[name] = math.min(1, math.max(0, self.secondaryStats[name]))
+    end
+end
+
 function UHDUnit:ApplyStats()
     local oldMaxHp = self:GetMaxHP()
     local oldMaxMana = self:GetMaxMana()
     local oldHp = self:GetHP()
     local oldMana = self:GetMana()
+
+    self:CheckSecondaryStat0_1("evasion")
+    self:CheckSecondaryStat0_1("ccResist")
+    self:CheckSecondaryStat0_1("spellResist")
 
     self:SetMaxHealth(self.secondaryStats.health)
     self:SetMaxMana(self.secondaryStats.mana)
@@ -1083,13 +1212,21 @@ function UHDUnit:DealDamage(target, damage)
     }
     self:DamageDealt(args)
     if target:IsA(UHDUnit) then target:DamageDealt(args) end
-    target:SetHP(hpAfterDamage)
+    self:DamageTarget(target, dmg, false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_UNKNOWN, WEAPON_TYPE_WHOKNOWS)
     return dmg
+end
+
+function UHDUnit:Heal(target, value)
+    target:SetHP(math.min(self.secondaryStats.health, target:GetHP() + value))
 end
 
 local unitDamaging = WC3.Trigger()
 for i=0,23 do unitDamaging:RegisterPlayerUnitDamaging(WC3.Player.Get(i)) end
 unitDamaging:AddAction(function()
+    local damageType = BlzGetEventDamageType()
+    if damageType == DAMAGE_TYPE_UNKNOWN then
+        return
+    end
     local source = WC3.Unit.GetEventDamageSource()
     local target = WC3.Unit.GetEventDamageTarget()
     local args = {
@@ -1265,7 +1402,7 @@ function MagicDragon:ctor()
     self.secondaryStats.health = 25
     self.secondaryStats.mana = 10
     self.secondaryStats.weaponDamage = 4
-    self.secondaryStats.evasion = 15
+    self.secondaryStats.evasion = 0.15
     
     self.unitid = FourCC('e004')
 end
@@ -1308,7 +1445,7 @@ function MagicDragon:ctor()
     self.secondaryStats.health = 10
     self.secondaryStats.mana = 5
     self.secondaryStats.weaponDamage = 3
-    self.secondaryStats.evasion = 10
+    self.secondaryStats.evasion = 0.1
     self.unitid = FourCC('e000')
 end
 Log("MagicDragon load successfull")
@@ -1337,6 +1474,112 @@ Log("MagicDragon load successfull")
 return MagicDragon
 end)
 -- End of file Core\Creeps\Necromant.lua
+-- Start of file Core\CreepsBoos\DefiledTree.lua
+Module("Core.CreepsBoos.DefiledTree", function()
+local Class = require("Class")
+local BoosPreset = require("Core.BoosPreset")
+local WC3 = require("WC3.All")
+local Spell = require "Core.Spell"
+local Unit = require("WC3.Unit")
+local Log = require("Log")
+local treeLog = Log.Category("Boos\\DefiledTree", {
+    printVerbosity = Log.Verbosity.Trace,
+    fileVerbosity = Log.Verbosity.Trace,
+    })
+
+local DrainMana = Class(Spell)
+
+local DefiledTree = Class(BoosPreset)
+
+
+function DefiledTree:ctor()
+    BoosPreset.ctor(self)
+    self.secondaryStats.health = 375
+    self.secondaryStats.mana = 110
+    self.secondaryStats.weaponDamage = 4
+    self.secondaryStats.physicalDamage = 35
+    self.abilities = {
+        drainMana = {
+            id = FourCC('BS00'),
+            handler = DrainMana,
+            availableFromStart = true,
+            params = {
+                radius = function (_) return 400 end,
+                duration = function (_) return 10 end,
+                period = function (_) return 0.5 end,
+                stealMana = function (_) return 3 end,
+                wampireHp = function (_) return 6 end
+            }
+        }
+    }
+    self.unitid = FourCC('bu01')
+end
+
+
+function DrainMana:ctor(definition, caster)
+    self.affected = {}
+    self.bonus = 0
+    Spell.ctor(self, definition, caster)
+end
+
+function DrainMana:Cast()
+    self.target =  Unit.GetSpellTarget()
+    local x, y = self.target:GetX(), self.target:GetY()
+    treeLog:Info("Pos "..x.." "..y)
+    --treeLog:Info("Caster Owner "..self.caster:GetOwner().handle)
+    self.spellunit = WC3.Unit(self.caster:GetOwner(), FourCC("bs00") , x, y, 0)
+    local timer = WC3.Timer()
+    timer:Start(self.period, true, function()
+        if self.caster:GetHP() <= 0 then
+            timer:Destroy()
+            self:End()
+            return
+        end
+        self.duration = self.duration - self.period
+        -- treeLog:Info("Duration "..self.duration)
+
+        self:Effect()
+        self:Drain()
+
+        if self.duration <= 0 then
+            timer:Destroy()
+            self:End()
+        end
+    end)
+end
+
+function DrainMana:Effect()
+    WC3.Unit.EnumInRange(self.spellunit:GetX(), self.spellunit:GetY(), self.radius, function(unit)
+        if self.caster ~= unit and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+        table.insert(self.affected,{unit = unit})
+        end
+    end)
+    local x, y = self.target:GetX(), self.target:GetY()
+    self.spellunit:IssuePointOrderById(851986, x, y)
+end
+
+function DrainMana:Drain()
+    local towampire = self.caster:GetHP()
+    for _, target in pairs(self.affected) do
+        local residualMana = target.unit:GetMana() - self.stealMana
+        local stolenMana = self.stealMana
+        if residualMana <= 0 then
+            stolenMana = stolenMana + residualMana
+            residualMana = 0
+        end
+        towampire = self.wampireHp + towampire * (stolenMana / self.stealMana)
+        target.unit:SetMana(residualMana)
+    end
+    self.caster:SetHP(towampire)
+end
+
+function DrainMana:End()
+    self.spellunit:Destroy()
+end
+
+return DefiledTree
+end)
+-- End of file Core\CreepsBoos\DefiledTree.lua
 -- Start of file Core\Node\CreepSpawner.lua
 Module("Core.Node.CreepSpawner", function()
 local Log = require("Log")
@@ -1631,7 +1874,7 @@ function DrainLight:Cast()
     local timer = Timer()
 
     Unit.EnumInRange(self.caster:GetX(), self.caster:GetY(), self.radius, function(unit)
-        if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+        if self.caster ~= unit and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             table.insert(self.affected, {
                 unit = unit,
                 stolen = 0,
@@ -1705,11 +1948,11 @@ function DrainLight:Drain(target)
     end
     if self.damage > 0 then
         local damagePerTick = self.period * self.damage
-        local damage = self.caster:DealDamage(target.unit, { value = damagePerTick, isAttack = false, })
+        local damage = self.caster:DealDamage(target.unit, { value = damagePerTick, })
         if self.healed < self.healLimit * self.period then
             local toHeal = math.min(self.healLimit * self.period - self.healed, self.stealPercentage * damage)
             self.healed = self.healed + toHeal
-            self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.caster:GetHP() + toHeal))
+            self.caster:Heal(self.caster, toHeal)
         end
     end
 end
@@ -1724,7 +1967,7 @@ function HeavySlash:Cast()
         if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             local damage = self.caster:DealDamage(unit, { value = self.baseDamage, isAttack = true, })
             if self.manaBurn > 0 then unit:SetMana(math.max(0, unit:GetMana() - self.manaBurn)) end
-            if self.vampirism > 0 then self.caster:SetHP(math.min(self.caster:GetMaxHP(), self.vampirism * damage)) end
+            if self.vampirism > 0 then self.caster:Heal(self.caster, self.vampirism * damage) end
 
             if unit:IsA(UHDUnit) then
                 affected[unit] = true
@@ -1803,7 +2046,7 @@ function DarkMend:Cast()
             return
         end
         timeLeft = timeLeft - self.period
-        self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime)
+        self.caster:Heal(self.caster, (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime)
         if timeLeft <= 0 then
             timer:Destroy()
         end
@@ -2201,7 +2444,7 @@ local WaveObserver = require("Core.WaveObserver")
 local Core = require("Core.Core")
 local Tavern = require("Core.Tavern")
 local Timer = require("WC3.Timer")
-
+local DefiledTree = require("Core.CreepsBoos.DefiledTree")
 local logMain = Log.Category("Main")
 
 local heroPresets = {
@@ -2221,12 +2464,16 @@ for i = 0, 7, 1 do
     local shiftx = 1300 + i * 100
     local unit = WC3.Unit(WC3.Player.Get(i), FourCC("e001"), shiftx, -3600, 0)
 end
+--logMain = Log.Category("AddSpell")
+--local unit = WC3.Unit(WC3.Player.Get(0), FourCC("bs00"), -2100, -3800, 0)
+heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
+heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
 Core(WC3.Player.Get(8), -2300, -3800, 0)
 Tavern(WC3.Player.Get(0), 1600, -3800, 0, heroPresets)
-
+local boos = DefiledTree():Spawn(WC3.Player.Get(0), -2300, -3500, 0)
 local timerwaveObserver = Timer()
 timerwaveObserver:Start(25, false,
-    function() WaveObserver(WC3.Player.Get(9)) 
+    function() WaveObserver(WC3.Player.Get(9))
 end)
 
 
@@ -2596,6 +2843,10 @@ function Unit.GetDying()
     return Get(GetDyingUnit())
 end
 
+function Unit.GetSpellTarget()
+    return Get(GetSpellTargetUnit())
+end
+
 function Unit.GetBying()
     return Get(GetBuyingUnit())
 end
@@ -2839,6 +3090,10 @@ function Unit:IssueAttackPoint(x, y)
     return self:IssuePointOrderById(851983, x, y)
 end
 
+function Unit:IssueMovePoint(x, y)
+    return self:IssuePointOrderById(851986, x, y)
+end
+
 function Unit:SetMoveSpeed(value)
     SetUnitMoveSpeed(self.handle, 300 * value)
 end
@@ -2893,6 +3148,110 @@ function Unit:IsHero() return IsHeroUnitId(self:GetTypeId()) end
 return Unit
 end)
 -- End of file WC3\Unit.lua
+-- Start of file Core\CreepsBoos\DefiledTree.lua
+Module("Core.CreepsBoos.DefiledTree", function()
+local Class = require("Class")
+local BoosPreset = require("Core.BoosPreset")
+local WC3 = require("WC3.All")
+local Spell = require "Core.Spell"
+local Unit = require("WC3.Unit")
+local Log = require("Log")
+local treeLog = Log.Category("Boos\\DefiledTree", {
+    printVerbosity = Log.Verbosity.Trace,
+    fileVerbosity = Log.Verbosity.Trace,
+    })
+
+local DrainMana = Class(Spell)
+
+local DefiledTree = Class(BoosPreset)
+
+
+function DefiledTree:ctor()
+    BoosPreset.ctor(self)
+    self.secondaryStats.health = 375
+    self.secondaryStats.mana = 110
+    self.secondaryStats.weaponDamage = 4
+    self.secondaryStats.physicalDamage = 35
+    self.abilities = {
+        drainMana = {
+            id = FourCC('BS00'),
+            handler = DrainMana,
+            availableFromStart = true,
+            params = {
+                radius = function (_) return 400 end,
+                duration = function (_) return 10 end,
+                period = function (_) return 0.5 end,
+                stealMana = function (_) return 3 end,
+                wampireHp = function (_) return 6 end
+            }
+        }
+    }
+    self.unitid = FourCC('bu01')
+end
+
+
+function DrainMana:ctor(definition, caster)
+    self.affected = {}
+    self.bonus = 0
+    Spell.ctor(self, definition, caster)
+end
+
+function DrainMana:Cast()
+    self.target =  Unit.GetSpellTarget()
+    local x, y = self.target:GetX(), self.target:GetY()
+    treeLog:Info("Pos "..x.." "..y)
+    --treeLog:Info("Caster Owner "..self.caster:GetOwner().handle)
+    self.spellunit = WC3.Unit(self.caster:GetOwner(), FourCC("bs00") , x, y, 0)
+    local timer = WC3.Timer()
+    timer:Start(self.period, true, function()
+        if self.caster:GetHP() <= 0 then
+            timer:Destroy()
+            self:End()
+            return
+        end
+        self.duration = self.duration - self.period
+        treeLog:Info("Duration "..self.duration)
+        
+        self:Effect()
+        self:Drain()
+
+        if self.duration <= 0 then
+            timer:Destroy()
+            self:End()
+        end
+    end)
+end
+
+function DrainMana:Effect()
+    WC3.Unit.EnumInRange(self.spellunit:GetX(), self.spellunit:GetY(), self.radius, function(unit)
+        
+        if self.caster ~= unit and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+        table.insert(self.affected,{
+            unit = unit,
+        })
+        end
+    end)
+    local x, y = self.target:GetX(), self.target:GetY()
+    self.spellunit:IssuePointOrderById(851986, x, y)
+end
+
+function DrainMana:Drain()
+    local towampire = self.caster:GetHP()
+    for _, target in pairs(self.affected) do
+        local toStealNow = target.unit:GetMana() - self.stealMana
+        towampire = self.wampireHp + towampire
+        self.unit:SetMana(toStealNow)
+    end
+    self.caster:SetHP(towampire)
+end
+
+function DrainMana:End()
+    self.spellunit:Destroy()
+end
+
+return DefiledTree
+end)
+-- End of file Core\CreepsBoos\DefiledTree.lua
 function CreateUnitsForPlayer0()
     local p = Player(0)
     local u

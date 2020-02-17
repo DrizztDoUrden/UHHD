@@ -24,6 +24,10 @@ function Unit.GetDying()
     return Get(GetDyingUnit())
 end
 
+function Unit.GetSpellTarget()
+    return Get(GetSpellTargetUnit())
+end
+
 function Unit.GetBying()
     return Get(GetBuyingUnit())
 end
@@ -265,6 +269,10 @@ end
 
 function Unit:IssueAttackPoint(x, y)
     return self:IssuePointOrderById(851983, x, y)
+end
+
+function Unit:IssueMovePoint(x, y)
+    return self:IssuePointOrderById(851986, x, y)
 end
 
 function Unit:SetMoveSpeed(value)
