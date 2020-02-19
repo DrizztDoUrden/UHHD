@@ -3,7 +3,6 @@ local BosPreset = require("Core.BosPreset")
 local WC3 = require("WC3.All")
 local Spell = require "Core.Spell"
 local Unit = require("WC3.Unit")
-local Timer = require("WC3.Timer")
 local Log = require("Log")
 local treeLog = Log.Category("Bos\\DefiledTree", {
     printVerbosity = Log.Verbosity.Trace,
@@ -21,6 +20,9 @@ function DefiledTree:ctor()
     self.secondaryStats.mana = 110
     self.secondaryStats.weaponDamage = 4
     self.secondaryStats.physicalDamage = 35
+    self.spellBook = {{
+        spellName = "DrainMana",
+        isAllTimeAcctivate = false}}
     self.abilities = {
         drainMana = {
             id = FourCC('BS00'),
@@ -89,13 +91,14 @@ function DrainMana:Effect()
 end
 
 function DrainMana:AutoCast()
-    local Bos = self.caster
-    local timerDM = Timer()
-    Bos.timerDM:Start(1, true, function()
+    if self.aggresive then
+        local Bos = self.caster
         treeLog:Info("Choose aim")
         local target = Bos:SelectbyMinHP()
-        treeLog:Info("target in : "..target:PosX().." "..target:PosY()) 
-        end)
+        treeLog:Info("target in : "..target:PosX().." "..target:PosY())
+        return true
+    end
+    return false
 end
 
 function DrainMana:Drain()

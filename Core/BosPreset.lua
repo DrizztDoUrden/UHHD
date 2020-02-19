@@ -49,6 +49,17 @@ function BosPreset:Spawn(owner, x, y, facing)
         local target = Bos:SelectbyMinHP(700)
         BosPresetLog:Info("target in : "..target:PosX().." "..target:PosY())
         Bos:IssueTargetOrderById(851983, target)
+        for i, value in pairs(Bos.spellBook) do
+            if value:AutoCast() then
+                local timer = Timer()
+                timer:Start(value.cooldown + 0.2, true, function()
+                    if not value:AddAction() then
+                        timer:Destroy()
+                    end
+                end)
+                Bos.toDestroy[timer] = true
+            end
+        end
         end)
 
     for i, ability in pairs(self.abilities) do
