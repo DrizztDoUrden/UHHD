@@ -3,6 +3,7 @@ local Log = require("Log")
 local Stats = require("Core.Stats")
 local Bos = require("Core.Bos")
 local Unit = require("WC3.Unit")
+local Timer = require("WC3.Timer")
 
 local BosPresetLog = Log.Category("Bos\\BosPreset", {
     printVerbosity = Log.Verbosity.Trace,
@@ -41,7 +42,14 @@ function BosPreset:Spawn(owner, x, y, facing)
     Bos.secondaryStats = self.secondaryStats
     Bos:ApplyStats()
     Bos.abilities:AddAction(function() self:Cast(Bos) end)
-    Bos.agrotimer:Start(1, true, function() self:Agro(Bos) end)
+    local timerAttack = Timer()
+    Bos.toDestroy[timerAttack] = true
+    Bos.timerAttack:Start(1, true, function()
+        BosPresetLog:Info("Choose aim")
+        local target = Bos:SelectbyMinHP(700)
+        BosPresetLog:Info("target in : "..target:PosX().." "..target:PosY())
+        Bos:IssueTargetOrderById(851983, target)
+        end)
 
     for i, ability in pairs(self.abilities) do
         BosPresetLog:Info("Number "..i)
@@ -72,26 +80,7 @@ function BosPreset:Cast(Bos)
     end
 end
 
-function BosPreset:SelectbyMinHP(Bos)
-    local x, y = Bos:GetX(), Bos:GetY()
-    local bosOwner = Bos:GetOwner()
-    local targets = {}
-    Unit.EnumInRange(x, y, 800, function(unit)
-        if bosOwner:IsAEnemy(unit:GetOwner()) then
-            table.insert(targets, {unit = unit})
-        end
-    end)
-    local minHP = targets[1].unit:GetHP()
-    local unitWithMinHP = targets[1].unit
-    for _, unit in pairs(self.targets) do
-        local hp = unit.unit:GetHP()
-        if minHP < hp then
-            unitWithMinHP = unit.unit
-            minHP = hp
-        end
-    end
-    Bos:IssueTargetOrderById(851983, unitWithMinHP)
-end
+
 
 
 Log("Creep load succsesfull")

@@ -3,6 +3,7 @@ local BosPreset = require("Core.BosPreset")
 local WC3 = require("WC3.All")
 local Spell = require "Core.Spell"
 local Unit = require("WC3.Unit")
+local Timer = require("WC3.Timer")
 local Log = require("Log")
 local treeLog = Log.Category("Bos\\DefiledTree", {
     printVerbosity = Log.Verbosity.Trace,
@@ -31,11 +32,13 @@ function DefiledTree:ctor()
                 period = function (_) return 0.5 end,
                 leachMana = function (_) return 3 * self.secondaryStats.spellDamage end,
                 leachHP = function (_) return 6 * self.secondaryStats.spellDamage end,
-                dummySpeed = function (_) return 0.6 end
+                dummySpeed = function (_) return 0.6 end,
+                range = function (_) return 599 end
             }
         }
     }
     self.unitid = FourCC('bu01')
+    
 end
 
 
@@ -43,6 +46,18 @@ function DrainMana:ctor(definition, caster)
     self.affected = {}
     self.bonus = 0
     Spell.ctor(self, definition, caster)
+end
+
+function DefiledTree:Spawn()
+    local Bos = BosPreset.Spawn(self)
+    local timerDM = Timer()
+    Bos.timerDM:Start(1, true, function()
+        treeLog:Info("Choose aim")
+        local target = Bos:SelectbyMinHP()
+        treeLog:Info("target in : "..target:PosX().." "..target:PosY())
+        Bos:IssueTargetOrderById(851983, target)
+        end)
+    Bos:AddTimer("DrainMana")
 end
 
 function DrainMana:Cast()
@@ -82,6 +97,10 @@ function DrainMana:Effect()
     self.dummy:IssuePointOrderById(851986, x, y)
 end
 
+function DrainMana:AutoCast()
+    
+end
+
 function DrainMana:Drain()
     local sumHP = 0
     for _, target in pairs(self.affected) do
@@ -92,6 +111,7 @@ function DrainMana:Drain()
     end
     self.caster:SetHP(self.caster:GetHP() + sumHP)
 end
+
 
 function DrainMana:End()
     self.dummy:Destroy()

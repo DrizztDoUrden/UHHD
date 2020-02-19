@@ -16,15 +16,11 @@ local BosLog = Log.Category("Bos\\Bos", {
 
     function Bos:ctor(...)
         UHDUnit.ctor(self, ...)
-        self.abilities = WC3.Trigger()
+        self.abilitiesCastOnEnemy = {true}
+        self.abilities = WC3.Trigger() 
         self.abilities:RegisterUnitSpellEffect(self)
         self.toDestroy[self.abilities] = true
-        self.aggroBehavier = WC3.Trigger()
-        self.agrotimer = Timer()
-        self.toDestroy[self.agrotimer] = true
-        self.toDestroy[self.aggroBehavier] = true
     end
-
 
     function Bos:Destroy()
         local timer = WC3.Timer()
@@ -34,11 +30,32 @@ local BosLog = Log.Category("Bos\\Bos", {
         end)
     end
 
-    function Bos:SelectbyMinMana()
+    function Bos:SelectbyMinHP(range)
+        local x, y = Bos:GetX(), Bos:GetY()
+        local bosOwner = Bos:GetOwner()
+        local targets = {}
+        Unit.EnumInRange(x, y, range, function(unit)
+            if bosOwner:IsAEnemy(unit:GetOwner()) then
+                table.insert(targets, {unit = unit})
+            end
+        end)
+        local minHP = targets[1].unit:GetHP()
+        local unitWithMinHP = targets[1].unit
+        for _, unit in pairs(self.targets) do
+            local hp = unit.unit:GetHP()
+            if minHP < hp then
+                unitWithMinHP = unit.unit
+                minHP = hp
+            end
+        end
+        return unitWithMinHP
+    end
+    
+    function Bos:SelectbyMinMana(range)
         local x, y = self:GetX(), self:GetY()
         local bosOwner = self:GetOwner()
         local targets = {}
-        Unit.EnumInRange(x, y, 800, function(unit)
+        Unit.EnumInRange(x, y, range, function(unit)
             if bosOwner:IsAEnemy(unit:GetOwner()) then
                 table.insert(targets, {unit = unit})
             end
@@ -54,6 +71,5 @@ local BosLog = Log.Category("Bos\\Bos", {
         end
         return unitWithMinMana
     end
-
 
 return Bos
