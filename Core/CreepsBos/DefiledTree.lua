@@ -2,7 +2,7 @@ local Class = require("Class")
 local BosPreset = require("Core.BosPreset")
 local WC3 = require("WC3.All")
 local Spell = require "Core.Spell"
-local Unit = require("WC3.Unit")
+
 local Log = require("Log")
 local treeLog = Log.Category("Bos\\DefiledTree", {
     printVerbosity = Log.Verbosity.Trace,
@@ -49,12 +49,9 @@ function DrainMana:ctor(definition, caster)
     Spell.ctor(self, definition, caster)
 end
 
-function DefiledTree:Spawn()
-    local Bos = BosPreset.Spawn(self)
-end
 
 function DrainMana:Cast()
-    self.target =  Unit.GetSpellTarget()
+    self.target =  WC3.Unit.GetSpellTarget()
     local x, y = self.target:GetX(), self.target:GetY()
     treeLog:Info("Pos "..x.." "..y)
     --treeLog:Info("Caster Owner "..self.caster:GetOwner().handle)
@@ -90,16 +87,16 @@ function DrainMana:Effect()
     self.dummy:IssuePointOrderById(851986, x, y)
 end
 
-function DrainMana:AutoCast()
-    if self.aggresive then
-        local Bos = self.caster
-        treeLog:Info("Choose aim")
-        local target = Bos:SelectbyMinHP()
-        treeLog:Info("target in : "..target:PosX().." "..target:PosY())
-        return true
-    end
-    return false
-end
+-- function DrainMana:AutoCast()
+--     if self.aggresive then
+--         local Bos = self.caster
+--         treeLog:Info("Choose aim")
+--         local target = Bos:SelectbyMinHP()
+--         treeLog:Info("target in : "..target:PosX().." "..target:PosY())
+--         return true
+--     end
+--     return false
+-- end
 
 function DrainMana:Drain()
     local sumHP = 0

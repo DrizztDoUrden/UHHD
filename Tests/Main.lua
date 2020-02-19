@@ -26,7 +26,8 @@ for i = 0, 7, 1 do
     local shiftx = 1300 + i * 100
     local unit = WC3.Unit(WC3.Player.Get(i), FourCC("e001"), shiftx, -3600, 0)
 end
---logMain = Log.Category("AddSpell")
+logMain = Log.Category("AddSpell")
+logMain:Info("Start Map")
 --local unit = WC3.Unit(WC3.Player.Get(0), FourCC("bs00"), -2100, -3800, 0)
 heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
 heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)

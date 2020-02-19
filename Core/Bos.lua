@@ -2,7 +2,7 @@ local Class = require("Class")
 local UHDUnit = require("Core.UHDUnit")
 local WC3 = require("WC3.All")
 local Timer = require("WC3.Timer")
-local Unit = require("Core.Unit")
+local Unit = require("WC3.Unit")
 
 local Log = require("Log")
 
@@ -33,23 +33,25 @@ local BosLog = Log.Category("Bos\\Bos", {
     end
 
     function Bos:SelectbyMinHP(range)
-        local x, y = Bos:GetX(), Bos:GetY()
-        local bosOwner = Bos:GetOwner()
+        local x, y = self:GetX(), self:GetY()
+        local bosOwner = self:GetOwner()
+        -- BosLog:Info("Choose target")
         local targets = {}
         Unit.EnumInRange(x, y, range, function(unit)
-            if bosOwner:IsAEnemy(unit:GetOwner()) then
-                table.insert(targets, {unit = unit})
+            if bosOwner:IsEnemy(unit:GetOwner()) then
+                table.insert(targets, unit)
             end
         end)
-        local minHP = targets[1].unit:GetHP()
-        local unitWithMinHP = targets[1].unit
-        for _, unit in pairs(self.targets) do
-            local hp = unit.unit:GetHP()
-            if minHP < hp then
-                unitWithMinHP = unit.unit
+        local minHP = targets[1]:GetHP()
+        local unitWithMinHP = targets[1]
+        for _, unit in pairs(targets) do
+            local hp = unit:GetHP()
+            if minHP > hp then
+                unitWithMinHP = unit
                 minHP = hp
             end
         end
+        -- BosLog:Info("unit"..unitWithMinHP:GetX())
         return unitWithMinHP
     end
 
@@ -60,17 +62,17 @@ local BosLog = Log.Category("Bos\\Bos", {
         local bosOwner = self:GetOwner()
         local targets = {}
         Unit.EnumInRange(x, y, range, function(unit)
-            if bosOwner:IsAEnemy(unit:GetOwner()) then
-                table.insert(targets, {unit = unit})
+            if bosOwner:IsEnemy(unit:GetOwner()) then
+                table.insert(targets, unit)
                 self.aggresive = true
             end
         end)
-        local minMana = targets[1].unit:GetMana()
-        local unitWithMinMana = targets[1].unit
-        for _, unit in pairs(self.targets) do
-            local mana = unit.unit:GetMana()
-            if minMana < mana then
-                unitWithMinMana = unit.unit
+        local minMana = targets[1]:GetMana()
+        local unitWithMinMana = targets[1]
+        for _, unit in pairs(targets) do
+            local mana = unit:GetMana()
+            if minMana > mana then
+                unitWithMinMana = unit
                 minMana = mana
             end
         end

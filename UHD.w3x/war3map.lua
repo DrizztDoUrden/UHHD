@@ -394,7 +394,7 @@ local Class = require("Class")
 local UHDUnit = require("Core.UHDUnit")
 local WC3 = require("WC3.All")
 local Timer = require("WC3.Timer")
-local Unit = require("Core.Unit")
+local Unit = require("WC3.Unit")
 
 local Log = require("Log")
 
@@ -409,7 +409,8 @@ local BosLog = Log.Category("Bos\\Bos", {
     function Bos:ctor(...)
         UHDUnit.ctor(self, ...)
         self.aggresive = false
-        self.abilitiesCastOnEnemy = {true}
+        self.spellBook = {}
+
         self.abilities = WC3.Trigger() 
         self.abilities:RegisterUnitSpellEffect(self)
         self.toDestroy[self.abilities] = true
@@ -424,52 +425,46 @@ local BosLog = Log.Category("Bos\\Bos", {
     end
 
     function Bos:SelectbyMinHP(range)
-        local x, y = Bos:GetX(), Bos:GetY()
-        local bosOwner = Bos:GetOwner()
+        local x, y = self:GetX(), self:GetY()
+        local bosOwner = self:GetOwner()
+        BosLog:Info("Choose target")
         local targets = {}
         Unit.EnumInRange(x, y, range, function(unit)
-            if bosOwner:IsAEnemy(unit:GetOwner()) then
-                table.insert(targets, {unit = unit})
+            if bosOwner:IsEnemy(unit:GetOwner()) then
+                table.insert(targets, unit)
             end
         end)
-        local minHP = targets[1].unit:GetHP()
-        local unitWithMinHP = targets[1].unit
-        for _, unit in pairs(self.targets) do
-            local hp = unit.unit:GetHP()
-            if minHP < hp then
-                unitWithMinHP = unit.unit
+        local minHP = targets[1]:GetHP()
+        local unitWithMinHP = targets[1]
+        for _, unit in pairs(targets) do
+            local hp = unit:GetHP()
+            if minHP > hp then
+                unitWithMinHP = unit
                 minHP = hp
             end
         end
+        -- BosLog:Info("unit"..unitWithMinHP:GetX())
         return unitWithMinHP
     end
 
-    function Bos:CheckEnemyInRange(range)
-        local x, y = self:GetX(), self:GetY()
-        local bosOwner = self:GetOwner()
-        self.aggresive = false
-        Unit.EnumInRange(x, y, range, function(unit)
-            if bosOwner:IsAEnemy(unit:GetOwner()) then
-                self.aggresive = true
-            end
-        end)
-    end
 
     function Bos:SelectbyMinMana(range)
+        self.aggresive = false
         local x, y = self:GetX(), self:GetY()
         local bosOwner = self:GetOwner()
         local targets = {}
         Unit.EnumInRange(x, y, range, function(unit)
-            if bosOwner:IsAEnemy(unit:GetOwner()) then
-                table.insert(targets, {unit = unit})
+            if bosOwner:IsEnemy(unit:GetOwner()) then
+                table.insert(targets, unit)
+                self.aggresive = true
             end
         end)
-        local minMana = targets[1].unit:GetMana()
-        local unitWithMinMana = targets[1].unit
-        for _, unit in pairs(self.targets) do
-            local mana = unit.unit:GetMana()
-            if minMana < mana then
-                unitWithMinMana = unit.unit
+        local minMana = targets[1]:GetMana()
+        local unitWithMinMana = targets[1]
+        for _, unit in pairs(targets) do
+            local mana = unit:GetMana()
+            if minMana > mana then
+                unitWithMinMana = unit
                 minMana = mana
             end
         end
@@ -521,17 +516,28 @@ end
 
 function BosPreset:Spawn(owner, x, y, facing)
     local Bos = Bos(owner, self.unitid, x, y, facing);
-
+    BosPresetLog:Info("Spawn Bos")
     Bos.secondaryStats = self.secondaryStats
     Bos:ApplyStats()
     Bos.abilities:AddAction(function() self:Cast(Bos) end)
     local timerAttack = Timer()
     Bos.toDestroy[timerAttack] = true
-    Bos.timerAttack:Start(1, true, function()
+    timerAttack:Start(1, true, function()
         BosPresetLog:Info("Choose aim")
         local target = Bos:SelectbyMinHP(700)
-        BosPresetLog:Info("target in : "..target:PosX().." "..target:PosY())
+        BosPresetLog:Info("target in : "..target:GetX().." "..target:GetY())
         Bos:IssueTargetOrderById(851983, target)
+        -- for i, value in pairs(Bos.spellBook) do
+        --     if value:AutoCast() then
+        --         local timer = Timer()
+        --         timer:Start(value.cooldown + 0.2, true, function()
+        --             if not value:AddAction() then
+        --                 timer:Destroy()
+        --             end
+        --         end)
+        --         Bos.toDestroy[timer] = true
+        --     end
+        -- end
         end)
 
     for i, ability in pairs(self.abilities) do
@@ -1544,8 +1550,7 @@ local Class = require("Class")
 local BosPreset = require("Core.BosPreset")
 local WC3 = require("WC3.All")
 local Spell = require "Core.Spell"
-local Unit = require("WC3.Unit")
-local Timer = require("WC3.Timer")
+
 local Log = require("Log")
 local treeLog = Log.Category("Bos\\DefiledTree", {
     printVerbosity = Log.Verbosity.Trace,
@@ -1563,6 +1568,9 @@ function DefiledTree:ctor()
     self.secondaryStats.mana = 110
     self.secondaryStats.weaponDamage = 4
     self.secondaryStats.physicalDamage = 35
+    self.spellBook = {{
+        spellName = "DrainMana",
+        isAllTimeAcctivate = false}}
     self.abilities = {
         drainMana = {
             id = FourCC('BS00'),
@@ -1580,7 +1588,6 @@ function DefiledTree:ctor()
         }
     }
     self.unitid = FourCC('bu01')
-    
 end
 
 
@@ -1590,12 +1597,9 @@ function DrainMana:ctor(definition, caster)
     Spell.ctor(self, definition, caster)
 end
 
-function DefiledTree:Spawn()
-    local Bos = BosPreset.Spawn(self)
-end
 
 function DrainMana:Cast()
-    self.target =  Unit.GetSpellTarget()
+    self.target =  WC3.Unit.GetSpellTarget()
     local x, y = self.target:GetX(), self.target:GetY()
     treeLog:Info("Pos "..x.." "..y)
     --treeLog:Info("Caster Owner "..self.caster:GetOwner().handle)
@@ -1631,16 +1635,16 @@ function DrainMana:Effect()
     self.dummy:IssuePointOrderById(851986, x, y)
 end
 
-function DrainMana:AutoCast()
-    local Bos = BosPreset.Spawn(self)
-    local timerDM = Timer()
-    Bos.timerDM:Start(1, true, function()
-        treeLog:Info("Choose aim")
-        local target = Bos:SelectbyMinHP()
-        treeLog:Info("target in : "..target:PosX().." "..target:PosY())
-        
-        end)
-end
+-- function DrainMana:AutoCast()
+--     if self.aggresive then
+--         local Bos = self.caster
+--         treeLog:Info("Choose aim")
+--         local target = Bos:SelectbyMinHP()
+--         treeLog:Info("target in : "..target:PosX().." "..target:PosY())
+--         return true
+--     end
+--     return false
+-- end
 
 function DrainMana:Drain()
     local sumHP = 0
@@ -2545,7 +2549,8 @@ for i = 0, 7, 1 do
     local shiftx = 1300 + i * 100
     local unit = WC3.Unit(WC3.Player.Get(i), FourCC("e001"), shiftx, -3600, 0)
 end
---logMain = Log.Category("AddSpell")
+logMain = Log.Category("AddSpell")
+logMain:Info("Start Map")
 --local unit = WC3.Unit(WC3.Player.Get(0), FourCC("bs00"), -2100, -3800, 0)
 heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
 heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
