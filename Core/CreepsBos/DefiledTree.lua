@@ -38,7 +38,6 @@ function DefiledTree:ctor()
         }
     }
     self.unitid = FourCC('bu01')
-    
 end
 
 
@@ -50,14 +49,6 @@ end
 
 function DefiledTree:Spawn()
     local Bos = BosPreset.Spawn(self)
-    local timerDM = Timer()
-    Bos.timerDM:Start(1, true, function()
-        treeLog:Info("Choose aim")
-        local target = Bos:SelectbyMinHP()
-        treeLog:Info("target in : "..target:PosX().." "..target:PosY())
-        Bos:IssueTargetOrderById(851983, target)
-        end)
-    Bos:AddTimer("DrainMana")
 end
 
 function DrainMana:Cast()
@@ -98,7 +89,13 @@ function DrainMana:Effect()
 end
 
 function DrainMana:AutoCast()
-    
+    local Bos = self.caster
+    local timerDM = Timer()
+    Bos.timerDM:Start(1, true, function()
+        treeLog:Info("Choose aim")
+        local target = Bos:SelectbyMinHP()
+        treeLog:Info("target in : "..target:PosX().." "..target:PosY()) 
+        end)
 end
 
 function DrainMana:Drain()

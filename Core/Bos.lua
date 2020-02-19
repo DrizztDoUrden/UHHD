@@ -16,6 +16,7 @@ local BosLog = Log.Category("Bos\\Bos", {
 
     function Bos:ctor(...)
         UHDUnit.ctor(self, ...)
+        self.aggresive = false
         self.abilitiesCastOnEnemy = {true}
         self.abilities = WC3.Trigger() 
         self.abilities:RegisterUnitSpellEffect(self)
@@ -50,7 +51,18 @@ local BosLog = Log.Category("Bos\\Bos", {
         end
         return unitWithMinHP
     end
-    
+
+    function Bos:CheckEnemyInRange(range)
+        local x, y = self:GetX(), self:GetY()
+        local bosOwner = self:GetOwner()
+        self.aggresive = false
+        Unit.EnumInRange(x, y, range, function(unit)
+            if bosOwner:IsAEnemy(unit:GetOwner()) then
+                self.aggresive = true
+            end
+        end)
+    end
+
     function Bos:SelectbyMinMana(range)
         local x, y = self:GetX(), self:GetY()
         local bosOwner = self:GetOwner()

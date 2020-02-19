@@ -393,6 +393,8 @@ Module("Core.Bos", function()
 local Class = require("Class")
 local UHDUnit = require("Core.UHDUnit")
 local WC3 = require("WC3.All")
+local Timer = require("WC3.Timer")
+local Unit = require("Core.Unit")
 
 local Log = require("Log")
 
@@ -406,13 +408,12 @@ local BosLog = Log.Category("Bos\\Bos", {
 
     function Bos:ctor(...)
         UHDUnit.ctor(self, ...)
-        self.abilities = WC3.Trigger()
+        self.aggresive = false
+        self.abilitiesCastOnEnemy = {true}
+        self.abilities = WC3.Trigger() 
         self.abilities:RegisterUnitSpellEffect(self)
         self.toDestroy[self.abilities] = true
-        self.aggroBehavier = WC3.Trigger()
-        self.toDestroy[self.aggroBehavier] = true
     end
-
 
     function Bos:Destroy()
         local timer = WC3.Timer()
@@ -422,6 +423,58 @@ local BosLog = Log.Category("Bos\\Bos", {
         end)
     end
 
+    function Bos:SelectbyMinHP(range)
+        local x, y = Bos:GetX(), Bos:GetY()
+        local bosOwner = Bos:GetOwner()
+        local targets = {}
+        Unit.EnumInRange(x, y, range, function(unit)
+            if bosOwner:IsAEnemy(unit:GetOwner()) then
+                table.insert(targets, {unit = unit})
+            end
+        end)
+        local minHP = targets[1].unit:GetHP()
+        local unitWithMinHP = targets[1].unit
+        for _, unit in pairs(self.targets) do
+            local hp = unit.unit:GetHP()
+            if minHP < hp then
+                unitWithMinHP = unit.unit
+                minHP = hp
+            end
+        end
+        return unitWithMinHP
+    end
+
+    function Bos:CheckEnemyInRange(range)
+        local x, y = self:GetX(), self:GetY()
+        local bosOwner = self:GetOwner()
+        self.aggresive = false
+        Unit.EnumInRange(x, y, range, function(unit)
+            if bosOwner:IsAEnemy(unit:GetOwner()) then
+                self.aggresive = true
+            end
+        end)
+    end
+
+    function Bos:SelectbyMinMana(range)
+        local x, y = self:GetX(), self:GetY()
+        local bosOwner = self:GetOwner()
+        local targets = {}
+        Unit.EnumInRange(x, y, range, function(unit)
+            if bosOwner:IsAEnemy(unit:GetOwner()) then
+                table.insert(targets, {unit = unit})
+            end
+        end)
+        local minMana = targets[1].unit:GetMana()
+        local unitWithMinMana = targets[1].unit
+        for _, unit in pairs(self.targets) do
+            local mana = unit.unit:GetMana()
+            if minMana < mana then
+                unitWithMinMana = unit.unit
+                minMana = mana
+            end
+        end
+        return unitWithMinMana
+    end
 
 return Bos
 end)
@@ -432,6 +485,8 @@ local Class = require("Class")
 local Log = require("Log")
 local Stats = require("Core.Stats")
 local Bos = require("Core.Bos")
+local Unit = require("WC3.Unit")
+local Timer = require("WC3.Timer")
 
 local BosPresetLog = Log.Category("Bos\\BosPreset", {
     printVerbosity = Log.Verbosity.Trace,
@@ -470,6 +525,14 @@ function BosPreset:Spawn(owner, x, y, facing)
     Bos.secondaryStats = self.secondaryStats
     Bos:ApplyStats()
     Bos.abilities:AddAction(function() self:Cast(Bos) end)
+    local timerAttack = Timer()
+    Bos.toDestroy[timerAttack] = true
+    Bos.timerAttack:Start(1, true, function()
+        BosPresetLog:Info("Choose aim")
+        local target = Bos:SelectbyMinHP(700)
+        BosPresetLog:Info("target in : "..target:PosX().." "..target:PosY())
+        Bos:IssueTargetOrderById(851983, target)
+        end)
 
     for i, ability in pairs(self.abilities) do
         BosPresetLog:Info("Number "..i)
@@ -499,6 +562,9 @@ function BosPreset:Cast(Bos)
         end
     end
 end
+
+
+
 
 Log("Creep load succsesfull")
 return BosPreset
@@ -1479,6 +1545,7 @@ local BosPreset = require("Core.BosPreset")
 local WC3 = require("WC3.All")
 local Spell = require "Core.Spell"
 local Unit = require("WC3.Unit")
+local Timer = require("WC3.Timer")
 local Log = require("Log")
 local treeLog = Log.Category("Bos\\DefiledTree", {
     printVerbosity = Log.Verbosity.Trace,
@@ -1507,11 +1574,13 @@ function DefiledTree:ctor()
                 period = function (_) return 0.5 end,
                 leachMana = function (_) return 3 * self.secondaryStats.spellDamage end,
                 leachHP = function (_) return 6 * self.secondaryStats.spellDamage end,
-                dummySpeed = function (_) return 0.6 end
+                dummySpeed = function (_) return 0.6 end,
+                range = function (_) return 599 end
             }
         }
     }
     self.unitid = FourCC('bu01')
+    
 end
 
 
@@ -1519,6 +1588,10 @@ function DrainMana:ctor(definition, caster)
     self.affected = {}
     self.bonus = 0
     Spell.ctor(self, definition, caster)
+end
+
+function DefiledTree:Spawn()
+    local Bos = BosPreset.Spawn(self)
 end
 
 function DrainMana:Cast()
@@ -1558,6 +1631,17 @@ function DrainMana:Effect()
     self.dummy:IssuePointOrderById(851986, x, y)
 end
 
+function DrainMana:AutoCast()
+    local Bos = BosPreset.Spawn(self)
+    local timerDM = Timer()
+    Bos.timerDM:Start(1, true, function()
+        treeLog:Info("Choose aim")
+        local target = Bos:SelectbyMinHP()
+        treeLog:Info("target in : "..target:PosX().." "..target:PosY())
+        
+        end)
+end
+
 function DrainMana:Drain()
     local sumHP = 0
     for _, target in pairs(self.affected) do
@@ -1568,6 +1652,7 @@ function DrainMana:Drain()
     end
     self.caster:SetHP(self.caster:GetHP() + sumHP)
 end
+
 
 function DrainMana:End()
     self.dummy:Destroy()
@@ -3079,6 +3164,12 @@ function Unit:IssuePointOrderById(order, x, y)
         end
     else
         error("coorditane should be a number", 2)
+    end
+end
+
+function Unit:IssueTargetOrderById(order, target)
+    if math.type(order) == "integer" then
+        local result = IssueTargetOrderById(self.handle, order, target.handle)
     end
 end
 
