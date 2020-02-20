@@ -130,7 +130,10 @@ function DuskKnight:ctor()
     self:AddTalent("0", "22")
 
     self:AddTalent("0", "30")
-    self:AddTalent("0", "31").onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
+    self:AddTalent("0", "31").onTaken = function(_, hero)
+        hero:SetManaCost(self.abilities.darkMend.id, 0, 0)
+        hero:SetCooldown(self.abilities.darkMend.id, 0, hero:GetCooldown(self.abilities.darkMend.id, 0) - 3)
+    end
     self:AddTalent("0", "32")
 
     self.basicStats.strength = 12
