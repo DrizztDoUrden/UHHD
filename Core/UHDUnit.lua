@@ -7,9 +7,6 @@ local logUnit = Log.Category("Core\\Unit")
 
 local UHDUnit = Class(WC3.Unit)
 
-local hpRegenAbility = FourCC('_HPR')
-local mpRegenAbility = FourCC('_MPR')
-
 UHDUnit.armorValue = 0.06
 
 function UHDUnit:ctor(...)
@@ -36,9 +33,6 @@ function UHDUnit:ctor(...)
 
     self.onDamageDealt = {}
     self.onDamageReceived = {}
-
-    self:AddAbility(hpRegenAbility)
-    self:AddAbility(mpRegenAbility)
 end
 
 function UHDUnit:CheckSecondaryStat0_1(name)
