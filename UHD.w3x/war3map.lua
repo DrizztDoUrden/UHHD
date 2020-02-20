@@ -427,7 +427,7 @@ local BosLog = Log.Category("Bos\\Bos", {
     function Bos:SelectbyMinHP(range)
         local x, y = self:GetX(), self:GetY()
         local bosOwner = self:GetOwner()
-        BosLog:Info("Choose target")
+        -- BosLog:Info("Choose target")
         local targets = {}
         Unit.EnumInRange(x, y, range, function(unit)
             if bosOwner:IsEnemy(unit:GetOwner()) then
@@ -520,25 +520,6 @@ function BosPreset:Spawn(owner, x, y, facing)
     Bos.secondaryStats = self.secondaryStats
     Bos:ApplyStats()
     Bos.abilities:AddAction(function() self:Cast(Bos) end)
-    local timerAttack = Timer()
-    Bos.toDestroy[timerAttack] = true
-    timerAttack:Start(1, true, function()
-        BosPresetLog:Info("Choose aim")
-        local target = Bos:SelectbyMinHP(700)
-        BosPresetLog:Info("target in : "..target:GetX().." "..target:GetY())
-        Bos:IssueTargetOrderById(851983, target)
-        -- for i, value in pairs(Bos.spellBook) do
-        --     if value:AutoCast() then
-        --         local timer = Timer()
-        --         timer:Start(value.cooldown + 0.2, true, function()
-        --             if not value:AddAction() then
-        --                 timer:Destroy()
-        --             end
-        --         end)
-        --         Bos.toDestroy[timer] = true
-        --     end
-        -- end
-        end)
 
     for i, ability in pairs(self.abilities) do
         BosPresetLog:Info("Number "..i)
@@ -1590,13 +1571,30 @@ function DefiledTree:ctor()
     self.unitid = FourCC('bu01')
 end
 
+function DefiledTree:Spawn(...)
+    Bos = BosPreset.Spawn(self, ...)
+    local timerAttack = WC3.Timer()
+    Bos.toDestroy[timerAttack] = true
+    timerAttack:Start(1, true, function()
+        local target = Bos:SelectbyMinHP(700)
+        Bos:IssueTargetOrderById(851983, target)
+        for i, value in pairs(self.abilities) do
+            treeLog:Info(" spell name "..i)
+            treeLog:Info(" spell id "..value["id"])
+            treeLog:Info(" spell id "..value.id)
+            if Bos:GetCooldown(value.id, 1) == 0 then
+                treeLog:Info(" test")
+            end
+        end
+        end)
+end
+
 
 function DrainMana:ctor(definition, caster)
     self.affected = {}
     self.bonus = 0
     Spell.ctor(self, definition, caster)
 end
-
 
 function DrainMana:Cast()
     self.target =  WC3.Unit.GetSpellTarget()
@@ -1635,16 +1633,16 @@ function DrainMana:Effect()
     self.dummy:IssuePointOrderById(851986, x, y)
 end
 
--- function DrainMana:AutoCast()
---     if self.aggresive then
---         local Bos = self.caster
---         treeLog:Info("Choose aim")
---         local target = Bos:SelectbyMinHP()
---         treeLog:Info("target in : "..target:PosX().." "..target:PosY())
---         return true
---     end
---     return false
--- end
+function DrainMana:AutoCast()
+    if self.aggresive then
+        local Bos = self.caster
+        treeLog:Info("Choose aim")
+        local target = Bos:SelectbyMinHP()
+        treeLog:Info("target in : "..target:PosX().." "..target:PosY())
+        return true
+    end
+    return false
+end
 
 function DrainMana:Drain()
     local sumHP = 0

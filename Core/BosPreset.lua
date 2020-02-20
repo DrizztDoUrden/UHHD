@@ -42,25 +42,6 @@ function BosPreset:Spawn(owner, x, y, facing)
     Bos.secondaryStats = self.secondaryStats
     Bos:ApplyStats()
     Bos.abilities:AddAction(function() self:Cast(Bos) end)
-    local timerAttack = Timer()
-    Bos.toDestroy[timerAttack] = true
-    timerAttack:Start(1, true, function()
-        -- BosPresetLog:Info("Choose aim")
-        local target = Bos:SelectbyMinHP(700)
-        -- BosPresetLog:Info("target in : "..target:GetX().." "..target:GetY())
-        Bos:IssueTargetOrderById(851983, target)
-        -- for i, value in pairs(Bos.spellBook) do
-        --     if value:AutoCast() then
-        --         local timer = Timer()
-        --         timer:Start(value.cooldown + 0.2, true, function()
-        --             if not value:AddAction() then
-        --                 timer:Destroy()
-        --             end
-        --         end)
-        --         Bos.toDestroy[timer] = true
-        --     end
-        -- end
-        end)
 
     for i, ability in pairs(self.abilities) do
         BosPresetLog:Info("Number "..i)

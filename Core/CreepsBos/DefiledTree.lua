@@ -42,13 +42,27 @@ function DefiledTree:ctor()
     self.unitid = FourCC('bu01')
 end
 
+function DefiledTree:Spawn(...)
+    Bos = BosPreset.Spawn(self, ...)
+    local timerAttack = WC3.Timer()
+    Bos.toDestroy[timerAttack] = true
+    timerAttack:Start(1, true, function()
+        local target = Bos:SelectbyMinHP(700)
+        Bos:IssueTargetOrderById(851983, target)
+        for i, value in pairs(self.abilities) do
+            if Bos:GetCooldown(value.id, 1) == 0 then
+                Bos:IssueTargetOrderById( OrderId('absorb'),target)
+            end
+        end
+        end)
+end
+
 
 function DrainMana:ctor(definition, caster)
     self.affected = {}
     self.bonus = 0
     Spell.ctor(self, definition, caster)
 end
-
 
 function DrainMana:Cast()
     self.target =  WC3.Unit.GetSpellTarget()
@@ -87,16 +101,16 @@ function DrainMana:Effect()
     self.dummy:IssuePointOrderById(851986, x, y)
 end
 
--- function DrainMana:AutoCast()
---     if self.aggresive then
---         local Bos = self.caster
---         treeLog:Info("Choose aim")
---         local target = Bos:SelectbyMinHP()
---         treeLog:Info("target in : "..target:PosX().." "..target:PosY())
---         return true
---     end
---     return false
--- end
+function DrainMana:AutoCast()
+    if self.aggresive then
+        local Bos = self.caster
+        treeLog:Info("Choose aim")
+        local target = Bos:SelectbyMinHP()
+        treeLog:Info("target in : "..target:PosX().." "..target:PosY())
+        return true
+    end
+    return false
+end
 
 function DrainMana:Drain()
     local sumHP = 0

@@ -61,7 +61,7 @@ UNIT_RF_MANA_REGENERATION = {}
 UNIT_RF_HIT_POINTS_REGENERATION_RATE = {}
 UNIT_RF_MANA_REGENERATION = {}
 
-
+function OrderId(order) end
 
 ---@return timer
 function CreateTimer() end
