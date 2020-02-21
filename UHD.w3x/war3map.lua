@@ -1216,7 +1216,7 @@ function UHDUnit:ApplyStats()
 
     self:SetMaxHealth(self.secondaryStats.health)
     self:SetMaxMana(self.secondaryStats.mana)
-    self:SetBaseDamage(self.secondaryStats.weaponDamag * self.secondaryStats.physicalDamage)
+    self:SetBaseDamage(self.secondaryStats.weaponDamage * self.secondaryStats.physicalDamage)
     self:SetAttackCooldown(1 / self.secondaryStats.attackSpeed)
     self:SetArmor(self.secondaryStats.armor)
     self:SetHpRegen(self.secondaryStats.healthRegen)
