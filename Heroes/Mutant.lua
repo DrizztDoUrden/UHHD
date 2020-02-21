@@ -36,9 +36,10 @@ function Mutant:ctor()
                 end,
                 healPerHit = function(_) return 0.05 end,
                 endlessRageLimit = function(_, caster)
-                    if caster:HasTalent("T102") then return 8 end
+                    if caster:HasTalent("T102") then return 7 end
                     return 0
-                end
+                end,
+                endlessRageHeal = function(_) return 0.02 end
             },
         },
         takeCover = {
@@ -161,11 +162,15 @@ function BashingStrikes:Cast()
     self.caster:SetCooldownRemaining(FourCC("MT_0"), 0)
 
     local function handler()
-        self.caster:SetHP(math.min(self.caster.secondaryStats.health, self.caster:GetHP() + self.healPerHit * self.caster.secondaryStats.health))
         local rage = self.caster.effects["Mutant.Rage"]
+        local heal
         if not rage or rage.stacks > self.endlessRageLimit then
             self.attacks = self.attacks - 1
+            heal = self.healPerHit
+        else
+            heal = self.endlessRageHeal
         end
+        self.caster:SetHP(math.min(self.caster.secondaryStats.health, self.caster:GetHP() + heal * self.caster.secondaryStats.health))
         if self.attacks <= 0 then
             self.caster:GetOwner():SetTechLevel(FourCC("R002"), 1)
             self.caster:SetCooldownRemaining(FourCC("MT_0"), 10)
