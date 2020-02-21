@@ -861,7 +861,7 @@ function Hero:UpdateSecondaryStats()
     local ltoBase = 0.95
 
     self.secondaryStats.physicalDamage = BonusMul(self.baseSecondaryStats.physicalDamage, gtoBase, self.basicStats.strength, self.bonusSecondaryStats.physicalDamage)
-    self.secondaryStats.weaponDamage = (self.baseSecondaryStats.weaponDamage + self.bonusSecondaryStats.weaponDamage) * self.secondaryStats.physicalDamage
+    self.secondaryStats.weaponDamage = (self.baseSecondaryStats.weaponDamage + self.bonusSecondaryStats.weaponDamage)
 
     self.secondaryStats.evasion = ProbabilityBased(self.baseSecondaryStats.evasion, math.sqrt(ltoBase), self.basicStats.agility, self.bonusSecondaryStats.evasion)
     self.secondaryStats.attackSpeed = BonusMul(self.baseSecondaryStats.attackSpeed, math.sqrt(gtoBase), self.basicStats.agility, self.bonusSecondaryStats.attackSpeed)
@@ -1216,7 +1216,7 @@ function UHDUnit:ApplyStats()
 
     self:SetMaxHealth(self.secondaryStats.health)
     self:SetMaxMana(self.secondaryStats.mana)
-    self:SetBaseDamage(self.secondaryStats.weaponDamage)
+    self:SetBaseDamage(self.secondaryStats.weaponDamag * self.secondaryStats.physicalDamage)
     self:SetAttackCooldown(1 / self.secondaryStats.attackSpeed)
     self:SetArmor(self.secondaryStats.armor)
     self:SetHpRegen(self.secondaryStats.healthRegen)
@@ -1354,7 +1354,7 @@ function WaveObserver:ctor(owner)
 
     Log(" Create Timer")
     
-    wavetimer:Start(5, true, function()
+    wavetimer:Start(25, true, function()
         if creepSpawner1:HasNextWave(level) then
             logWaveObserver:Info("WAVE"..level)
             creepcount = creepcount + creepSpawner1:SpawnNewWave(level, 4)
@@ -1446,6 +1446,11 @@ local Log = require("Log")
             unit = "MagicDragon",
             ability = nil
         }},
+        [10] = {{
+            count = 1,
+            unit = "DefiledTree",
+            ability = nil
+        }},
     }
 Log("WaveSpecification is load")
 return waveComposition
@@ -1461,9 +1466,9 @@ local MagicDragon = Class(CreepPreset)
 
 function MagicDragon:ctor()
     CreepPreset.ctor(self)
-    self.secondaryStats.health = 25
+    self.secondaryStats.health = 20
     self.secondaryStats.mana = 10
-    self.secondaryStats.weaponDamage = 4
+    self.secondaryStats.weaponDamage = 3
     self.secondaryStats.evasion = 0.15
     
     self.unitid = FourCC('e004')
@@ -1527,7 +1532,7 @@ function MagicDragon:ctor()
     CreepPreset.ctor(self)
     self.secondaryStats.health = 20
     self.secondaryStats.mana = 5
-    self.secondaryStats.weaponDamage = 3
+    self.secondaryStats.weaponDamage = 4
     self.secondaryStats.evasion = 0
     self.unitid = FourCC('e003')
 end

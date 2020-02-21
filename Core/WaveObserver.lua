@@ -49,7 +49,7 @@ function WaveObserver:ctor(owner)
 
     Log(" Create Timer")
     
-    wavetimer:Start(5, true, function()
+    wavetimer:Start(25, true, function()
         if creepSpawner1:HasNextWave(level) then
             logWaveObserver:Info("WAVE"..level)
             creepcount = creepcount + creepSpawner1:SpawnNewWave(level, 4)
