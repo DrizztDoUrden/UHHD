@@ -1169,9 +1169,6 @@ local logUnit = Log.Category("Core\\Unit")
 
 local UHDUnit = Class(WC3.Unit)
 
-local hpRegenAbility = FourCC('_HPR')
-local mpRegenAbility = FourCC('_MPR')
-
 UHDUnit.armorValue = 0.06
 
 function UHDUnit:ctor(...)
@@ -1198,9 +1195,6 @@ function UHDUnit:ctor(...)
 
     self.onDamageDealt = {}
     self.onDamageReceived = {}
-
-    self:AddAbility(hpRegenAbility)
-    self:AddAbility(mpRegenAbility)
 end
 
 function UHDUnit:CheckSecondaryStat0_1(name)
@@ -1347,22 +1341,28 @@ function WaveObserver:ctor(owner)
     triggercheckalldead:RegisterPlayerUnitEvent(owner, EVENT_PLAYER_UNIT_DEATH, nil)
     triggercheckalldead:AddAction(function ()
     if creepcount == 0 and self.needtokillallcreep then
-        wcplayer.PlayersEndGame(true)
+        if creepSpawner1:HasNextWave(level) then
+            logWaveObserver:Info("Bos spawn")
+            creepSpawner1:SpawnNewWave(level, 2)
+            creepSpawner2:SpawnNewWave(level, 2)
+            level = level + 1
+        else
+            wcplayer.PlayersEndGame(true)
+        end
     end
     end)
 
     Log(" Create Timer")
     
-    wavetimer:Start(30, true, function()
+    wavetimer:Start(5, true, function()
         if creepSpawner1:HasNextWave(level) then
             logWaveObserver:Info("WAVE"..level)
-            creepcount = creepcount + creepSpawner1:SpawnNewWave(level, 2)
-            creepcount = creepcount + creepSpawner2:SpawnNewWave(level, 2)
+            creepcount = creepcount + creepSpawner1:SpawnNewWave(level, 4)
+            creepcount = creepcount + creepSpawner2:SpawnNewWave(level, 4)
             level = level + 1
-            if not creepSpawner1:HasNextWave(level) then
-                Log("level "..level)
+            if math.floor(level/10) == level/10 then
                 self.needtokillallcreep = true
-                logWaveObserver:Info("No waves")
+                logWaveObserver:Info("Next Boss")
                 wavetimer:Destroy()
             end
         end
@@ -1446,12 +1446,6 @@ local Log = require("Log")
             unit = "MagicDragon",
             ability = nil
         }},
-        [10] = {{
-            count = 1,
-            unit = "DediledTree",
-            ability = nil
-        }}
-
     }
 Log("WaveSpecification is load")
 return waveComposition
@@ -1718,7 +1712,7 @@ function CreepSpawner:GetWaveSpecification(level)
 end
 
 function CreepSpawner:HasNextWave(level)
-    return level < self.maxlevel
+    return level <= self.maxlevel
 end
 
 function CreepSpawner:SpawnNewWave(level, herocount)
@@ -1957,7 +1951,10 @@ function DuskKnight:ctor()
     self:AddTalent("0", "22")
 
     self:AddTalent("0", "30")
-    self:AddTalent("0", "31").onTaken = function(_, hero) hero:SetManaCost(self.abilities.darkMend.id, 1, 0) hero:SetCooldown(self.abilities.darkMend.id, 1, hero:GetCooldown(self.abilities.darkMend.id, 1) - 3) end
+    self:AddTalent("0", "31").onTaken = function(_, hero)
+        hero:SetManaCost(self.abilities.darkMend.id, 0, 0)
+        hero:SetCooldown(self.abilities.darkMend.id, 0, hero:GetCooldown(self.abilities.darkMend.id, 0) - 3)
+    end
     self:AddTalent("0", "32")
 
     self.basicStats.strength = 12

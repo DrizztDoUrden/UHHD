@@ -31,7 +31,7 @@ function CreepSpawner:GetWaveSpecification(level)
 end
 
 function CreepSpawner:HasNextWave(level)
-    return level < self.maxlevel
+    return level <= self.maxlevel
 end
 
 function CreepSpawner:SpawnNewWave(level, herocount)
