@@ -18,8 +18,8 @@ function DefiledTree:ctor()
     BosPreset.ctor(self)
     self.secondaryStats.health = 375
     self.secondaryStats.mana = 110
-    self.secondaryStats.weaponDamage = 4
-    self.secondaryStats.physicalDamage = 35
+    self.secondaryStats.weaponDamage = 35
+    self.secondaryStats.physicalDamage = 1
     self.spellBook = {{
         spellName = "DrainMana",
         isAllTimeAcctivate = false}}
@@ -47,24 +47,34 @@ function DefiledTree:Spawn(...)
     local timerAttack = WC3.Timer()
     Bos.toDestroy[timerAttack] = true
     timerAttack:Start(1, true, function()
-        DefiledTree:SelectAims()
+        self:SelectAims()
     end)
 end
 
 function DefiledTree:SelectAims()
-    local target = Bos:SelectbyMinHP(700)
-    Bos:IssueTargetOrderById(851983, target)
-    if self.aggresive then
+    local x, y = Bos:GetX(), Bos:GetY()
+    local bosOwner = Bos:GetOwner()
+    local targets = {}
+    WC3.Unit.EnumInRange(x, y, 700, function(unit)
+        if bosOwner:IsEnemy(unit:GetOwner()) then
+            table.insert(targets, unit)
+            Bos.aggresive = true
+        end
+    end)
+    if Bos.aggresive then
+        local target = Bos:SelectbyMinHP(targets)
+        Bos:IssueTargetOrderById(851983, target)
+        -- print(self.unitid)
         for i, value in pairs(self.abilities) do
+            -- treeLog:Info(" spell"..i)
             if Bos:GetCooldown(value.id, 0) == 0 then
                 -- treeLog:Info("range "..value.params.duration())
-                local target = Bos:SelectbyMinMana(600)
+                local target = Bos:SelectbyMinMana(targets)
                 Bos:IssueTargetOrderById(OrderId('absorb'), target)
                 break
             end
         end
-    end
-    if not Bos.aggresive then
+    else
         Bos:GotoNodeAgain()
     end
 end

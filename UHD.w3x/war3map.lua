@@ -438,23 +438,10 @@ local BosLog = Log.Category("Bos\\Bos", {
         end
     end
 
-    function Bos:SelectbyMinHP(range)
-        local x, y = self:GetX(), self:GetY()
-        local bosOwner = self:GetOwner()
-        -- BosLog:Info("Choose target")
-        local targets = {}
-        Unit.EnumInRange(x, y, range, function(unit)
-            if bosOwner:IsEnemy(unit:GetOwner()) then
-                table.insert(targets, unit)
-                self.aggresive = true
-            end
-        end)
-        if not self.aggresive then
-            return nil
-        end
-        local minHP = targets[1]:GetHP()
-        local unitWithMinHP = targets[1]
-        for _, unit in pairs(targets) do
+    function Bos:SelectbyMinHP(list)
+        local minHP = list[1]:GetHP()
+        local unitWithMinHP = list[1]
+        for _, unit in pairs(list) do
             local hp = unit:GetHP()
             if minHP > hp then
                 unitWithMinHP = unit
@@ -465,23 +452,10 @@ local BosLog = Log.Category("Bos\\Bos", {
         return unitWithMinHP
     end
 
-    function Bos:SelectbyMinMana(range)
-        self.aggresive = false
-        local x, y = self:GetX(), self:GetY()
-        local bosOwner = self:GetOwner()
-        local targets = {}
-        Unit.EnumInRange(x, y, range, function(unit)
-            if bosOwner:IsEnemy(unit:GetOwner()) then
-                table.insert(targets, unit)
-                self.aggresive = true
-            end
-        end)
-        if not self.aggresive then
-            return nil
-        end
-        local minMana = targets[1]:GetMana()
-        local unitWithMinMana = targets[1]
-        for _, unit in pairs(targets) do
+    function Bos:SelectbyMinMana(list)
+        local minMana = list[1]:GetMana()
+        local unitWithMinMana = list[1]
+        for _, unit in pairs(list) do
             local mana = unit:GetMana()
             if minMana > mana then
                 unitWithMinMana = unit
@@ -1579,8 +1553,8 @@ function DefiledTree:ctor()
     BosPreset.ctor(self)
     self.secondaryStats.health = 375
     self.secondaryStats.mana = 110
-    self.secondaryStats.weaponDamage = 4
-    self.secondaryStats.physicalDamage = 35
+    self.secondaryStats.weaponDamage = 35
+    self.secondaryStats.physicalDamage = 1
     self.spellBook = {{
         spellName = "DrainMana",
         isAllTimeAcctivate = false}}
@@ -1608,24 +1582,37 @@ function DefiledTree:Spawn(...)
     local timerAttack = WC3.Timer()
     Bos.toDestroy[timerAttack] = true
     timerAttack:Start(1, true, function()
-        local target = Bos:SelectbyMinHP(700)
-        Bos:IssueTargetOrderById(851983, target)
-        if self.aggresive then
-            for i, value in pairs(self.abilities) do
-                if Bos:GetCooldown(value.id, 0) == 0 then
-                    -- treeLog:Info("range "..value.params.duration())
-                    local target = Bos:SelectbyMinMana(600)
-                    Bos:IssueTargetOrderById(OrderId('absorb'), target)
-                    break
-                end
-            end
-        end
-        if not Bos.aggresive then
-            Bos:GotoNodeAgain()
-        end
-        end)
+        self:SelectAims()
+    end)
 end
 
+function DefiledTree:SelectAims()
+    local x, y = Bos:GetX(), Bos:GetY()
+    local bosOwner = Bos:GetOwner()
+    local targets = {}
+    WC3.Unit.EnumInRange(x, y, 700, function(unit)
+        if bosOwner:IsEnemy(unit:GetOwner()) then
+            table.insert(targets, unit)
+            Bos.aggresive = true
+        end
+    end)
+    if Bos.aggresive then
+        local target = Bos:SelectbyMinHP(targets)
+        Bos:IssueTargetOrderById(851983, target)
+        -- print(self.unitid)
+        for i, value in pairs(self.abilities) do
+            -- treeLog:Info(" spell"..i)
+            if Bos:GetCooldown(value.id, 0) == 0 then
+                -- treeLog:Info("range "..value.params.duration())
+                local target = Bos:SelectbyMinMana(targets)
+                Bos:IssueTargetOrderById(OrderId('absorb'), target)
+                break
+            end
+        end
+    else
+        Bos:GotoNodeAgain()
+    end
+end
 
 function DrainMana:ctor(definition, caster)
     self.affected = {}
@@ -2218,9 +2205,10 @@ function Mutant:ctor()
                 end,
                 healPerHit = function(_) return 0.05 end,
                 endlessRageLimit = function(_, caster)
-                    if caster:HasTalent("T102") then return 8 end
+                    if caster:HasTalent("T102") then return 7 end
                     return 0
-                end
+                end,
+                endlessRageHeal = function(_) return 0.02 end
             },
         },
         takeCover = {
@@ -2343,11 +2331,15 @@ function BashingStrikes:Cast()
     self.caster:SetCooldownRemaining(FourCC("MT_0"), 0)
 
     local function handler()
-        self.caster:SetHP(math.min(self.caster.secondaryStats.health, self.caster:GetHP() + self.healPerHit * self.caster.secondaryStats.health))
         local rage = self.caster.effects["Mutant.Rage"]
+        local heal
         if not rage or rage.stacks > self.endlessRageLimit then
             self.attacks = self.attacks - 1
+            heal = self.healPerHit
+        else
+            heal = self.endlessRageHeal
         end
+        self.caster:SetHP(math.min(self.caster.secondaryStats.health, self.caster:GetHP() + heal * self.caster.secondaryStats.health))
         if self.attacks <= 0 then
             self.caster:GetOwner():SetTechLevel(FourCC("R002"), 1)
             self.caster:SetCooldownRemaining(FourCC("MT_0"), 10)
@@ -2589,11 +2581,11 @@ end
 logMain = Log.Category("AddSpell")
 logMain:Info("Start Map")
 --local unit = WC3.Unit(WC3.Player.Get(0), FourCC("bs00"), -2100, -3800, 0)
-heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
-heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
+-- heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
+-- heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
 Core(WC3.Player.Get(8), -2300, -3800, 0)
 Tavern(WC3.Player.Get(0), 1600, -3800, 0, heroPresets)
-local Bos = DefiledTree():Spawn(WC3.Player.Get(0), -2300, -3500, 0)
+-- local Bos = DefiledTree():Spawn(WC3.Player.Get(0), -2300, -3500, 0)
 local timerwaveObserver = Timer()
 timerwaveObserver:Start(25, false,
     function() WaveObserver(WC3.Player.Get(9))

@@ -46,23 +46,10 @@ local BosLog = Log.Category("Bos\\Bos", {
         end
     end
 
-    function Bos:SelectbyMinHP(range)
-        local x, y = self:GetX(), self:GetY()
-        local bosOwner = self:GetOwner()
-        -- BosLog:Info("Choose target")
-        local targets = {}
-        Unit.EnumInRange(x, y, range, function(unit)
-            if bosOwner:IsEnemy(unit:GetOwner()) then
-                table.insert(targets, unit)
-                self.aggresive = true
-            end
-        end)
-        if not self.aggresive then
-            return nil
-        end
-        local minHP = targets[1]:GetHP()
-        local unitWithMinHP = targets[1]
-        for _, unit in pairs(targets) do
+    function Bos:SelectbyMinHP(list)
+        local minHP = list[1]:GetHP()
+        local unitWithMinHP = list[1]
+        for _, unit in pairs(list) do
             local hp = unit:GetHP()
             if minHP > hp then
                 unitWithMinHP = unit
@@ -73,23 +60,10 @@ local BosLog = Log.Category("Bos\\Bos", {
         return unitWithMinHP
     end
 
-    function Bos:SelectbyMinMana(range)
-        self.aggresive = false
-        local x, y = self:GetX(), self:GetY()
-        local bosOwner = self:GetOwner()
-        local targets = {}
-        Unit.EnumInRange(x, y, range, function(unit)
-            if bosOwner:IsEnemy(unit:GetOwner()) then
-                table.insert(targets, unit)
-                self.aggresive = true
-            end
-        end)
-        if not self.aggresive then
-            return nil
-        end
-        local minMana = targets[1]:GetMana()
-        local unitWithMinMana = targets[1]
-        for _, unit in pairs(targets) do
+    function Bos:SelectbyMinMana(list)
+        local minMana = list[1]:GetMana()
+        local unitWithMinMana = list[1]
+        for _, unit in pairs(list) do
             local mana = unit:GetMana()
             if minMana > mana then
                 unitWithMinMana = unit
