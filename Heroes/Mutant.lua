@@ -276,7 +276,7 @@ function Meditate:Cast()
 
     timer:Start(self.castTime, false, function()
         timer:Destroy()
-        self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed * (1 - self.castSlow)
+        self.caster.bonusSecondaryStats.attackSpeed = self.caster.bonusSecondaryStats.attackSpeed / (1 + self.castSlow)
         self.caster:ApplyStats()
         local rage = self.caster.effects["Mutant.Rage"]
         if rage then
