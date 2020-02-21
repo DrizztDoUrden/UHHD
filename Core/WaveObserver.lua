@@ -41,6 +41,11 @@ function WaveObserver:ctor(owner)
             creepSpawner1:SpawnNewWave(level, 2)
             creepSpawner2:SpawnNewWave(level, 2)
             level = level + 1
+            if creepSpawner1:HasNextWave(level) then
+                wavetimer:Start(25, true, function()
+                    self:StartGeneralWave()
+                end)
+            end
         else
             wcplayer.PlayersEndGame(true)
         end
@@ -48,8 +53,11 @@ function WaveObserver:ctor(owner)
     end)
 
     Log(" Create Timer")
-    
     wavetimer:Start(25, true, function()
+        self:StartGeneralWave()
+    end)
+
+    function WaveObserver:StartGeneralWave()
         if creepSpawner1:HasNextWave(level) then
             logWaveObserver:Info("WAVE"..level)
             creepcount = creepcount + creepSpawner1:SpawnNewWave(level, 2)
@@ -61,7 +69,7 @@ function WaveObserver:ctor(owner)
                 wavetimer:Destroy()
             end
         end
-    end)
+    end
 
 
 end

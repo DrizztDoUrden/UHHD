@@ -35,7 +35,6 @@ function CreepSpawner:HasNextWave(level)
 end
 
 function CreepSpawner:SpawnNewWave(level, herocount)
-    -- logCreepSpawner:Info("WAVE "..self.level + 1)
     local wave = self:GetWaveSpecification(level)
     local acc = 0
     for i, unit in pairs(wave) do

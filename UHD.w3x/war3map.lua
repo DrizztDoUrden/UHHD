@@ -395,7 +395,7 @@ local UHDUnit = require("Core.UHDUnit")
 local WC3 = require("WC3.All")
 local Timer = require("WC3.Timer")
 local Unit = require("WC3.Unit")
-
+local Creep = require("Core.Creep")
 local Log = require("Log")
 
 
@@ -404,7 +404,7 @@ local BosLog = Log.Category("Bos\\Bos", {
     fileVerbosity = Log.Verbosity.Trace,
     })
 
-    local Bos = Class(UHDUnit)
+    local Bos = Class(Creep)
 
     function Bos:ctor(...)
         UHDUnit.ctor(self, ...)
@@ -416,6 +416,8 @@ local BosLog = Log.Category("Bos\\Bos", {
         self.abilities:RegisterUnitSpellEffect(self)
         self.toDestroy[self.abilities] = true
     end
+
+
 
     function Bos:Destroy()
         local timer = WC3.Timer()
@@ -447,6 +449,9 @@ local BosLog = Log.Category("Bos\\Bos", {
                 self.aggresive = true
             end
         end)
+        if not self.aggresive then
+            return nil
+        end
         local minHP = targets[1]:GetHP()
         local unitWithMinHP = targets[1]
         for _, unit in pairs(targets) do
@@ -471,6 +476,9 @@ local BosLog = Log.Category("Bos\\Bos", {
                 self.aggresive = true
             end
         end)
+        if not self.aggresive then
+            return nil
+        end
         local minMana = targets[1]:GetMana()
         local unitWithMinMana = targets[1]
         for _, unit in pairs(targets) do
@@ -536,12 +544,12 @@ function BosPreset:Spawn(owner, x, y, facing)
     for i, ability in pairs(self.abilities) do
         BosPresetLog:Info("Number "..i)
         if ability.availableFromStart then
-            BosPresetLog:Info("Try to add ability")
             Bos:AddAbility(ability.id)
         end
     end
     return Bos
 end
+
 
 function BosPreset:Cast(Bos)
     local abilityId = GetSpellAbilityId()
@@ -618,7 +626,7 @@ local creepLog = Log.Category("CreepSpawner\\CreepSpawnerr", {
     end
 
     function Creep:Scale(level, heroesCount)
-        local mult = (1 + 0.05 * (0.7 * heroesCount +  0) * (level - 1))
+        local mult = (1 + 0.05 * (0.7 * heroesCount +  0)) ^ (level - 1)
         --creepLog:Info("multiplier "..mult)
         self.secondaryStats.health = mult * self.secondaryStats.health
         self.secondaryStats.physicalDamage = mult * self.secondaryStats.physicalDamage
@@ -1216,7 +1224,7 @@ function UHDUnit:ApplyStats()
 
     self:SetMaxHealth(self.secondaryStats.health)
     self:SetMaxMana(self.secondaryStats.mana)
-    self:SetBaseDamage(self.secondaryStats.weaponDamag * self.secondaryStats.physicalDamage)
+    self:SetBaseDamage(self.secondaryStats.weaponDamage * self.secondaryStats.physicalDamage)
     self:SetAttackCooldown(1 / self.secondaryStats.attackSpeed)
     self:SetArmor(self.secondaryStats.armor)
     self:SetHpRegen(self.secondaryStats.healthRegen)
@@ -1346,6 +1354,11 @@ function WaveObserver:ctor(owner)
             creepSpawner1:SpawnNewWave(level, 2)
             creepSpawner2:SpawnNewWave(level, 2)
             level = level + 1
+            if creepSpawner1:HasNextWave(level) then
+                wavetimer:Start(25, true, function()
+                    self:StartGeneralWave()
+                end)
+            end
         else
             wcplayer.PlayersEndGame(true)
         end
@@ -1353,12 +1366,15 @@ function WaveObserver:ctor(owner)
     end)
 
     Log(" Create Timer")
-    
     wavetimer:Start(25, true, function()
+        self:StartGeneralWave()
+    end)
+
+    function WaveObserver:StartGeneralWave()
         if creepSpawner1:HasNextWave(level) then
             logWaveObserver:Info("WAVE"..level)
-            creepcount = creepcount + creepSpawner1:SpawnNewWave(level, 4)
-            creepcount = creepcount + creepSpawner2:SpawnNewWave(level, 4)
+            creepcount = creepcount + creepSpawner1:SpawnNewWave(level, 2)
+            creepcount = creepcount + creepSpawner2:SpawnNewWave(level, 2)
             level = level + 1
             if math.floor(level/10) == level/10 then
                 self.needtokillallcreep = true
@@ -1366,7 +1382,7 @@ function WaveObserver:ctor(owner)
                 wavetimer:Destroy()
             end
         end
-    end)
+    end
 
 
 end
@@ -1452,7 +1468,7 @@ local Log = require("Log")
             ability = nil
         }},
     }
-Log("WaveSpecification is load")
+
 return waveComposition
 end)
 -- End of file Core\WaveSpecification.lua
@@ -1473,7 +1489,7 @@ function MagicDragon:ctor()
     
     self.unitid = FourCC('e004')
 end
-Log("MagicDragon load successfull")
+
 
 return MagicDragon
 end)
@@ -1494,7 +1510,7 @@ function MagicDragon:ctor()
 
     self.unitid = FourCC('e002')
 end
-Log("MagicDragon load successfull")
+
 
 return MagicDragon
 end)
@@ -1511,11 +1527,11 @@ function MagicDragon:ctor()
     CreepPreset.ctor(self)
     self.secondaryStats.health = 10
     self.secondaryStats.mana = 5
-    self.secondaryStats.weaponDamage = 3
+    self.secondaryStats.weaponDamage = 6
     self.secondaryStats.evasion = 0.1
     self.unitid = FourCC('e000')
 end
-Log("MagicDragon load successfull")
+
 
 return MagicDragon
 end)
@@ -1536,7 +1552,7 @@ function MagicDragon:ctor()
     self.secondaryStats.evasion = 0
     self.unitid = FourCC('e003')
 end
-Log("MagicDragon load successfull")
+
 
 return MagicDragon
 end)
@@ -1594,12 +1610,14 @@ function DefiledTree:Spawn(...)
     timerAttack:Start(1, true, function()
         local target = Bos:SelectbyMinHP(700)
         Bos:IssueTargetOrderById(851983, target)
-        for i, value in pairs(self.abilities) do
-            if Bos:GetCooldown(value.id, 0) == 0 then
-                -- treeLog:Info("range "..value.params.duration())
-                local target = Bos:SelectbyMinMana(600)
-                Bos:IssueTargetOrderById(OrderId('absorb'), target)
-                break
+        if self.aggresive then
+            for i, value in pairs(self.abilities) do
+                if Bos:GetCooldown(value.id, 0) == 0 then
+                    -- treeLog:Info("range "..value.params.duration())
+                    local target = Bos:SelectbyMinMana(600)
+                    Bos:IssueTargetOrderById(OrderId('absorb'), target)
+                    break
+                end
             end
         end
         if not Bos.aggresive then
@@ -1721,7 +1739,6 @@ function CreepSpawner:HasNextWave(level)
 end
 
 function CreepSpawner:SpawnNewWave(level, herocount)
-    -- logCreepSpawner:Info("WAVE "..self.level + 1)
     local wave = self:GetWaveSpecification(level)
     local acc = 0
     for i, unit in pairs(wave) do
@@ -1781,7 +1798,6 @@ end
 
 
 function PathNode:SetEvent(formation)
-    Log(" Add trigger to path Node in"..self.x.." "..self.y)
     local trigger = Trigger()
     trigger:RegisterEnterRegion(self.region)
     trigger:AddAction(function()
@@ -2573,11 +2589,11 @@ end
 logMain = Log.Category("AddSpell")
 logMain:Info("Start Map")
 --local unit = WC3.Unit(WC3.Player.Get(0), FourCC("bs00"), -2100, -3800, 0)
--- heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
--- heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
+heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
+heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
 Core(WC3.Player.Get(8), -2300, -3800, 0)
 Tavern(WC3.Player.Get(0), 1600, -3800, 0, heroPresets)
--- local Bos = DefiledTree():Spawn(WC3.Player.Get(0), -2300, -3500, 0)
+local Bos = DefiledTree():Spawn(WC3.Player.Get(0), -2300, -3500, 0)
 local timerwaveObserver = Timer()
 timerwaveObserver:Start(25, false,
     function() WaveObserver(WC3.Player.Get(9))

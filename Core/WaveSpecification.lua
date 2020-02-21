@@ -74,5 +74,5 @@ local Log = require("Log")
             ability = nil
         }},
     }
-Log("WaveSpecification is load")
+
 return waveComposition

@@ -47,8 +47,14 @@ function DefiledTree:Spawn(...)
     local timerAttack = WC3.Timer()
     Bos.toDestroy[timerAttack] = true
     timerAttack:Start(1, true, function()
-        local target = Bos:SelectbyMinHP(700)
-        Bos:IssueTargetOrderById(851983, target)
+        DefiledTree:SelectAims()
+    end)
+end
+
+function DefiledTree:SelectAims()
+    local target = Bos:SelectbyMinHP(700)
+    Bos:IssueTargetOrderById(851983, target)
+    if self.aggresive then
         for i, value in pairs(self.abilities) do
             if Bos:GetCooldown(value.id, 0) == 0 then
                 -- treeLog:Info("range "..value.params.duration())
@@ -57,12 +63,11 @@ function DefiledTree:Spawn(...)
                 break
             end
         end
-        if not Bos.aggresive then
-            Bos:GotoNodeAgain()
-        end
-        end)
+    end
+    if not Bos.aggresive then
+        Bos:GotoNodeAgain()
+    end
 end
-
 
 function DrainMana:ctor(definition, caster)
     self.affected = {}

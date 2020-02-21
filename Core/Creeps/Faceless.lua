@@ -13,6 +13,6 @@ function MagicDragon:ctor()
     
     self.unitid = FourCC('e004')
 end
-Log("MagicDragon load successfull")
+
 
 return MagicDragon

@@ -46,12 +46,12 @@ function BosPreset:Spawn(owner, x, y, facing)
     for i, ability in pairs(self.abilities) do
         BosPresetLog:Info("Number "..i)
         if ability.availableFromStart then
-            BosPresetLog:Info("Try to add ability")
             Bos:AddAbility(ability.id)
         end
     end
     return Bos
 end
+
 
 function BosPreset:Cast(Bos)
     local abilityId = GetSpellAbilityId()

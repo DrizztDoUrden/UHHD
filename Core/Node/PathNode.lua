@@ -15,7 +15,6 @@ end
 
 
 function PathNode:SetEvent(formation)
-    Log(" Add trigger to path Node in"..self.x.." "..self.y)
     local trigger = Trigger()
     trigger:RegisterEnterRegion(self.region)
     trigger:AddAction(function()

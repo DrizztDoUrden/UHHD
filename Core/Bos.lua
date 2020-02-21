@@ -3,7 +3,7 @@ local UHDUnit = require("Core.UHDUnit")
 local WC3 = require("WC3.All")
 local Timer = require("WC3.Timer")
 local Unit = require("WC3.Unit")
-
+local Creep = require("Core.Creep")
 local Log = require("Log")
 
 
@@ -12,7 +12,7 @@ local BosLog = Log.Category("Bos\\Bos", {
     fileVerbosity = Log.Verbosity.Trace,
     })
 
-    local Bos = Class(UHDUnit)
+    local Bos = Class(Creep)
 
     function Bos:ctor(...)
         UHDUnit.ctor(self, ...)
@@ -24,6 +24,8 @@ local BosLog = Log.Category("Bos\\Bos", {
         self.abilities:RegisterUnitSpellEffect(self)
         self.toDestroy[self.abilities] = true
     end
+
+
 
     function Bos:Destroy()
         local timer = WC3.Timer()
@@ -55,6 +57,9 @@ local BosLog = Log.Category("Bos\\Bos", {
                 self.aggresive = true
             end
         end)
+        if not self.aggresive then
+            return nil
+        end
         local minHP = targets[1]:GetHP()
         local unitWithMinHP = targets[1]
         for _, unit in pairs(targets) do
@@ -79,6 +84,9 @@ local BosLog = Log.Category("Bos\\Bos", {
                 self.aggresive = true
             end
         end)
+        if not self.aggresive then
+            return nil
+        end
         local minMana = targets[1]:GetMana()
         local unitWithMinMana = targets[1]
         for _, unit in pairs(targets) do
