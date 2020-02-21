@@ -618,7 +618,7 @@ local creepLog = Log.Category("CreepSpawner\\CreepSpawnerr", {
     end
 
     function Creep:Scale(level, heroesCount)
-        local mult = (1 + 0.05 * (0.7 * heroesCount +  0) * (level - 1))
+        local mult = (1 + 0.05 * (0.7 * heroesCount +  0)) ^ (level - 1)
         --creepLog:Info("multiplier "..mult)
         self.secondaryStats.health = mult * self.secondaryStats.health
         self.secondaryStats.physicalDamage = mult * self.secondaryStats.physicalDamage
@@ -1357,8 +1357,8 @@ function WaveObserver:ctor(owner)
     wavetimer:Start(25, true, function()
         if creepSpawner1:HasNextWave(level) then
             logWaveObserver:Info("WAVE"..level)
-            creepcount = creepcount + creepSpawner1:SpawnNewWave(level, 4)
-            creepcount = creepcount + creepSpawner2:SpawnNewWave(level, 4)
+            creepcount = creepcount + creepSpawner1:SpawnNewWave(level, 2)
+            creepcount = creepcount + creepSpawner2:SpawnNewWave(level, 2)
             level = level + 1
             if math.floor(level/10) == level/10 then
                 self.needtokillallcreep = true
