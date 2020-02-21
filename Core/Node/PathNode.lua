@@ -22,7 +22,7 @@ function PathNode:SetEvent(formation)
         local whichunit = Unit.GetEntering()
         if self.prev and whichunit:IsA(Creep) then
             local x, y = self.prev:GetCenter()
-            whichunit:IssueAttackPoint(x, y)
+            whichunit:OrderToAttack(x, y)
         end
     end)
 end

@@ -6,7 +6,8 @@ local CreepClasses = {
     MagicDragon = require("Core.Creeps.MagicDragon"), 
     Faceless = require("Core.Creeps.Faceless"),
     Ghoul = require("Core.Creeps.Ghoul"),
-    Necromant = require("Core.Creeps.Necromant")}
+    Necromant = require("Core.Creeps.Necromant"),
+    DefiledTree = require("Core.CreepsBos.DefiledTree") }
 
 local CreepSpawner = Class(Node)
 
@@ -43,7 +44,7 @@ function CreepSpawner:SpawnNewWave(level, herocount)
             local creepPreset = creepPresetClass()
             local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing, level, herocount)
             local x, y = self.prev:GetCenter()
-            creep:IssueAttackPoint(x, y)
+            creep:OrderToAttack(x, y)
             acc = acc + 1
         end
     end

@@ -72,8 +72,5 @@ function BosPreset:Cast(Bos)
     end
 end
 
-
-
-
 Log("Creep load succsesfull")
 return BosPreset

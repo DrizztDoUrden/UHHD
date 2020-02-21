@@ -68,6 +68,11 @@ local Log = require("Log")
             unit = "MagicDragon",
             ability = nil
         }},
+        [10] = {{
+            count = 1,
+            unit = "DediledTree",
+            ability = nil
+        }}
 
     }
 Log("WaveSpecification is load")

@@ -20,5 +20,4 @@ function Core:ctor(...)
     trigger:AddAction(function() wcplayer.PlayersEndGame(false) end)
 end
 
-
 return Core

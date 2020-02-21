@@ -12,12 +12,13 @@ local BosLog = Log.Category("Bos\\Bos", {
     fileVerbosity = Log.Verbosity.Trace,
     })
 
-    local Bos= Class(UHDUnit)
+    local Bos = Class(UHDUnit)
 
     function Bos:ctor(...)
         UHDUnit.ctor(self, ...)
         self.aggresive = false
         self.spellBook = {}
+        self.nextNode = nil
 
         self.abilities = WC3.Trigger() 
         self.abilities:RegisterUnitSpellEffect(self)
@@ -32,6 +33,17 @@ local BosLog = Log.Category("Bos\\Bos", {
         end)
     end
 
+    function Bos:OrderToAttack(x, y)
+        self.nextNode = {x, y}
+        self:IssueAttackPoint(x, y)
+    end
+
+    function Bos:GotoNodeAgain()
+        if self.nextNode ~= nil then
+            self:IssueAttackPoint(self.nextNode[1], self.nextNode[2])
+        end
+    end
+
     function Bos:SelectbyMinHP(range)
         local x, y = self:GetX(), self:GetY()
         local bosOwner = self:GetOwner()
@@ -40,6 +52,7 @@ local BosLog = Log.Category("Bos\\Bos", {
         Unit.EnumInRange(x, y, range, function(unit)
             if bosOwner:IsEnemy(unit:GetOwner()) then
                 table.insert(targets, unit)
+                self.aggresive = true
             end
         end)
         local minHP = targets[1]:GetHP()
@@ -54,7 +67,6 @@ local BosLog = Log.Category("Bos\\Bos", {
         -- BosLog:Info("unit"..unitWithMinHP:GetX())
         return unitWithMinHP
     end
-
 
     function Bos:SelectbyMinMana(range)
         self.aggresive = false

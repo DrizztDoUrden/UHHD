@@ -50,9 +50,15 @@ function DefiledTree:Spawn(...)
         local target = Bos:SelectbyMinHP(700)
         Bos:IssueTargetOrderById(851983, target)
         for i, value in pairs(self.abilities) do
-            if Bos:GetCooldown(value.id, 1) == 0 then
-                Bos:IssueTargetOrderById( OrderId('absorb'),target)
+            if Bos:GetCooldown(value.id, 0) == 0 then
+                -- treeLog:Info("range "..value.params.duration())
+                local target = Bos:SelectbyMinMana(600)
+                Bos:IssueTargetOrderById(OrderId('absorb'), target)
+                break
             end
+        end
+        if not Bos.aggresive then
+            Bos:GotoNodeAgain()
         end
         end)
 end

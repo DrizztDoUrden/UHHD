@@ -16,6 +16,10 @@ local creepLog = Log.Category("CreepSpawner\\CreepSpawnerr", {
         end)
     end
 
+    function Creep:OrderToAttack(x, y)
+        self:IssueAttackPoint(x, y)
+    end
+
     function Creep:Scale(level, heroesCount)
         local mult = (1 + 0.05 * (0.7 * heroesCount +  0) * (level - 1))
         --creepLog:Info("multiplier "..mult)
