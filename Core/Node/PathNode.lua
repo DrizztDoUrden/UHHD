@@ -19,7 +19,7 @@ function PathNode:SetEvent(formation)
     trigger:RegisterEnterRegion(self.region)
     trigger:AddAction(function()
         local whichunit = Unit.GetEntering()
-        if self.prev and whichunit:IsA(Creep) then
+        if self.prev and (whichunit:IsA(Creep) or whichunit:IsA(Creep))  then
             local x, y = self.prev:GetCenter()
             whichunit:OrderToAttack(x, y)
         end

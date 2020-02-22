@@ -1,18 +1,19 @@
 local Class = require("Class")
 local Log = require("Log")
 local Stats = require("Core.Stats")
-local Bos = require("Core.Bos")
+local Boss = require("Core.Boss")
 local Unit = require("WC3.Unit")
+local CreepPreset = require("Core.CreepPreset")
 local Timer = require("WC3.Timer")
 
-local BosPresetLog = Log.Category("Bos\\BosPreset", {
+local BossPresetLog = Log.Category("Boss\\BossPreset", {
     printVerbosity = Log.Verbosity.Trace,
     fileVerbosity = Log.Verbosity.Trace,
     })
 
-local BosPreset = Class()
+local BossPreset = Class(CreepPreset)
 
-function BosPreset:ctor()
+function BossPreset:ctor()
     self.secondaryStats = Stats.Secondary()
 
     self.abilities = {}
@@ -34,38 +35,42 @@ function BosPreset:ctor()
     self.secondaryStats.spellResist = 0.3
 
     self.secondaryStats.movementSpeed = 1
+
+    self.class = Boss
 end
 
-function BosPreset:Spawn(owner, x, y, facing)
-    local Bos = Bos(owner, self.unitid, x, y, facing);
-    BosPresetLog:Info("Spawn Bos")
-    Bos.secondaryStats = self.secondaryStats
-    Bos:ApplyStats()
-    Bos.abilities:AddAction(function() self:Cast(Bos) end)
+function BossPreset:Spawn(owner, x, y, facing,  level, herocount)
+    local Boss = CreepPreset.Spawn(self, owner, x, y, facing,  level, herocount);
+    BossPresetLog:Info("Spawn Boss")
+    Boss.abilities:AddAction(function() self:Cast(Boss) end)
+    print("BossPreset")
+    print(Boss)
 
     for i, ability in pairs(self.abilities) do
-        BosPresetLog:Info("Number "..i)
+        BossPresetLog:Info("Number "..i)
         if ability.availableFromStart then
-            Bos:AddAbility(ability.id)
+            Boss:AddAbility(ability.id)
         end
     end
-    return Bos
+    print("BossPreset after spell adding")
+    print(Boss)
+    return Boss
 end
 
 
-function BosPreset:Cast(Bos)
+function BossPreset:Cast(Boss)
     local abilityId = GetSpellAbilityId()
     for _, ability in pairs(self.abilities) do
         if type(ability.id) == "table" then
             for _, id in pairs(ability.id) do
                 if id == abilityId then
-                    ability:handler(Bos)
+                    ability:handler(Boss)
                     break
                 end
             end
         else
             if ability.id == abilityId then
-                ability:handler(Bos)
+                ability:handler(Boss)
                 break
             end
         end
@@ -73,4 +78,4 @@ function BosPreset:Cast(Bos)
 end
 
 Log("Creep load succsesfull")
-return BosPreset
+return BossPreset

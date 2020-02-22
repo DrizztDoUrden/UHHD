@@ -1,21 +1,21 @@
 local Class = require("Class")
-local BosPreset = require("Core.BosPreset")
+local BossPreset = require("Core.BossPreset")
 local WC3 = require("WC3.All")
 local Spell = require "Core.Spell"
 
 local Log = require("Log")
-local treeLog = Log.Category("Bos\\DefiledTree", {
+local treeLog = Log.Category("Boss\\DefiledTree", {
     printVerbosity = Log.Verbosity.Trace,
     fileVerbosity = Log.Verbosity.Trace,
     })
 
 local DrainMana = Class(Spell)
 
-local DefiledTree = Class(BosPreset)
+local DefiledTree = Class(BossPreset)
 
 
 function DefiledTree:ctor()
-    BosPreset.ctor(self)
+    BossPreset.ctor(self)
     self.secondaryStats.health = 375
     self.secondaryStats.mana = 110
     self.secondaryStats.weaponDamage = 35
@@ -43,39 +43,39 @@ function DefiledTree:ctor()
 end
 
 function DefiledTree:Spawn(...)
-    Bos = BosPreset.Spawn(self, ...)
+    Boss = BossPreset.Spawn(self, ...)
     local timerAttack = WC3.Timer()
-    Bos.toDestroy[timerAttack] = true
+    Boss.toDestroy[timerAttack] = true
     timerAttack:Start(1, true, function()
         self:SelectAims()
     end)
 end
 
 function DefiledTree:SelectAims()
-    local x, y = Bos:GetX(), Bos:GetY()
-    local bosOwner = Bos:GetOwner()
+    local x, y = Boss:GetX(), Boss:GetY()
+    local bosOwner = Boss:GetOwner()
     local targets = {}
     WC3.Unit.EnumInRange(x, y, 700, function(unit)
         if bosOwner:IsEnemy(unit:GetOwner()) then
             table.insert(targets, unit)
-            Bos.aggresive = true
+            Boss.aggresive = true
         end
     end)
-    if Bos.aggresive then
-        local target = Bos:SelectbyMinHP(targets)
-        Bos:IssueTargetOrderById(851983, target)
+    if Boss.aggresive then
+        local target = Boss:SelectbyMinHP(targets)
+        Boss:IssueTargetOrderById(851983, target)
         -- print(self.unitid)
         for i, value in pairs(self.abilities) do
             -- treeLog:Info(" spell"..i)
-            if Bos:GetCooldown(value.id, 0) == 0 then
+            if Boss:GetCooldown(value.id, 0) == 0 then
                 -- treeLog:Info("range "..value.params.duration())
-                local target = Bos:SelectbyMinMana(targets)
-                Bos:IssueTargetOrderById(OrderId('absorb'), target)
+                local target = Boss:SelectbyMinMana(targets)
+                Boss:IssueTargetOrderById(OrderId('absorb'), target)
                 break
             end
         end
     else
-        Bos:GotoNodeAgain()
+        Boss:GotoNodeAgain()
     end
 end
 
@@ -124,9 +124,9 @@ end
 
 function DrainMana:AutoCast()
     if self.aggresive then
-        local Bos = self.caster
+        local Boss = self.caster
         treeLog:Info("Choose aim")
-        local target = Bos:SelectbyMinHP()
+        local target = Boss:SelectbyMinHP()
         treeLog:Info("target in : "..target:PosX().." "..target:PosY())
         return true
     end

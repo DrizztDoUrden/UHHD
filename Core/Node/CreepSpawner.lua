@@ -3,11 +3,11 @@ local Class = require("Class")
 local Node = require("Core.Node.Node")
 local waveComopsion = require("Core.WaveSpecification")
 local CreepClasses = {
-    MagicDragon = require("Core.Creeps.MagicDragon"), 
-    Faceless = require("Core.Creeps.Faceless"),
-    Ghoul = require("Core.Creeps.Ghoul"),
-    Necromant = require("Core.Creeps.Necromant"),
-    DefiledTree = require("Core.CreepsBos.DefiledTree") }
+    MagicDragon = require("Creeps.MagicDragon")(), 
+    Faceless = require("Creeps.Faceless")(),
+    Ghoul = require("Creeps.Ghoul")(),
+    Necromant = require("Creeps.Necromant")(),
+    DefiledTree = require("Bosses.DefiledTree")()}
 
 local CreepSpawner = Class(Node)
 
@@ -40,10 +40,12 @@ function CreepSpawner:SpawnNewWave(level, herocount)
     for i, unit in pairs(wave) do
         for j = 1, unit["count"] do
             local creepPresetClass = CreepClasses[unit["unit"]]
-            local creepPreset = creepPresetClass()
+            local creepPreset = creepPresetClass
             local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing, level, herocount)
-            local x, y = self.prev:GetCenter()
-            creep:OrderToAttack(x, y)
+            print(creepPreset.unitid == CreepClasses.DefiledTree.unitid)
+            -- local x, y = self.prev:GetCenter()
+            print(creep)
+            -- creep:OrderToAttack(x, y)
             acc = acc + 1
         end
     end

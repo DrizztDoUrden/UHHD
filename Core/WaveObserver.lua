@@ -18,31 +18,31 @@ local WaveObserver = Class()
 function WaveObserver:ctor(owner)
     local node = PathNode(-2300, -3800, nil)
     local node1 = PathNode(-2300, 5000, node)
-    local creepSpawner1 = CreepSpawner(owner, 1600, 5000, node1, 0)
-    local creepSpawner2 = CreepSpawner(owner, -5800, 5000, node1, 0)
+    self.creepSpawner1 = CreepSpawner(owner, 1600, 5000, node1, 0)
+    self.creepSpawner2 = CreepSpawner(owner, -5800, 5000, node1, 0)
     local trigger = Trigger()
     self.needtokillallcreep = false
-    local creepcount = 0
-    local level = 1
+    self.creepcount = 0
+    self.level = 1
     trigger:RegisterPlayerUnitEvent(owner, EVENT_PLAYER_UNIT_DEATH, nil)
     trigger:AddAction(function()
         local whichcreep = Creep.GetDying()
         whichcreep:Destroy()
-        creepcount = creepcount - 1
+        self.creepcount = self.creepcount - 1
     end)
     local wavetimer  = Timer()
     
     local triggercheckalldead = Trigger()
     triggercheckalldead:RegisterPlayerUnitEvent(owner, EVENT_PLAYER_UNIT_DEATH, nil)
     triggercheckalldead:AddAction(function ()
-    if creepcount == 0 and self.needtokillallcreep then
-        if creepSpawner1:HasNextWave(level) then
+    if self.creepcount == 0 and self.needtokillallcreep then
+        if self.creepSpawner1:HasNextWave(self.level) then
+            self.level = self.level + 1
             logWaveObserver:Info("Bos spawn")
-            creepSpawner1:SpawnNewWave(level, 2)
-            creepSpawner2:SpawnNewWave(level, 2)
-            level = level + 1
-            if creepSpawner1:HasNextWave(level) then
-                wavetimer:Start(25, true, function()
+            self.creepSpawner1:SpawnNewWave(self.level - 1, 2)
+            self.creepSpawner2:SpawnNewWave(self.level - 1, 2)
+            if self.creepSpawner1:HasNextWave(self.level) then
+                wavetimer:Start(5, true, function()
                     self:StartGeneralWave()
                 end)
             end
@@ -54,23 +54,25 @@ function WaveObserver:ctor(owner)
 
     Log(" Create Timer")
     wavetimer:Start(25, true, function()
-        self:StartGeneralWave()
+        self:StartGeneralWave(wavetimer)
     end)
 
-    function WaveObserver:StartGeneralWave()
-        if creepSpawner1:HasNextWave(level) then
-            logWaveObserver:Info("WAVE"..level)
-            creepcount = creepcount + creepSpawner1:SpawnNewWave(level, 2)
-            creepcount = creepcount + creepSpawner2:SpawnNewWave(level, 2)
-            level = level + 1
-            if math.floor(level/10) == level/10 then
+end
+
+    function WaveObserver:StartGeneralWave(timer)
+        if self.creepSpawner1:HasNextWave(self.level) then
+            self.level = self.level + 1
+            logWaveObserver:Info("WAVE"..self.level)
+            self.creepcount = self.creepcount + self.creepSpawner1:SpawnNewWave(self.level - 1, 2)
+            self.creepcount = self.creepcount + self.creepSpawner2:SpawnNewWave(self.level - 1, 2)
+            if math.floor(self.level/10) == self.level/10 then
                 self.needtokillallcreep = true
                 logWaveObserver:Info("Next Boss")
-                wavetimer:Destroy()
+                self:Destroy()
             end
         end
     end
 
 
-end
+
 return WaveObserver
