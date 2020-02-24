@@ -42,6 +42,14 @@ function DuskKnight:ctor()
                     return 0
                 end,
                 healLimit = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
+                damageReduction = function(_, caster)
+                    if caster:HasTalent("T002") then return 0.15 end
+                    return 0
+                end,
+                damageBuffLimit = function(_, caster)
+                    if caster:HasTalent("T002") then return 0.15 end
+                    return 0
+                end,
             },
         },
         heavySlash = {
@@ -147,6 +155,7 @@ end
 function DrainLight:ctor(definition, caster)
     self.affected = {}
     self.bonus = 0
+    self.damageBonus = 0
     Spell.ctor(self, definition, caster)
 end
 
@@ -161,6 +170,7 @@ function DrainLight:Cast()
                 toSteal = self.armorRemoved,
                 toReturn = self.armorRemoved,
                 toBonus = self.stealPercentage,
+                toStealDamage = self.damageReduction,
             })
         end
     end)
@@ -182,6 +192,19 @@ function DrainLight:Cast()
         end
 
         if self.duration <= 0 then
+            for _, target in pairs(self.affected) do
+                if target.unit:GetHP() > 0 then
+                    target.unit.secondaryStats.physicalDamage = target.unit.secondaryStats.physicalDamage * (1 - target.toStealDamage)
+                    target.unit:ApplyStats()
+                    if self.damageBonus < self.damageBuffLimit then
+                        self.caster.bonusSecondaryStats.physicalDamage = self.caster.bonusSecondaryStats.physicalDamage / (1 + self.damageBonus)
+                        self.damageBonus = math.min(self.damageBuffLimit, self.damageBonus + target.toStealDamage * target.toBonus)
+                        self.caster.bonusSecondaryStats.physicalDamage = self.caster.bonusSecondaryStats.physicalDamage * (1 + self.damageBonus)
+                        self.caster:ApplyStats()
+                    end
+                end
+            end
+
             timer:Destroy()
             self:Effect()
         end
@@ -209,17 +232,19 @@ end
 
 function DrainLight:End()
     for _, target in pairs(self.affected) do
-        target.unit:SetArmor(target.unit:GetArmor() + target.toReturn)
+        target.unit.secondaryStats.armor = target.unit.secondaryStats.armor + target.toReturn
+        target.unit.secondaryStats.physicalDamage = target.unit.secondaryStats.physicalDamage / (1 - target.toStealDamage)
+        target.unit:ApplyStats()
     end
     self.caster.bonusSecondaryStats.armor = self.caster.bonusSecondaryStats.armor - self.bonus
+    self.unit.bonusSecondaryStats.physicalDamage = self.unit.bonusSecondaryStats.physicalDamage / (1 + self.damageBonus)
     self.caster:ApplyStats()
 end
 
 function DrainLight:Drain(target)
     local toStealNow = (target.toSteal - target.stolen) * self.period / self.duration
-    target.unit:SetArmor(target.unit:GetArmor() + target.stolen)
-    target.stolen = target.stolen + toStealNow
-    target.unit:SetArmor(target.unit:GetArmor() - target.stolen)
+    target.unit.secondaryStats.armor = target.unit.secondaryStats.armor + toStealNow
+    target.unit:ApplyStats()
     if self.bonus < self.gainLimit then
         local toBonus = math.min(self.gainLimit - self.bonus, toStealNow * target.toBonus)
         self.caster.bonusSecondaryStats.armor = self.caster.bonusSecondaryStats.armor + toBonus
