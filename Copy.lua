@@ -12,10 +12,13 @@ end
 local function Copy(object)
     if type(object) == "function" then
         error("Attempt to copy a function", 2)
+        return nil
     end
     if type(object) == "userdata" then
         error("Attempt to copy a userdata", 2)
+        return nil
     end
+    return CopyImplementation(object)
 end
 
 return Copy

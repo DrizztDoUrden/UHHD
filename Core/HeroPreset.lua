@@ -45,6 +45,7 @@ function HeroPreset:Spawn(owner, x, y, facing)
     hero.talentBooks = Copy(self.talentBooks)
     hero.talents = Copy(self.talents)
 
+
     for _, talent in pairs(self.talents) do
         owner:SetTechLevel(talent.tech, 1)
     end
