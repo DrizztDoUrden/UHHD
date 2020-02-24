@@ -3,6 +3,7 @@ local Trigger = require("WC3.Trigger")
 local Stats = require("Core.Stats")
 local Hero = require("Core.Hero")
 local Log = require("Log")
+local Copy = require "Copy"
 
 local HeroPreset = Class()
 
@@ -38,16 +39,13 @@ end
 function HeroPreset:Spawn(owner, x, y, facing)
     local hero = Hero(owner, self.unitid, x, y, facing);
 
-    hero.baseSecondaryStats = self.secondaryStats
-    hero.basicStats = self.basicStats
+    hero.baseSecondaryStats = Copy(self.secondaryStats)
+    hero.basicStats = Copy(self.basicStats)
     hero:ApplyStats()
-    hero.talents = {}
-    hero.talentBooks = {}
+    hero.talentBooks = Copy(self.talentBooks)
+    hero.talents = Copy(self.talents)
 
-    for k, v in pairs(self.talentBooks) do hero.talentBooks[k] = v end
-
-    for id, talent in pairs(self.talents) do
-        hero.talents[id] = talent
+    for _, talent in pairs(self.talents) do
         owner:SetTechLevel(talent.tech, 1)
     end
 
