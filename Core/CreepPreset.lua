@@ -2,7 +2,7 @@ local Class = require("Class")
 local Log = require("Log")
 local Stats = require("Core.Stats")
 local Creep = require("Core.Creep")
-
+local Copy = require "Copy"
 
 local CreepPreset = Class()
 
@@ -31,7 +31,7 @@ end
 
 function CreepPreset:Spawn(owner, x, y, facing, level, herocount)
     local creep = self.class(owner, self.unitid, x, y, facing);
-    creep.secondaryStats = self.secondaryStats
+    creep.secondaryStats = Copy(self.secondaryStats)
     creep:Scale(level, herocount)
     creep:ApplyStats()
     print(" CreepPreset")
