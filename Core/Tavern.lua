@@ -13,7 +13,7 @@ local Tavern = Class(WC3.Unit)
 function Tavern:ctor(owner, x, y, facing, heroPresets)
     WC3.Unit.ctor(self, owner, FourCC("n000"), x, y, facing)
 
-    heroPresets[1]:Spawn(WC3.Player.Get(8), heroSpawnX, heroSpawnY, 0)
+    -- heroPresets[1]:Spawn(WC3.Player.Get(8), heroSpawnX, heroSpawnY, 0)
 
     self.owner = owner
     self.heroPresets = heroPresets

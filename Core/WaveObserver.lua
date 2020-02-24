@@ -53,7 +53,7 @@ function WaveObserver:ctor(owner)
     end)
 
     Log(" Create Timer")
-    wavetimer:Start(25, true, function()
+    wavetimer:Start(5, true, function()
         self:StartGeneralWave(wavetimer)
     end)
 

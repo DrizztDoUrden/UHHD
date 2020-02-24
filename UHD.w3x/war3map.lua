@@ -427,49 +427,16 @@ function DefiledTree:ctor()
                 leachMana = function (_) return 3 * self.secondaryStats.spellDamage end,
                 leachHP = function (_) return 6 * self.secondaryStats.spellDamage end,
                 dummySpeed = function (_) return 0.6 end,
-                range = function (_) return 599 end
-            }
+                range = function (_) return 599 end,
+            },
+            idforCast = "absorb",
+            GetPriority = function (_, caster)
+                return function(target) return target:GetMana() / (3 * 10 * caster.secondaryStats.spellDamage) end end
         }
     }
     self.unitid = FourCC('bu01')
 end
 
-function DefiledTree:Spawn(...)
-    Boss = BossPreset.Spawn(self, ...)
-    local timerAttack = WC3.Timer()
-    Boss.toDestroy[timerAttack] = true
-    timerAttack:Start(1, true, function()
-        self:SelectAims()
-    end)
-end
-
-function DefiledTree:SelectAims()
-    local x, y = Boss:GetX(), Boss:GetY()
-    local bosOwner = Boss:GetOwner()
-    local targets = {}
-    WC3.Unit.EnumInRange(x, y, 700, function(unit)
-        if bosOwner:IsEnemy(unit:GetOwner()) then
-            table.insert(targets, unit)
-            Boss.aggresive = true
-        end
-    end)
-    if Boss.aggresive then
-        local target = Boss:SelectbyMinHP(targets)
-        Boss:IssueTargetOrderById(851983, target)
-        -- print(self.unitid)
-        for i, value in pairs(self.abilities) do
-            -- treeLog:Info(" spell"..i)
-            if Boss:GetCooldown(value.id, 0) == 0 then
-                -- treeLog:Info("range "..value.params.duration())
-                local target = Boss:SelectbyMinMana(targets)
-                Boss:IssueTargetOrderById(OrderId('absorb'), target)
-                break
-            end
-        end
-    else
-        Boss:GotoNodeAgain()
-    end
-end
 
 function DrainMana:ctor(definition, caster)
     self.affected = {}
@@ -480,8 +447,8 @@ end
 function DrainMana:Cast()
     self.target =  WC3.Unit.GetSpellTarget()
     local x, y = self.target:GetX(), self.target:GetY()
-    treeLog:Info("Pos "..x.." "..y)
-    --treeLog:Info("Caster Owner "..self.caster:GetOwner().handle)
+    -- treeLog:Info("Pos "..x.." "..y)
+    -- treeLog:Info("Caster Owner "..self.caster:GetOwner().handle)
     self.dummy = WC3.Unit(self.caster:GetOwner(), FourCC("bs00") , x, y, 0)
     self.dummy:SetMoveSpeed(self.dummySpeed)
     local timer = WC3.Timer()
@@ -512,17 +479,6 @@ function DrainMana:Effect()
     end)
     local x, y = self.target:GetX(), self.target:GetY()
     self.dummy:IssuePointOrderById(851986, x, y)
-end
-
-function DrainMana:AutoCast()
-    if self.aggresive then
-        local Boss = self.caster
-        treeLog:Info("Choose aim")
-        local target = Boss:SelectbyMinHP()
-        treeLog:Info("target in : "..target:PosX().." "..target:PosY())
-        return true
-    end
-    return false
 end
 
 function DrainMana:Drain()
@@ -571,8 +527,9 @@ local BossLog = Log.Category("Boss\\Boss", {
         self.abilities = WC3.Trigger() 
         self.abilities:RegisterUnitSpellEffect(self)
         self.toDestroy[self.abilities] = true
+        self.AggroTimer = Timer()
+        self.toDestroy[self.AggroTimer] = true
     end
-
 
 
     function Boss:Destroy()
@@ -594,32 +551,6 @@ local BossLog = Log.Category("Boss\\Boss", {
         end
     end
 
-    function Boss:SelectbyMinHP(list)
-        local minHP = list[1]:GetHP()
-        local unitWithMinHP = list[1]
-        for _, unit in pairs(list) do
-            local hp = unit:GetHP()
-            if minHP > hp then
-                unitWithMinHP = unit
-                minHP = hp
-            end
-        end
-        -- BossLog:Info("unit"..unitWithMinHP:GetX())
-        return unitWithMinHP
-    end
-
-    function Boss:SelectbyMinMana(list)
-        local minMana = list[1]:GetMana()
-        local unitWithMinMana = list[1]
-        for _, unit in pairs(list) do
-            local mana = unit:GetMana()
-            if minMana > mana then
-                unitWithMinMana = unit
-                minMana = mana
-            end
-        end
-        return unitWithMinMana
-    end
 
 return Boss
 end)
@@ -668,23 +599,84 @@ function BossPreset:ctor()
 end
 
 function BossPreset:Spawn(owner, x, y, facing,  level, herocount)
-    local Boss = CreepPreset.Spawn(self, owner, x, y, facing,  level, herocount);
-    BossPresetLog:Info("Spawn Boss")
-    Boss.abilities:AddAction(function() self:Cast(Boss) end)
-    print("BossPreset")
-    print(Boss)
+    local boss = CreepPreset.Spawn(self, owner, x, y, facing,  level, herocount);
+    -- BossPresetLog:Info("Spawn Boss")
+    boss.abilities:AddAction(function() self:Cast(boss) end)
+    -- print("BossPreset")
+    -- print(boss)
+    
 
     for i, ability in pairs(self.abilities) do
-        BossPresetLog:Info("Number "..i)
+        -- BossPresetLog:Info("Number "..i)
         if ability.availableFromStart then
-            Boss:AddAbility(ability.id)
+            boss:AddAbility(ability.id)
         end
     end
-    print("BossPreset after spell adding")
-    print(Boss)
-    return Boss
+    -- print("BossPreset after spell adding")
+    -- print(boss)
+    boss.AggroTimer:Start(1, true, function()
+        self:SelectTarget(boss)
+    end)
+    return boss
 end
 
+function BossPreset:SelectTarget(boss)
+    local x, y = boss:GetX(), boss:GetY()
+    local bosOwner = boss:GetOwner()
+    local targets = {}
+    boss.aggresive = false
+    Unit.EnumInRange(x, y, 700, function(unit)
+        if bosOwner:IsEnemy(unit:GetOwner()) then
+            table.insert(targets, unit)
+            boss.aggresive = true
+        end
+    end)
+    if boss.aggresive then
+        local target = self:SelectbyMinHP(targets)
+        boss:IssueTargetOrderById(851983, target)
+        for spellName, spell in pairs(self.abilities) do
+            -- BossPresetLog:Info("Spell ="..spellName)
+            if boss:GetCooldown(spell.id, 1) == 0 then
+                local target = self:GetTargetWithMaxPriority(boss, spell)
+                if target ~= nil then
+                    boss:IssueTargetOrderById(OrderId(spell.idforCast), target)
+                end
+            end
+        end
+    else
+        boss:GotoNodeAgain()
+    end
+end
+
+function BossPreset:GetTargetWithMaxPriority(boss, spellDefinition)
+    local x, y = boss:GetX(), boss:GetY()
+    local bosOwner = boss:GetOwner()
+    local target = nil
+    local maxPriority = -1
+    Unit.EnumInRange(x,y, spellDefinition.params.range(), function(unit) 
+        if bosOwner:IsEnemy(unit:GetOwner()) then
+            local currPriority = spellDefinition.GetPriority(spellDefinition, self)(unit)
+            if maxPriority <= currPriority then
+                target = unit
+                maxPriority = currPriority
+            end
+        end
+    end)
+    return target
+end
+
+function BossPreset:SelectbyMinHP(list)
+    local minHP = list[1]:GetHP()
+    local unitWithMinHP = list[1]
+    for _, unit in pairs(list) do
+        local hp = unit:GetHP()
+        if minHP > hp then
+            unitWithMinHP = unit
+            minHP = hp
+        end
+    end
+    return unitWithMinHP
+end
 
 function BossPreset:Cast(Boss)
     local abilityId = GetSpellAbilityId()
@@ -1271,7 +1263,7 @@ local Tavern = Class(WC3.Unit)
 function Tavern:ctor(owner, x, y, facing, heroPresets)
     WC3.Unit.ctor(self, owner, FourCC("n000"), x, y, facing)
 
-    heroPresets[1]:Spawn(WC3.Player.Get(8), heroSpawnX, heroSpawnY, 0)
+    -- heroPresets[1]:Spawn(WC3.Player.Get(8), heroSpawnX, heroSpawnY, 0)
 
     self.owner = owner
     self.heroPresets = heroPresets
@@ -1504,7 +1496,7 @@ function WaveObserver:ctor(owner)
     end)
 
     Log(" Create Timer")
-    wavetimer:Start(25, true, function()
+    wavetimer:Start(5, true, function()
         self:StartGeneralWave(wavetimer)
     end)
 
@@ -1657,11 +1649,12 @@ function CreepSpawner:SpawnNewWave(level, herocount)
         for j = 1, unit["count"] do
             local creepPresetClass = CreepClasses[unit["unit"]]
             local creepPreset = creepPresetClass
+            -- print(creepPreset)
             local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing, level, herocount)
-            print(creepPreset.unitid == CreepClasses.DefiledTree.unitid)
-            -- local x, y = self.prev:GetCenter()
-            print(creep)
-            -- creep:OrderToAttack(x, y)
+            -- print(creepPreset.unitid == CreepClasses.DefiledTree.unitid)
+            local x, y = self.prev:GetCenter()
+            -- print(creep)
+            creep:OrderToAttack(x, y)
             acc = acc + 1
         end
     end
@@ -2597,7 +2590,7 @@ logMain:Info("Start Map")
 -- heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
 Core(WC3.Player.Get(8), -2300, -3800, 0)
 Tavern(WC3.Player.Get(0), 1600, -3800, 0, heroPresets)
--- local Bos = DefiledTree():Spawn(WC3.Player.Get(0), -2300, -3500, 0)
+-- local Bos = DefiledTree():Spawn(WC3.Player.Get(0), -2300, -3500, 0, 1, 2)
 local timerwaveObserver = Timer()
 timerwaveObserver:Start(15, false,
     function() WaveObserver(WC3.Player.Get(9))
@@ -3216,6 +3209,8 @@ end
 function Unit:IssueTargetOrderById(order, target)
     if math.type(order) == "integer" then
         local result = IssueTargetOrderById(self.handle, order, target.handle)
+    else 
+        error("order should be integer", 2)
     end
 end
 
@@ -3281,6 +3276,247 @@ function Unit:IsHero() return IsHeroUnitId(self:GetTypeId()) end
 return Unit
 end)
 -- End of file WC3\Unit.lua
+-- Start of file Bosses\DefiledTree.lua
+Module("Bosses.DefiledTree", function()
+local Class = require("Class")
+local BossPreset = require("Core.BossPreset")
+local WC3 = require("WC3.All")
+local Spell = require "Core.Spell"
+
+local Log = require("Log")
+local treeLog = Log.Category("Boss\\DefiledTree", {
+    printVerbosity = Log.Verbosity.Trace,
+    fileVerbosity = Log.Verbosity.Trace,
+    })
+
+local DrainMana = Class(Spell)
+
+local DefiledTree = Class(BossPreset)
+
+
+function DefiledTree:ctor()
+    BossPreset.ctor(self)
+    self.secondaryStats.health = 375
+    self.secondaryStats.mana = 110
+    self.secondaryStats.weaponDamage = 35
+    self.secondaryStats.physicalDamage = 1
+    self.spellBook = {{
+        spellName = "DrainMana",
+        isAllTimeAcctivate = false}}
+    self.abilities = {
+        drainMana = {
+            id = FourCC('BS00'),
+            handler = DrainMana,
+            availableFromStart = true,
+            params = {
+                radius = function (_) return 150 end,
+                duration = function (_) return 10 end,
+                period = function (_) return 0.5 end,
+                leachMana = function (_) return 3 * self.secondaryStats.spellDamage end,
+                leachHP = function (_) return 6 * self.secondaryStats.spellDamage end,
+                dummySpeed = function (_) return 0.6 end,
+                range = function (_) return 599 end
+            }
+        }
+    }
+    self.unitid = FourCC('bu01')
+end
+
+function DefiledTree:Spawn(...)
+    Boss = BossPreset.Spawn(self, ...)
+    local timerAttack = WC3.Timer()
+    Boss.toDestroy[timerAttack] = true
+    timerAttack:Start(1, true, function()
+        self:SelectAims()
+    end)
+end
+
+function DefiledTree:SelectAims()
+    local x, y = Boss:GetX(), Boss:GetY()
+    local bosOwner = Boss:GetOwner()
+    local targets = {}
+    WC3.Unit.EnumInRange(x, y, 700, function(unit)
+        if bosOwner:IsEnemy(unit:GetOwner()) then
+            table.insert(targets, unit)
+            Boss.aggresive = true
+        end
+    end)
+    if Boss.aggresive then
+        local target = Boss:SelectbyMinHP(targets)
+        Boss:IssueTargetOrderById(851983, target)
+        -- print(self.unitid)
+        for i, value in pairs(self.abilities) do
+            -- treeLog:Info(" spell"..i)
+            if Boss:GetCooldown(value.id, 0) == 0 then
+                -- treeLog:Info("range "..value.params.duration())
+                local target = Boss:SelectbyMinMana(targets)
+                Boss:IssueTargetOrderById(OrderId('absorb'), target)
+                break
+            end
+        end
+    else
+        Boss:GotoNodeAgain()
+    end
+end
+
+function DrainMana:ctor(definition, caster)
+    self.affected = {}
+    self.bonus = 0
+    Spell.ctor(self, definition, caster)
+end
+
+function DrainMana:Cast()
+    self.target =  WC3.Unit.GetSpellTarget()
+    local x, y = self.target:GetX(), self.target:GetY()
+    treeLog:Info("Pos "..x.." "..y)
+    --treeLog:Info("Caster Owner "..self.caster:GetOwner().handle)
+    self.dummy = WC3.Unit(self.caster:GetOwner(), FourCC("bs00") , x, y, 0)
+    self.dummy:SetMoveSpeed(self.dummySpeed)
+    local timer = WC3.Timer()
+    timer:Start(self.period, true, function()
+        if self.caster:GetHP() <= 0 then
+            timer:Destroy()
+            self:End()
+            return
+        end
+        self.duration = self.duration - self.period
+        -- treeLog:Info("Duration "..self.duration)
+
+        self:Effect()
+        self:Drain()
+
+        if self.duration <= 0 then
+            timer:Destroy()
+            self:End()
+        end
+    end)
+end
+
+function DrainMana:Effect()
+    WC3.Unit.EnumInRange(self.dummy:GetX(), self.dummy:GetY(), self.radius, function(unit)
+        if self.caster ~= unit and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+        table.insert(self.affected,{unit = unit})
+        end
+    end)
+    local x, y = self.target:GetX(), self.target:GetY()
+    self.dummy:IssuePointOrderById(851986, x, y)
+end
+
+function DrainMana:AutoCast()
+    if self.aggresive then
+        local Boss = self.caster
+        treeLog:Info("Choose aim")
+        local target = Boss:SelectbyMinHP()
+        treeLog:Info("target in : "..target:PosX().." "..target:PosY())
+        return true
+    end
+    return false
+end
+
+function DrainMana:Drain()
+    local sumHP = 0
+    for _, target in pairs(self.affected) do
+        local currentMana = target.unit:GetMana()
+        local residualMana = math.max(currentMana - self.leachMana * self.period, 0)
+        sumHP =  sumHP + self.leachHP * self.period * ((currentMana - residualMana)/ self.leachMana)
+        target.unit:SetMana(residualMana)
+    end
+    self.caster:SetHP(self.caster:GetHP() + sumHP)
+end
+
+
+function DrainMana:End()
+    self.dummy:Destroy()
+end
+
+return DefiledTree
+end)
+-- End of file Bosses\DefiledTree.lua
+-- Start of file Core\BossPreset.lua
+Module("Core.BossPreset", function()
+local Class = require("Class")
+local Log = require("Log")
+local Stats = require("Core.Stats")
+local Boss = require("Core.Boss")
+local Unit = require("WC3.Unit")
+local CreepPreset = require("Core.CreepPreset")
+local Timer = require("WC3.Timer")
+
+local BossPresetLog = Log.Category("Boss\\BossPreset", {
+    printVerbosity = Log.Verbosity.Trace,
+    fileVerbosity = Log.Verbosity.Trace,
+    })
+
+local BossPreset = Class(CreepPreset)
+
+function BossPreset:ctor()
+    self.secondaryStats = Stats.Secondary()
+
+    self.abilities = {}
+
+    self.secondaryStats.health = 50
+    self.secondaryStats.mana = 2
+    self.secondaryStats.healthRegen = 1
+    self.secondaryStats.manaRegen = 1
+
+    self.secondaryStats.weaponDamage = 15
+    self.secondaryStats.attackSpeed = 0.5
+    self.secondaryStats.physicalDamage = 1
+    self.secondaryStats.spellDamage = 1
+
+    self.secondaryStats.armor = 5
+    self.secondaryStats.evasion = 0.3
+    self.secondaryStats.block = 0
+    self.secondaryStats.ccResist = 0
+    self.secondaryStats.spellResist = 0.3
+
+    self.secondaryStats.movementSpeed = 1
+
+    self.class = Boss
+end
+
+function BossPreset:Spawn(owner, x, y, facing,  level, herocount)
+    local boss = CreepPreset.Spawn(self, owner, x, y, facing,  level, herocount);
+    BossPresetLog:Info("Spawn Boss")
+    boss.abilities:AddAction(function() self:Cast(Boss) end)
+    print("BossPreset")
+    print(boss)
+
+    -- for i, ability in pairs(self.abilities) do
+    --     BossPresetLog:Info("Number "..i)
+    --     if ability.availableFromStart then
+    --         boss:AddAbility(ability.id)
+    --     end
+    -- end
+    print("BossPreset after spell adding")
+    print(boss)
+    return boss
+end
+
+
+function BossPreset:Cast(Boss)
+    local abilityId = GetSpellAbilityId()
+    for _, ability in pairs(self.abilities) do
+        if type(ability.id) == "table" then
+            for _, id in pairs(ability.id) do
+                if id == abilityId then
+                    ability:handler(Boss)
+                    break
+                end
+            end
+        else
+            if ability.id == abilityId then
+                ability:handler(Boss)
+                break
+            end
+        end
+    end
+end
+
+Log("Creep load succsesfull")
+return BossPreset
+end)
+-- End of file Core\BossPreset.lua
 -- Start of file Core\BossPreset.lua
 Module("Core.BossPreset", function()
 local Class = require("Class")

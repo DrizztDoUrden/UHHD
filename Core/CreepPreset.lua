@@ -34,8 +34,8 @@ function CreepPreset:Spawn(owner, x, y, facing, level, herocount)
     creep.secondaryStats = self.secondaryStats
     creep:Scale(level, herocount)
     creep:ApplyStats()
-    print(" CreepPreset")
-    print(creep)
+    -- print(" CreepPreset")
+    -- print(creep)
     return creep
 end
 

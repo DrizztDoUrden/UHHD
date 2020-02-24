@@ -270,6 +270,8 @@ end
 function Unit:IssueTargetOrderById(order, target)
     if math.type(order) == "integer" then
         local result = IssueTargetOrderById(self.handle, order, target.handle)
+    else 
+        error("order should be integer", 2)
     end
 end
 

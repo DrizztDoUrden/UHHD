@@ -41,11 +41,12 @@ function CreepSpawner:SpawnNewWave(level, herocount)
         for j = 1, unit["count"] do
             local creepPresetClass = CreepClasses[unit["unit"]]
             local creepPreset = creepPresetClass
+            -- print(creepPreset)
             local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing, level, herocount)
-            print(creepPreset.unitid == CreepClasses.DefiledTree.unitid)
-            -- local x, y = self.prev:GetCenter()
-            print(creep)
-            -- creep:OrderToAttack(x, y)
+            -- print(creepPreset.unitid == CreepClasses.DefiledTree.unitid)
+            local x, y = self.prev:GetCenter()
+            -- print(creep)
+            creep:OrderToAttack(x, y)
             acc = acc + 1
         end
     end

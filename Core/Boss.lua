@@ -23,8 +23,9 @@ local BossLog = Log.Category("Boss\\Boss", {
         self.abilities = WC3.Trigger() 
         self.abilities:RegisterUnitSpellEffect(self)
         self.toDestroy[self.abilities] = true
+        self.AggroTimer = Timer()
+        self.toDestroy[self.AggroTimer] = true
     end
-
 
 
     function Boss:Destroy()
@@ -46,31 +47,5 @@ local BossLog = Log.Category("Boss\\Boss", {
         end
     end
 
-    function Boss:SelectbyMinHP(list)
-        local minHP = list[1]:GetHP()
-        local unitWithMinHP = list[1]
-        for _, unit in pairs(list) do
-            local hp = unit:GetHP()
-            if minHP > hp then
-                unitWithMinHP = unit
-                minHP = hp
-            end
-        end
-        -- BossLog:Info("unit"..unitWithMinHP:GetX())
-        return unitWithMinHP
-    end
-
-    function Boss:SelectbyMinMana(list)
-        local minMana = list[1]:GetMana()
-        local unitWithMinMana = list[1]
-        for _, unit in pairs(list) do
-            local mana = unit:GetMana()
-            if minMana > mana then
-                unitWithMinMana = unit
-                minMana = mana
-            end
-        end
-        return unitWithMinMana
-    end
 
 return Boss

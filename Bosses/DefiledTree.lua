@@ -35,49 +35,16 @@ function DefiledTree:ctor()
                 leachMana = function (_) return 3 * self.secondaryStats.spellDamage end,
                 leachHP = function (_) return 6 * self.secondaryStats.spellDamage end,
                 dummySpeed = function (_) return 0.6 end,
-                range = function (_) return 599 end
-            }
+                range = function (_) return 599 end,
+            },
+            idforCast = "absorb",
+            GetPriority = function (_, caster)
+                return function(target) return target:GetMana() / (3 * 10 * caster.secondaryStats.spellDamage) end end
         }
     }
     self.unitid = FourCC('bu01')
 end
 
-function DefiledTree:Spawn(...)
-    Boss = BossPreset.Spawn(self, ...)
-    local timerAttack = WC3.Timer()
-    Boss.toDestroy[timerAttack] = true
-    timerAttack:Start(1, true, function()
-        self:SelectAims()
-    end)
-end
-
-function DefiledTree:SelectAims()
-    local x, y = Boss:GetX(), Boss:GetY()
-    local bosOwner = Boss:GetOwner()
-    local targets = {}
-    WC3.Unit.EnumInRange(x, y, 700, function(unit)
-        if bosOwner:IsEnemy(unit:GetOwner()) then
-            table.insert(targets, unit)
-            Boss.aggresive = true
-        end
-    end)
-    if Boss.aggresive then
-        local target = Boss:SelectbyMinHP(targets)
-        Boss:IssueTargetOrderById(851983, target)
-        -- print(self.unitid)
-        for i, value in pairs(self.abilities) do
-            -- treeLog:Info(" spell"..i)
-            if Boss:GetCooldown(value.id, 0) == 0 then
-                -- treeLog:Info("range "..value.params.duration())
-                local target = Boss:SelectbyMinMana(targets)
-                Boss:IssueTargetOrderById(OrderId('absorb'), target)
-                break
-            end
-        end
-    else
-        Boss:GotoNodeAgain()
-    end
-end
 
 function DrainMana:ctor(definition, caster)
     self.affected = {}
@@ -88,8 +55,8 @@ end
 function DrainMana:Cast()
     self.target =  WC3.Unit.GetSpellTarget()
     local x, y = self.target:GetX(), self.target:GetY()
-    treeLog:Info("Pos "..x.." "..y)
-    --treeLog:Info("Caster Owner "..self.caster:GetOwner().handle)
+    -- treeLog:Info("Pos "..x.." "..y)
+    -- treeLog:Info("Caster Owner "..self.caster:GetOwner().handle)
     self.dummy = WC3.Unit(self.caster:GetOwner(), FourCC("bs00") , x, y, 0)
     self.dummy:SetMoveSpeed(self.dummySpeed)
     local timer = WC3.Timer()
@@ -120,17 +87,6 @@ function DrainMana:Effect()
     end)
     local x, y = self.target:GetX(), self.target:GetY()
     self.dummy:IssuePointOrderById(851986, x, y)
-end
-
-function DrainMana:AutoCast()
-    if self.aggresive then
-        local Boss = self.caster
-        treeLog:Info("Choose aim")
-        local target = Boss:SelectbyMinHP()
-        treeLog:Info("target in : "..target:PosX().." "..target:PosY())
-        return true
-    end
-    return false
 end
 
 function DrainMana:Drain()
