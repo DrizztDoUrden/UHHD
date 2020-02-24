@@ -26,11 +26,11 @@ function CreepPreset:ctor()
     self.secondaryStats.spellResist = 0.3
 
     self.secondaryStats.movementSpeed = 1
-    self.class = Creep
+    -- self.class = Creep
 end
 
 function CreepPreset:Spawn(owner, x, y, facing, level, herocount)
-    local creep = self.class(owner, self.unitid, x, y, facing);
+    local creep = Creep(owner, self.unitid, x, y, facing);
     creep.secondaryStats = self.secondaryStats
     creep:Scale(level, herocount)
     creep:ApplyStats()

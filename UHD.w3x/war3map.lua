@@ -516,7 +516,7 @@ local BossLog = Log.Category("Boss\\Boss", {
     fileVerbosity = Log.Verbosity.Trace,
     })
 
-    local Boss = Class(Creep)
+    local Boss = Class(UHDUnit)
 
     function Boss:ctor(...)
         UHDUnit.ctor(self, ...)
@@ -570,7 +570,7 @@ local BossPresetLog = Log.Category("Boss\\BossPreset", {
     fileVerbosity = Log.Verbosity.Trace,
     })
 
-local BossPreset = Class(CreepPreset)
+local BossPreset = Class()
 
 function BossPreset:ctor()
     self.secondaryStats = Stats.Secondary()
@@ -595,13 +595,15 @@ function BossPreset:ctor()
 
     self.secondaryStats.movementSpeed = 1
 
-    self.class = Boss
+    -- self.class = Boss
 end
 
 function BossPreset:Spawn(owner, x, y, facing,  level, herocount)
-    local boss = CreepPreset.Spawn(self, owner, x, y, facing,  level, herocount);
+    local boss = Boss(self, owner, x, y, facing,  level, herocount);
     -- BossPresetLog:Info("Spawn Boss")
+    boss:ApplyStats()
     boss.abilities:AddAction(function() self:Cast(boss) end)
+
     -- print("BossPreset")
     -- print(boss)
     
@@ -794,16 +796,16 @@ function CreepPreset:ctor()
     self.secondaryStats.spellResist = 0.3
 
     self.secondaryStats.movementSpeed = 1
-    self.class = Creep
+    -- self.class = Creep
 end
 
 function CreepPreset:Spawn(owner, x, y, facing, level, herocount)
-    local creep = self.class(owner, self.unitid, x, y, facing);
+    local creep = Creep(owner, self.unitid, x, y, facing);
     creep.secondaryStats = self.secondaryStats
     creep:Scale(level, herocount)
     creep:ApplyStats()
-    print(" CreepPreset")
-    print(creep)
+    -- print(" CreepPreset")
+    -- print(creep)
     return creep
 end
 
@@ -1482,8 +1484,8 @@ function WaveObserver:ctor(owner)
         if self.creepSpawner1:HasNextWave(self.level) then
             self.level = self.level + 1
             logWaveObserver:Info("Bos spawn")
-            self.creepSpawner1:SpawnNewWave(self.level - 1, 2)
-            self.creepSpawner2:SpawnNewWave(self.level - 1, 2)
+            -- self.creepSpawner1:SpawnNewWave(self.level - 1, 2)
+            -- self.creepSpawner2:SpawnNewWave(self.level - 1, 2)
             if self.creepSpawner1:HasNextWave(self.level) then
                 wavetimer:Start(5, true, function()
                     self:StartGeneralWave()
@@ -1510,7 +1512,7 @@ end
             self.creepcount = self.creepcount + self.creepSpawner2:SpawnNewWave(self.level - 1, 2)
             if math.floor(self.level/10) == self.level/10 then
                 self.needtokillallcreep = true
-                logWaveObserver:Info("Next Boss")
+                -- logWaveObserver:Info("Next Boss")
                 self:Destroy()
             end
         end
@@ -1528,8 +1530,8 @@ local Log = require("Log")
 
     local waveComposition = { 
         [1] = {{
-            count = 1,
-            unit = "DefiledTree",
+            count = 4,
+            unit = "Ghoul",
             ability = nil
         }},
         [2] = {{
@@ -1611,11 +1613,11 @@ local Class = require("Class")
 local Node = require("Core.Node.Node")
 local waveComopsion = require("Core.WaveSpecification")
 local CreepClasses = {
-    MagicDragon = require("Creeps.MagicDragon")(), 
-    Faceless = require("Creeps.Faceless")(),
-    Ghoul = require("Creeps.Ghoul")(),
-    Necromant = require("Creeps.Necromant")(),
-    DefiledTree = require("Bosses.DefiledTree")()}
+    MagicDragon = require("Creeps.MagicDragon"), 
+    Faceless = require("Creeps.Faceless"),
+    Ghoul = require("Creeps.Ghoul"),
+    Necromant = require("Creeps.Necromant"),
+    DefiledTree = require("Bosses.DefiledTree")}
 
 local CreepSpawner = Class(Node)
 
@@ -1650,7 +1652,7 @@ function CreepSpawner:SpawnNewWave(level, herocount)
             local creepPresetClass = CreepClasses[unit["unit"]]
             local creepPreset = creepPresetClass
             -- print(creepPreset)
-            local creep = creepPreset:Spawn(self.owner, self.x, self.y, self.facing, level, herocount)
+            local creep = creepPreset():Spawn(self.owner, self.x, self.y, self.facing, level, herocount)
             -- print(creepPreset.unitid == CreepClasses.DefiledTree.unitid)
             local x, y = self.prev:GetCenter()
             -- print(creep)

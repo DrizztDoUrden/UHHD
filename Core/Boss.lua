@@ -12,7 +12,7 @@ local BossLog = Log.Category("Boss\\Boss", {
     fileVerbosity = Log.Verbosity.Trace,
     })
 
-    local Boss = Class(Creep)
+    local Boss = Class(UHDUnit)
 
     function Boss:ctor(...)
         UHDUnit.ctor(self, ...)

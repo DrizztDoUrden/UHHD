@@ -11,7 +11,7 @@ local BossPresetLog = Log.Category("Boss\\BossPreset", {
     fileVerbosity = Log.Verbosity.Trace,
     })
 
-local BossPreset = Class(CreepPreset)
+local BossPreset = Class()
 
 function BossPreset:ctor()
     self.secondaryStats = Stats.Secondary()
@@ -36,13 +36,15 @@ function BossPreset:ctor()
 
     self.secondaryStats.movementSpeed = 1
 
-    self.class = Boss
+    -- self.class = Boss
 end
 
 function BossPreset:Spawn(owner, x, y, facing,  level, herocount)
-    local boss = CreepPreset.Spawn(self, owner, x, y, facing,  level, herocount);
+    local boss = Boss(self, owner, x, y, facing,  level, herocount);
     -- BossPresetLog:Info("Spawn Boss")
+    boss:ApplyStats()
     boss.abilities:AddAction(function() self:Cast(boss) end)
+
     -- print("BossPreset")
     -- print(boss)
     

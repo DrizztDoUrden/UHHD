@@ -39,8 +39,8 @@ function WaveObserver:ctor(owner)
         if self.creepSpawner1:HasNextWave(self.level) then
             self.level = self.level + 1
             logWaveObserver:Info("Bos spawn")
-            self.creepSpawner1:SpawnNewWave(self.level - 1, 2)
-            self.creepSpawner2:SpawnNewWave(self.level - 1, 2)
+            -- self.creepSpawner1:SpawnNewWave(self.level - 1, 2)
+            -- self.creepSpawner2:SpawnNewWave(self.level - 1, 2)
             if self.creepSpawner1:HasNextWave(self.level) then
                 wavetimer:Start(5, true, function()
                     self:StartGeneralWave()
@@ -67,7 +67,7 @@ end
             self.creepcount = self.creepcount + self.creepSpawner2:SpawnNewWave(self.level - 1, 2)
             if math.floor(self.level/10) == self.level/10 then
                 self.needtokillallcreep = true
-                logWaveObserver:Info("Next Boss")
+                -- logWaveObserver:Info("Next Boss")
                 self:Destroy()
             end
         end
