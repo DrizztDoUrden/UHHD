@@ -427,6 +427,40 @@ function RemoveLocation(loc) end
 
 function RemovePlayer(whichPlayer, PLAYER_GAME_RESULT) end
 
+function CreateItem(itemid, x, y) end
+
+function RemoveItem(whichItem) end
+
+function GetItemPlayer(whichItem) end
+
+function GetItemX(whichItem) end
+
+function GetItemY(whichItem) end
+
+function GetItemY(whichItem) end
+
+function GetItemName(whichItem) end
+
+function SetItemPosition(whichItem, x, y) end
+
+function BlzItemAddAbility(wwhichUnit, abilId) end
+
+function BlzItemRemoveAbility (whichUnit, abilId) end
+
+function UnitItemInSlot(whichUnit, slot) end
+
+function UnitRemoveItemFromSlot(whichUnit, slot) end
+
+function UnitAddItem(whichUnit, whichItem) end
+
+function UnitHasItem(whichUnit, whichItem) end
+
+function UnitAddItemById( whichUnit, itemId) end
+
+function UnitDropItemTarget(whicUnit, whichItem, widget) end
+
+function UnitInventorySize(whichUnit) end
+
 function EndGame(isShowScore) end
 
 function ClearSelection() end

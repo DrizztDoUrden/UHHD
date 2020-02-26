@@ -2,8 +2,8 @@ local Log = require("Log")
 
     local waveComposition = { 
         [1] = {{
-            count = 1,
-            unit = "DefiledTree",
+            count = 4,
+            unit = "Ghoul",
             ability = nil
         }},
         [2] = {{

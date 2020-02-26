@@ -785,7 +785,6 @@ local creepLog = Log.Category("CreepSpawner\\CreepSpawnerr", {
         --creepLog:Info("multiplier "..mult)
         self.secondaryStats.health = mult * self.secondaryStats.health
         self.secondaryStats.physicalDamage = mult * self.secondaryStats.physicalDamage
-        self.secondaryStats.armor = mult * self.secondaryStats.armor
     end
 
 
@@ -1504,26 +1503,26 @@ function WaveObserver:ctor(owner)
     
     local triggercheckalldead = Trigger()
     triggercheckalldead:RegisterPlayerUnitEvent(owner, EVENT_PLAYER_UNIT_DEATH, nil)
-    -- triggercheckalldead:AddAction(function ()
-    -- if self.creepcount == 0 and self.needtokillallcreep then
-    --     if self.creepSpawner1:HasNextWave(self.level) then
-    --         self.level = self.level + 1
-    --         logWaveObserver:Info("Bos spawn")
-    --         -- self.creepSpawner1:SpawnNewWave(self.level - 1, 2)
-    --         -- self.creepSpawner2:SpawnNewWave(self.level - 1, 2)
-    --         if self.creepSpawner1:HasNextWave(self.level) then
-    --             wavetimer:Start(5, true, function()
-    --                 self:StartGeneralWave()
-    --             end)
-    --         end
-    --     else
-    --         wcplayer.PlayersEndGame(true)
-    --     end
-    -- end
-    -- end)
+    triggercheckalldead:AddAction(function ()
+    if self.creepcount == 0 and self.needtokillallcreep then
+        if self.creepSpawner1:HasNextWave(self.level) then
+            self.level = self.level + 1
+            logWaveObserver:Info("Bos spawn")
+            self.creepSpawner1:SpawnNewWave(self.level - 1, 2)
+            self.creepSpawner2:SpawnNewWave(self.level - 1, 2)
+            if self.creepSpawner1:HasNextWave(self.level) then
+                wavetimer:Start(5, true, function()
+                    self:StartGeneralWave()
+                end)
+            end
+        else
+            wcplayer.PlayersEndGame(true)
+        end
+    end
+    end)
 
     Log(" Create Timer")
-    wavetimer:Start(5, true, function()
+    wavetimer:Start(25, true, function()
         self:StartGeneralWave(wavetimer)
     end)
 
@@ -1555,8 +1554,8 @@ local Log = require("Log")
 
     local waveComposition = { 
         [1] = {{
-            count = 1,
-            unit = "DefiledTree",
+            count = 4,
+            unit = "Ghoul",
             ability = nil
         }},
         [2] = {{
@@ -1784,7 +1783,7 @@ function MagicDragon:ctor()
     CreepPreset.ctor(self)
     self.secondaryStats.health = 20
     self.secondaryStats.mana = 10
-    self.secondaryStats.weaponDamage = 3
+    self.secondaryStats.weaponDamage = 2
     self.secondaryStats.evasion = 0.15
     
     self.unitid = FourCC('e004')
@@ -1827,7 +1826,7 @@ function MagicDragon:ctor()
     CreepPreset.ctor(self)
     self.secondaryStats.health = 10
     self.secondaryStats.mana = 5
-    self.secondaryStats.weaponDamage = 6
+    self.secondaryStats.weaponDamage = 4
     self.secondaryStats.evasion = 0.1
     self.unitid = FourCC('e000')
 end
@@ -1848,7 +1847,7 @@ function MagicDragon:ctor()
     CreepPreset.ctor(self)
     self.secondaryStats.health = 20
     self.secondaryStats.mana = 5
-    self.secondaryStats.weaponDamage = 4
+    self.secondaryStats.weaponDamage = 3
     self.secondaryStats.evasion = 0
     self.unitid = FourCC('e003')
 end
@@ -2689,6 +2688,77 @@ local WC3 = {
 return WC3
 end)
 -- End of file WC3\All.lua
+-- Start of file WC3\Item.lua
+Module("WC3.Item", function()
+local Class = require("Class")
+local Log = require("Log")
+local Item = Class()
+local Playr = require("WC3.Player")
+
+local items = {}
+
+local logUnit = Log.Category("WC3\\Unit")
+
+local function Get(handle)
+    local existing = items[handle]
+    if existing then
+        return existing
+    end
+    return Item(handle)
+end
+
+function Item:ctor(...)
+    local params = { ... }
+    if #params == 1 then
+        self.handle = params[1]
+    else
+        local itemid, x, y = ...
+        self.handle = CreateItem(itemid, x, y)
+    end
+    self:Register()
+    self.toDestroy = {}
+end
+
+function Item.GetSold()
+    Get(GetSoldUnit)
+end
+
+function Item:Register()
+    if items[self.handle] then
+        error("Attempt to reregister a unit", 3)
+    end
+    items[self.handle] = self
+end
+
+function Item:Destroy()
+    items[self.handle] = nil
+    RemoveItem(self.handle)
+    for item in pairs(self.toDestroy) do 
+        item:Destroy()
+    end
+end
+
+function Item:GetX()
+    return GetItemX(self.handle)
+end
+
+function Item:GetY()
+    return GetItemY(self.handle)
+end
+
+function Item:SetPos(x, y)
+    return SetItemPosition(self.handle, x, y)
+end
+
+function Item:GetName()
+    return GetItemName(self.handle)
+end
+
+function Item:GetPlayer()
+    return GetItemPlayer(self.handle)
+end
+end)
+-- End of file WC3\Item.lua
 -- Start of file WC3\Location.lua
 Module("WC3.Location", function()
 local Class = require("Class")

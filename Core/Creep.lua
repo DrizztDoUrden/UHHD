@@ -25,7 +25,6 @@ local creepLog = Log.Category("CreepSpawner\\CreepSpawnerr", {
         --creepLog:Info("multiplier "..mult)
         self.secondaryStats.health = mult * self.secondaryStats.health
         self.secondaryStats.physicalDamage = mult * self.secondaryStats.physicalDamage
-        self.secondaryStats.armor = mult * self.secondaryStats.armor
     end
 
 

@@ -34,26 +34,26 @@ function WaveObserver:ctor(owner)
     
     local triggercheckalldead = Trigger()
     triggercheckalldead:RegisterPlayerUnitEvent(owner, EVENT_PLAYER_UNIT_DEATH, nil)
-    -- triggercheckalldead:AddAction(function ()
-    -- if self.creepcount == 0 and self.needtokillallcreep then
-    --     if self.creepSpawner1:HasNextWave(self.level) then
-    --         self.level = self.level + 1
-    --         logWaveObserver:Info("Bos spawn")
-    --         -- self.creepSpawner1:SpawnNewWave(self.level - 1, 2)
-    --         -- self.creepSpawner2:SpawnNewWave(self.level - 1, 2)
-    --         if self.creepSpawner1:HasNextWave(self.level) then
-    --             wavetimer:Start(5, true, function()
-    --                 self:StartGeneralWave()
-    --             end)
-    --         end
-    --     else
-    --         wcplayer.PlayersEndGame(true)
-    --     end
-    -- end
-    -- end)
+    triggercheckalldead:AddAction(function ()
+    if self.creepcount == 0 and self.needtokillallcreep then
+        if self.creepSpawner1:HasNextWave(self.level) then
+            self.level = self.level + 1
+            logWaveObserver:Info("Bos spawn")
+            self.creepSpawner1:SpawnNewWave(self.level - 1, 2)
+            self.creepSpawner2:SpawnNewWave(self.level - 1, 2)
+            if self.creepSpawner1:HasNextWave(self.level) then
+                wavetimer:Start(5, true, function()
+                    self:StartGeneralWave()
+                end)
+            end
+        else
+            wcplayer.PlayersEndGame(true)
+        end
+    end
+    end)
 
     Log(" Create Timer")
-    wavetimer:Start(5, true, function()
+    wavetimer:Start(25, true, function()
         self:StartGeneralWave(wavetimer)
     end)
 
