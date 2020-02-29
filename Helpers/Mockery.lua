@@ -33,6 +33,8 @@ EVENT_UNIT_SPELL_FINISH = {}
 EVENT_UNIT_DEATH = {}
 EVENT_UNIT_HERO_LEVEL = {}
 EVENT_UNIT_SELL = {}
+EVENT_UNIT_DROP_ITEM = {}
+EVENT_UNIT_PICKUP_ITEM = {}
 
 EVENT_PLAYER_UNIT_DEATH = {}
 EVENT_PLAYER_UNIT_DAMAGING = {}
@@ -460,6 +462,8 @@ function UnitAddItemById( whichUnit, itemId) end
 function UnitDropItemTarget(whicUnit, whichItem, widget) end
 
 function UnitInventorySize(whichUnit) end
+
+function GetManipulatedItem() end
 
 function EndGame(isShowScore) end
 

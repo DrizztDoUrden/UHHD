@@ -1,6 +1,7 @@
 UHDUnit = require("Core.UHDUnit")
 WC3 = require("WC3.All")
 Class = require("Class")
+UHDItem = require("Core.UHDItem")
 
 
 local UHDUnitWInventory = Class(UHDUnit)
@@ -14,8 +15,37 @@ local UHDUnitWInventory = Class(UHDUnit)
             Weapon = nil,
             Arms = nil,
             legs = nil}
-        UHDUnit.ctor(...)
+        UHDUnit.ctor(self, ...)
         self.invetory = {}
+        local triggerUnitPickUPItem = WC3.Trigger()
+        triggerUnitPickUPItem:RegisterUnitPickUpItem(self)
+        triggerUnitPickUPItem:AddAction(function() self:GetItem(UHDItem.GetManipulatedItem()) end)
+        local triggerUnitDropItem = WC3.Trigger()
+        triggerUnitDropItem:RegisterUnitDropItem()
+        triggerUnitDropItem:AddAction(function() self:RemoveItemStats(UHDItem.GetManipulatedItem()) end)
+        self.toDestroy[triggerUnitDropItem] = true
+        self.toDestroy[triggerUnitDropItem] = true
+    end
+
+
+    function UHDUnitWInventory:SearchNewItem()
+        local resultList = {}
+        UHDUnit.EnumItems(self, function (item) resultList[item] = true end)
+        for item in pairs(resultList) do
+            if ~self:HasItem(item) then
+                self.invetory = resultList
+                return item
+            end
+        end
+    end
+
+    function UHDUnitWInventory:HasItem(item)
+        for litem in pairs(self.invetory) do
+            if item == litem then
+                return true
+            end
+        end
+        return false
     end
 
     function UHDUnitWInventory:CheckAvaileItemToAdd(item)
@@ -43,6 +73,9 @@ local UHDUnitWInventory = Class(UHDUnit)
         local maxInventory = self:GetInventorySize()
         if #self.invetory <= maxInventory then
             self.invetory[item]  = true
+            if self:CheckAvaileItemToAdd(item) then
+                self:GetItem(item)
+            end
         else
             self:LeaveItem(item)
         end

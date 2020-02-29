@@ -35,6 +35,10 @@ function Item.GetSold()
     Get(GetSoldUnit)
 end
 
+function Item.GetManipulatedItem()
+    Get(GetManipulatedItem())
+end
+
 function Item:Register()
     if items[self.handle] then
         error("Attempt to reregister a unit", 3)

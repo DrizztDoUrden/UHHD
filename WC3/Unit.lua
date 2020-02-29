@@ -1,7 +1,7 @@
 local Class = require("Class")
 local WCPlayer = require("WC3.Player")
 local Log = require("Log")
-local WCItem = require("WC3.Item")
+local Item = require("WC3.Item")
 
 
 local Unit = Class()
