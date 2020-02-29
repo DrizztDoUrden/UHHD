@@ -1170,6 +1170,45 @@ return HeroPreset
 
 end)
 -- End of file Core\HeroPreset.lua
+-- Start of file Core\Item.lua
+Module("Core.Item", function()
+
+Stats = require("Core.Stats")
+Class = require("Class")
+All = require("WC3.All")
+
+
+Item = Class()
+
+local customItemAvailability = {
+    General = "inf",
+    Helmet = 1,
+    BodyArmor = 1,
+    Weapon = 1,
+    Arms = 2,
+    legs = 1}
+
+function Item:ctor(itemid)
+    All.Item.ctor(itemid)
+    self.itemid = FourCC(itemid)
+    self.type = "general"
+    self.additionalSecondaryStats = Stats()
+    self.additionalBasicStats = Stats()
+    self.modules = {}
+end
+
+function Item.checkAvailabilityToAdd(unit, itemType)
+    if customItemAvailability[itemType] == "inf" then
+        return true
+    end
+end
+
+
+function Item:pass()
+
+end
+end)
+-- End of file Core\Item.lua
 -- Start of file Core\Spell.lua
 Module("Core.Spell", function()
 local Class = require "Class"
@@ -1465,6 +1504,11 @@ end)
 return UHDUnit
 end)
 -- End of file Core\UHDUnit.lua
+-- Start of file Core\UHDUnitWithInventory.lua
+Module("Core.UHDUnitWithInventory", function()
+
+end)
+-- End of file Core\UHDUnitWithInventory.lua
 -- Start of file Core\WaveObserver.lua
 Module("Core.WaveObserver", function()
 local Class = require("Class")
@@ -2707,6 +2751,10 @@ local function Get(handle)
     return Item(handle)
 end
 
+function Item.GetItemInSlot(unithandle, slot)
+    Get(UnitItemInSlot(unithandle, slot))
+end
+
 function Item:ctor(...)
     local params = { ... }
     if #params == 1 then
@@ -2754,9 +2802,34 @@ function Item:GetName()
     return GetItemName(self.handle)
 end
 
+function Item:AddAbility(id)
+        if math.type(id) then
+            return BlzItemAddAbility(self.handle, math.tointeger(id))
+        else
+            error("Abilityid should be an integer (" .. type(id) .. ")", 2)
+            return false
+        end
+end
+
+function Item:RemoveAbility(id)
+    if math.type(id) then
+        return BlzItemRemoveAbility(self.handle, math.tointeger(id))
+    else
+        error("Abilityid should be an integer (" .. type(id) .. ")", 2)
+        return false
+    end
+end
+
 function Item:GetPlayer()
     return GetItemPlayer(self.handle)
 end
+
+
+function Item.GetInSlot(handle, slot)
+    return Get(UnitItemInSlot(handle, slot))
+end
+
+return Item
 end)
 -- End of file WC3\Item.lua
 -- Start of file WC3\Location.lua
@@ -3062,10 +3135,14 @@ Module("WC3.Unit", function()
 local Class = require("Class")
 local WCPlayer = require("WC3.Player")
 local Log = require("Log")
+local WCItem = require("WC3.Item")
+
 
 local Unit = Class()
 
 local units = {}
+
+
 
 local logUnit = Log.Category("WC3\\Unit")
 
@@ -3248,6 +3325,36 @@ function Unit:AddAbility(id)
     end
 end
 
+function Unit:EnumItems(handler)
+    local invetorySize = self:GetInventorySize()
+    for key=0,invetorySize-1 do
+        local result, err = pcall(handler, self:GetItemInSlot(key))
+        if not result then
+            logUnit:Error("Error enumerating units in range: " .. err)
+        end
+    end
+end
+
+function Unit:GetItemInSlot(slot)
+    if math.type(slot) == "integer" then
+        Item.GetInSlot(self.handle, slot)
+    else
+        error("Slot should be integer")
+    end
+end
+
+function Unit:RemoveItemFromSlot(itemSlot)
+    return UnitRemoveItemFromSlot(self.handle, itemSlot)
+end
+
+function Unit:DropItemTarget(item, widget)
+    UnitDropItemTarget(self.handle, item.handle, widget.handle)
+end
+
+function Unit:HasItem(item)
+    return UnitHasItem(self.handle, item.handle)
+end
+
 function Unit:RemoveAbility(id)
     if math.type(id) then
         return UnitRemoveAbility(self.handle, math.tointeger(id))
@@ -3376,6 +3483,7 @@ function Unit:SetCooldownRemaining(abilityId, value)
     return BlzStartUnitAbilityCooldown(self.handle, abilityId, value)
 end
 
+function Unit:GetInventorySize() return UnitInventorySize(self.handle) end
 function Unit:GetName() return GetUnitName(self.handle) end
 function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end
 function Unit:GetX() return GetUnitX(self.handle) end

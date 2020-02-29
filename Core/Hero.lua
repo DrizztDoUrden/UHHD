@@ -45,6 +45,7 @@ function Hero:ctor(...)
     self.talents = {}
 
 
+
     self.baseSecondaryStats.health = 100
     self.baseSecondaryStats.mana = 100
     self.baseSecondaryStats.healthRegen = .5

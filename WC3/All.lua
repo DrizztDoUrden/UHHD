@@ -7,6 +7,7 @@ local WC3 = {
     Timer = require("WC3.Timer"),
     Trigger = require("WC3.Trigger"),
     Unit = require("WC3.Unit"),
+    Item = require("WC3.Item")
 }
 
 return WC3
