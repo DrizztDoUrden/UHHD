@@ -345,17 +345,17 @@ end
 function DarkMend:Cast()
     local timer = Timer()
     local timeLeft = self.duration
-    local curHp = self.caster:GetHP();
-    local part = 1 / math.floor(self.period / self.duration)
-    self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * self.instantHeal)
+    local ticks = self.duration // self.period
+    self.caster:Heal(self.caster, (self.caster:GetHP() * self.percentHeal + self.baseHeal) * self.instantHeal)
     timer:Start(self.period, true, function()
         local curHp = self.caster:GetHP();
         if curHp <= 0 then
             timer:Destroy()
             return
         end
+        print(curHp * self.percentHeal + self.baseHeal, ((curHp * self.percentHeal + self.baseHeal) / ticks) * self.healOverTime)
+        self.caster:Heal(self.caster, ((curHp * self.percentHeal + self.baseHeal) / ticks) * self.healOverTime)
         timeLeft = timeLeft - self.period
-        self.caster:Heal(self.caster, (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime)
         if timeLeft <= 0 then
             timer:Destroy()
         end
