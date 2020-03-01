@@ -1059,6 +1059,7 @@ function Hero:UpdateSecondaryStats()
     self.secondaryStats.armor = self.baseSecondaryStats.armor + self.bonusSecondaryStats.armor
 end
 
+
 function Hero:ApplyStats()
     self:UpdateSecondaryStats()
     self:SetStr(self.basicStats.strength, true)
@@ -1242,11 +1243,10 @@ local Inventory = Class()
                 amount = amount + 1
             end
         end)
-        print("ammount "..amount)
         if not self.customItemAvailability[ltype] then
             return true
         else
-            print(self.customItemAvailability[ltype])
+            
             if self.customItemAvailability[ltype] < amount + 1 then
                 return false
             else
@@ -1260,20 +1260,24 @@ local Inventory = Class()
     function Inventory:SetItem(item)
         -- print("New item")
         -- print(item)
-        local maxInventory = self.owner:GetInventorySize()
-        if #self.invetory <= maxInventory then
-            if self:CheckAvaileItemToAdd(item) then
-                self:DressItem(item)
-            else
-                self:DropItem(item)
+        if item ~= nil then
+            local maxInventory = self.owner:GetInventorySize()
+            if #self.invetory <= maxInventory then
+                if self:CheckAvaileItemToAdd(item) then
+                    self:DressItem(item)
+                else
+                    self:DropItem(item)
+                end
             end
         end
     end
 
     function Inventory:LeaveItem(item)
-        if self:HasItem(item) then
-            item:RemoveStats(self.owner)
-            self.invetory[item] = nil
+        if  item ~= nil then
+            if self:HasItem(item) then
+                item:RemoveStats(self.owner)
+                self.invetory[item] = nil
+            end
         end
     end
 
@@ -1288,9 +1292,7 @@ local Inventory = Class()
     function Inventory:DropItem(item)
         local itemSlot = self:GetItemSlot(item)
         if itemSlot == nil then
-            error("Error drop undressed Item")
         else
-            print("Remove Item")
             self.owner:RemoveItemFromSlot(itemSlot)
         end
     end
@@ -1345,18 +1347,19 @@ function Shop:AddTrigger()
     self.toDestroy[trigger] = true
     trigger:RegisterPlayerSoldItem(self.owner, self)
     trigger:AddAction(function()
-        print(" you buy")
         local buying = WC3.Unit.GetBying()
         local sold = WC3.Item.GetSold()
         local id = sold:GetTypeId()
         for key, item in pairs(self.itemPresets) do
             if key == id then
                 local newItem = item(x, y)
+                sold:Destroy()
                 buying:AddItem(newItem)
+                break
             end
         end
-        sold:Destroy()
-        logShop:Trace("Item bought with id "..id)
+        
+        -- logShop:Trace("Item bought with id "..id)
     end)
 end
 
@@ -1560,12 +1563,12 @@ function  UHDItem:AddStats(unit)
     unit.bonusSecondaryStats.healthRegen = bonusSecondaryStats.healthRegen + self.bonusSecondaryStats.healthRegen
     unit.bonusSecondaryStats.manaRegen = bonusSecondaryStats.manaRegen + self.bonusSecondaryStats.manaRegen
 
-    -- if UHDItem.type == "Weapon" then
-    --     unit.baseSecondaryStats.weaponDamage = self.baseSecondaryStats.weaponDamage
-    -- else
-    --     unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage * self.bonusSecondaryStats.weaponDamage
-    --     print("WPD "..unit.bonusSecondaryStats.weaponDamage.." " ..bonusSecondaryStats.weaponDamage.." " ..self.bonusSecondaryStats.weaponDamage)
-    -- end
+    if UHDItem.type == "Weapon" then
+        unit.baseSecondaryStats.weaponDamage = self.baseSecondaryStats.weaponDamage
+    else
+        unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage * self.bonusSecondaryStats.weaponDamage
+        -- print("WPD "..unit.bonusSecondaryStats.weaponDamage.." " ..bonusSecondaryStats.weaponDamage.." " ..self.bonusSecondaryStats.weaponDamage)
+    end
 
     unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed * self.bonusSecondaryStats.attackSpeed
     unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage * self.bonusSecondaryStats.physicalDamage
@@ -1587,11 +1590,11 @@ function  UHDItem:RemoveStats(unit)
     unit.bonusSecondaryStats.healthRegen = bonusSecondaryStats.healthRegen - self.bonusSecondaryStats.healthRegen
     unit.bonusSecondaryStats.manaRegen = bonusSecondaryStats.manaRegen - self.bonusSecondaryStats.manaRegen
 
-    -- if UHDItem.type == "Weapon" then
-    --     unit.baseSecondaryStats.weaponDamage = 0
-    -- else
-    --     unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage / self.bonusSecondaryStats.weaponDamage
-    -- end
+    if UHDItem.type == "Weapon" then
+        unit.baseSecondaryStats.weaponDamage = 0
+    else
+        unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage / self.bonusSecondaryStats.weaponDamage
+    end
 
     unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed / self.bonusSecondaryStats.attackSpeed
     unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage / self.bonusSecondaryStats.physicalDamage
@@ -3095,6 +3098,9 @@ local function Get(handle)
     if existing then
         return existing
     end
+    if handle == nil then
+        print(" Where getter give nil expect class from table")
+    end
     return Item(handle)
 end
 
@@ -3103,11 +3109,16 @@ function Item.GetItemInSlot(unithandle, slot)
 end
 
 function Item.GetSold()
+
     return Get(GetSoldItem())
 end
 
 function Item.GetManipulatedItem()
-    return Get(GetManipulatedItem())
+    local result = GetManipulatedItem()
+    if result ~= nil then
+        return Get(result)
+    end
+    return nil
 end
 
 function Item:ctor(...)
@@ -3701,7 +3712,7 @@ end
 
 function Unit:EnumItems(handler)
     local invetorySize = self:GetInventorySize()
-    for key=0,2 do
+    for key=0,invetorySize-1 do
         local result, err = pcall(handler, self:GetItemInSlot(key), key)
         if not result then
             logUnit:Error("Error enumerating units in range: " .. err)
@@ -3884,6 +3895,262 @@ function Unit:IsHero() return IsHeroUnitId(self:GetTypeId()) end
 return Unit
 end)
 -- End of file WC3\Unit.lua
+-- Start of file Core\Inventory.lua
+Module("Core.Inventory", function()
+
+local WC3 = require("WC3.All")
+local Class = require("Class")
+local UHDItem = require("Core.UHDItem")
+
+
+local Inventory = Class()
+
+    function Inventory:ctor(owner)
+        self.owner = owner
+        self.customItemAvailability = {
+            General = nil,
+            Helmet = nil,
+            BodyArmor = nil,
+            Weapon = nil,
+            Arms = nil,
+            Legs = nil,
+            Misc = nil}
+        self.invetory = {}
+        local triggerUnitPickUPItem = WC3.Trigger()
+        triggerUnitPickUPItem:RegisterUnitPickUpItem(self.owner)
+        triggerUnitPickUPItem:AddAction(function() self:SetItem(UHDItem.GetManipulatedItem()) end)
+        local triggerUnitDropItem = WC3.Trigger()
+        triggerUnitDropItem:RegisterUnitDropItem(self.owner)
+        triggerUnitDropItem:AddAction(function() self:LeaveItem(UHDItem.GetManipulatedItem()) end)
+        self.owner.toDestroy[triggerUnitDropItem] = true
+        self.owner.toDestroy[triggerUnitDropItem] = true
+    end
+
+    function Inventory:SearchNewItem()
+        local resultList = {}
+        self.owner:EnumItems(function (item) resultList[item] = true end)
+        for item in pairs(resultList) do
+            if ~self:HasItem(item) then
+                self.invetory = resultList
+                return item
+            end
+        end
+    end
+
+    function Inventory:HasItem(item)
+        for litem in pairs(self.invetory) do
+            if item == litem then
+                return true
+            end
+        end
+        return false
+    end
+
+    function Inventory:CheckAvaileItemToAdd(item)
+        local amount = 0
+        local ltype = item.type
+        self:EnumItems(function (locItem)
+            if locItem.type == ltype then
+                amount = amount + 1
+            end
+        end)
+        print("ammount "..amount)
+        if not self.customItemAvailability[ltype] then
+            return true
+        else
+            print(self.customItemAvailability[ltype])
+            if self.customItemAvailability[ltype] < amount + 1 then
+                return false
+            else
+                return true
+            end
+        end
+        error("Something going wrong when checking should be this item to add to the unit")
+        return false
+    end
+
+    function Inventory:SetItem(item)
+        -- print("New item")
+        -- print(item)
+        if not item ~= nil then
+            if item:IsA(UHDItem) then
+                local maxInventory = self.owner:GetInventorySize()
+                if #self.invetory <= maxInventory then
+                    if self:CheckAvaileItemToAdd(item) then
+                        self:DressItem(item)
+                    else
+                        self:DropItem(item)
+                    end
+                end
+            end
+        end
+    end
+
+    function Inventory:LeaveItem(item)
+        if not item == nil then
+            if self:HasItem(item) then
+                item:RemoveStats(self.owner)
+                self.invetory[item] = nil
+            end
+        end
+    end
+
+    function Inventory:EnumItems(handler)
+        local i = 0
+        for item in pairs(self.invetory) do
+            local res, err = pcall(handler, item, i)
+            i = i + 1
+        end
+    end
+
+    function Inventory:DropItem(item)
+        local itemSlot = self:GetItemSlot(item)
+        if itemSlot == nil then
+            error("Error drop undressed Item")
+        else
+            print("Remove Item")
+            self.owner:RemoveItemFromSlot(itemSlot)
+        end
+    end
+
+    function Inventory:UpdateItems()
+        local resultList = {}
+        self.owner:EnumItems(function (item) resultList[item] = true end)
+        self.invetory = resultList
+    end
+
+    function Inventory:GetItemSlot(item)
+        local resslot = nil
+        self.owner:EnumItems(
+        function (itemInSlot, slot)
+            if itemInSlot == item then
+                resslot = slot
+            end
+        end)
+        return resslot
+    end
+
+    function Inventory:DressItem(item)
+        self.invetory[item] = true
+        item:AddStats(self.owner)
+    end
+
+return Inventory
+end)
+-- End of file Core\Inventory.lua
+-- Start of file WC3\Item.lua
+Module("WC3.Item", function()
+local Class = require("Class")
+local Log = require("Log")
+
+local Item = Class()
+
+local items = {}
+
+local logItem = Log.Category("WC3\\Item")
+
+
+local function Get(handle)
+    local existing = items[handle]
+    if existing then
+        return existing
+    end
+    return Item(handle)
+end
+
+function Item.GetItemInSlot(unithandle, slot)
+    return Get(UnitItemInSlot(unithandle, slot))
+end
+
+function Item.GetSold()
+    print(GetSoldItem())
+    return Get(GetSoldItem())
+end
+
+function Item.GetManipulatedItem()
+    return Get(GetManipulatedItem())
+end
+
+function Item:ctor(...)
+    local params = { ... }
+    if #params == 1 then
+        self.handle = params[1]
+    else
+        local itemid, x, y = ...
+        self.handle = CreateItem(itemid, x, y)
+    end
+    self:Register()
+    self.toDestroy = {}
+end
+
+function Item:Register()
+    if items[self.handle] then
+        error("Attempt to reregister a unit", 3)
+    end
+    items[self.handle] = self
+end
+
+function Item:GetTypeId()
+    return GetItemTypeId(self.handle)
+end
+
+function Item:Destroy()
+    items[self.handle] = nil
+    RemoveItem(self.handle)
+    for item in pairs(self.toDestroy) do
+        item:Destroy()
+    end
+end
+
+function Item:GetX()
+    return GetItemX(self.handle)
+end
+
+function Item:GetY()
+    return GetItemY(self.handle)
+end
+
+function Item:SetPos(x, y)
+    return SetItemPosition(self.handle, x, y)
+end
+
+function Item:GetName()
+    return GetItemName(self.handle)
+end
+
+function Item:AddAbility(id)
+        if math.type(id) then
+            return BlzItemAddAbility(self.handle, math.tointeger(id))
+        else
+            error("Abilityid should be an integer (" .. type(id) .. ")", 2)
+            return false
+        end
+end
+
+function Item:RemoveAbility(id)
+    if math.type(id) then
+        return BlzItemRemoveAbility(self.handle, math.tointeger(id))
+    else
+        error("Abilityid should be an integer (" .. type(id) .. ")", 2)
+        return false
+    end
+end
+
+function Item:GetPlayer()
+    return GetItemPlayer(self.handle)
+end
+
+function Item.GetInSlot(unit, slot)
+    local result = UnitItemInSlot(unit.handle, slot)
+    if result ~= nil then
+        return Get(result)
+    end
+    return nil
+end
+
+return Item
+end)
+-- End of file WC3\Item.lua
 function CreateUnitsForPlayer0()
     local p = Player(0)
     local u

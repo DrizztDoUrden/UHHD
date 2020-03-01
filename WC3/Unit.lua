@@ -193,7 +193,7 @@ end
 
 function Unit:EnumItems(handler)
     local invetorySize = self:GetInventorySize()
-    for key=0,2 do
+    for key=0,invetorySize-1 do
         local result, err = pcall(handler, self:GetItemInSlot(key), key)
         if not result then
             logUnit:Error("Error enumerating units in range: " .. err)

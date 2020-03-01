@@ -13,6 +13,9 @@ local function Get(handle)
     if existing then
         return existing
     end
+    if handle == nil then
+        print(" Where getter give nil expect class from table")
+    end
     return Item(handle)
 end
 
@@ -21,11 +24,16 @@ function Item.GetItemInSlot(unithandle, slot)
 end
 
 function Item.GetSold()
+
     return Get(GetSoldItem())
 end
 
 function Item.GetManipulatedItem()
-    return Get(GetManipulatedItem())
+    local result = GetManipulatedItem()
+    if result ~= nil then
+        return Get(result)
+    end
+    return nil
 end
 
 function Item:ctor(...)

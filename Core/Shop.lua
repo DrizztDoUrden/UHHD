@@ -21,18 +21,19 @@ function Shop:AddTrigger()
     self.toDestroy[trigger] = true
     trigger:RegisterPlayerSoldItem(self.owner, self)
     trigger:AddAction(function()
-        print(" you buy")
         local buying = WC3.Unit.GetBying()
         local sold = WC3.Item.GetSold()
         local id = sold:GetTypeId()
         for key, item in pairs(self.itemPresets) do
             if key == id then
                 local newItem = item(x, y)
+                sold:Destroy()
                 buying:AddItem(newItem)
+                break
             end
         end
-        sold:Destroy()
-        logShop:Trace("Item bought with id "..id)
+        
+        -- logShop:Trace("Item bought with id "..id)
     end)
 end
 

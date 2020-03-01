@@ -55,11 +55,10 @@ local Inventory = Class()
                 amount = amount + 1
             end
         end)
-        print("ammount "..amount)
         if not self.customItemAvailability[ltype] then
             return true
         else
-            print(self.customItemAvailability[ltype])
+            
             if self.customItemAvailability[ltype] < amount + 1 then
                 return false
             else
@@ -73,20 +72,24 @@ local Inventory = Class()
     function Inventory:SetItem(item)
         -- print("New item")
         -- print(item)
-        local maxInventory = self.owner:GetInventorySize()
-        if #self.invetory <= maxInventory then
-            if self:CheckAvaileItemToAdd(item) then
-                self:DressItem(item)
-            else
-                self:DropItem(item)
+        if item ~= nil then
+            local maxInventory = self.owner:GetInventorySize()
+            if #self.invetory <= maxInventory then
+                if self:CheckAvaileItemToAdd(item) then
+                    self:DressItem(item)
+                else
+                    self:DropItem(item)
+                end
             end
         end
     end
 
     function Inventory:LeaveItem(item)
-        if self:HasItem(item) then
-            item:RemoveStats(self.owner)
-            self.invetory[item] = nil
+        if  item ~= nil then
+            if self:HasItem(item) then
+                item:RemoveStats(self.owner)
+                self.invetory[item] = nil
+            end
         end
     end
 
@@ -101,9 +104,7 @@ local Inventory = Class()
     function Inventory:DropItem(item)
         local itemSlot = self:GetItemSlot(item)
         if itemSlot == nil then
-            error("Error drop undressed Item")
         else
-            print("Remove Item")
             self.owner:RemoveItemFromSlot(itemSlot)
         end
     end

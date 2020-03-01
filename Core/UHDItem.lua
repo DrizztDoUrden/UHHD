@@ -40,12 +40,12 @@ function  UHDItem:AddStats(unit)
     unit.bonusSecondaryStats.healthRegen = bonusSecondaryStats.healthRegen + self.bonusSecondaryStats.healthRegen
     unit.bonusSecondaryStats.manaRegen = bonusSecondaryStats.manaRegen + self.bonusSecondaryStats.manaRegen
 
-    -- if UHDItem.type == "Weapon" then
-    --     unit.baseSecondaryStats.weaponDamage = self.baseSecondaryStats.weaponDamage
-    -- else
-    --     unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage * self.bonusSecondaryStats.weaponDamage
-    --     print("WPD "..unit.bonusSecondaryStats.weaponDamage.." " ..bonusSecondaryStats.weaponDamage.." " ..self.bonusSecondaryStats.weaponDamage)
-    -- end
+    if UHDItem.type == "Weapon" then
+        unit.baseSecondaryStats.weaponDamage = self.baseSecondaryStats.weaponDamage
+    else
+        unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage * self.bonusSecondaryStats.weaponDamage
+        -- print("WPD "..unit.bonusSecondaryStats.weaponDamage.." " ..bonusSecondaryStats.weaponDamage.." " ..self.bonusSecondaryStats.weaponDamage)
+    end
 
     unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed * self.bonusSecondaryStats.attackSpeed
     unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage * self.bonusSecondaryStats.physicalDamage
@@ -67,11 +67,11 @@ function  UHDItem:RemoveStats(unit)
     unit.bonusSecondaryStats.healthRegen = bonusSecondaryStats.healthRegen - self.bonusSecondaryStats.healthRegen
     unit.bonusSecondaryStats.manaRegen = bonusSecondaryStats.manaRegen - self.bonusSecondaryStats.manaRegen
 
-    -- if UHDItem.type == "Weapon" then
-    --     unit.baseSecondaryStats.weaponDamage = 0
-    -- else
-    --     unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage / self.bonusSecondaryStats.weaponDamage
-    -- end
+    if UHDItem.type == "Weapon" then
+        unit.baseSecondaryStats.weaponDamage = 0
+    else
+        unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage / self.bonusSecondaryStats.weaponDamage
+    end
 
     unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed / self.bonusSecondaryStats.attackSpeed
     unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage / self.bonusSecondaryStats.physicalDamage

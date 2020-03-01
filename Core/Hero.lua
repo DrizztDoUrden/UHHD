@@ -215,6 +215,7 @@ function Hero:UpdateSecondaryStats()
     self.secondaryStats.armor = self.baseSecondaryStats.armor + self.bonusSecondaryStats.armor
 end
 
+
 function Hero:ApplyStats()
     self:UpdateSecondaryStats()
     self:SetStr(self.basicStats.strength, true)
