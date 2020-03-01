@@ -10,7 +10,7 @@ function CreepPreset:ctor()
     self.secondaryStats = Stats.Secondary()
 
     self.secondaryStats.health = 50
-    self.secondaryStats.mana = 2
+    self.secondaryStats.mana = 10
     self.secondaryStats.healthRegen = 1
     self.secondaryStats.manaRegen = 1
 
@@ -19,11 +19,11 @@ function CreepPreset:ctor()
     self.secondaryStats.physicalDamage = 1
     self.secondaryStats.spellDamage = 1
 
-    self.secondaryStats.armor = 5
-    self.secondaryStats.evasion = 0.3
+    self.secondaryStats.armor = 0
+    self.secondaryStats.evasion = 0
     self.secondaryStats.block = 0
     self.secondaryStats.ccResist = 0
-    self.secondaryStats.spellResist = 0.3
+    self.secondaryStats.spellResist = 0
 
     self.secondaryStats.movementSpeed = 1
     self.class = Creep
