@@ -939,6 +939,7 @@ function Hero:Destroy()
     for u in pairs(self.skillUpgrades) do u:Destroy() end
 end
 
+
 function Hero:OnLevel()
     for _ = 1,Hero.StatsPerLevel do
         self:AddStatPoint()
@@ -1192,7 +1193,6 @@ local UHDItem = require("Core.UHDItem")
 
 local Inventory = Class()
 
-
     function Inventory:ctor(owner)
         self.owner = owner
         self.customItemAvailability = {
@@ -1313,7 +1313,6 @@ local Inventory = Class()
         self.invetory[item] = true
         item:AddStats(self.owner)
     end
-
 
 return Inventory
 end)
@@ -1512,8 +1511,6 @@ local Stats = require("Core.Stats")
 local Class = require("Class")
 local WC3 = require("WC3.All")
 
-
-
 local UHDItem = Class(WC3.Item)
 
 
@@ -1545,24 +1542,28 @@ function UHDItem:ctor(...)
 end
 
 function  UHDItem:AddStats(unit)
-    print("Apply stats")
     local bonusSecondaryStats = unit.bonusSecondaryStats
     unit.bonusSecondaryStats.health = bonusSecondaryStats.health + self.bonusSecondaryStats.health
     unit.bonusSecondaryStats.mana = bonusSecondaryStats.mana + self.bonusSecondaryStats.mana
     unit.bonusSecondaryStats.healthRegen = bonusSecondaryStats.healthRegen + self.bonusSecondaryStats.healthRegen
     unit.bonusSecondaryStats.manaRegen = bonusSecondaryStats.manaRegen + self.bonusSecondaryStats.manaRegen
 
-    unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage + self.bonusSecondaryStats.weaponDamage
-    unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed + self.bonusSecondaryStats.attackSpeed
-    unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage + self.bonusSecondaryStats.physicalDamage
-    unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage + self.bonusSecondaryStats.spellDamage
+    if UHDItem.type == "Weapon" then
+        unit.baseSecondaryStats.weaponDamage = self.baseSecondaryStats.weaponDamage
+    else
+        unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage * self.bonusSecondaryStats.weaponDamage
+    end
+
+    unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed * self.bonusSecondaryStats.attackSpeed
+    unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage * self.bonusSecondaryStats.physicalDamage
+    unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage * self.bonusSecondaryStats.spellDamage
 
     unit.bonusSecondaryStats.armor = bonusSecondaryStats.armor + self.bonusSecondaryStats.armor
-    unit.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion + self.bonusSecondaryStats.evasion
-    unit.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist + self.bonusSecondaryStats.ccResist
-    unit.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist + self.bonusSecondaryStats.spellResist
+    unit.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion * self.bonusSecondaryStats.evasion
+    unit.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist * self.bonusSecondaryStats.ccResist
+    unit.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist * self.bonusSecondaryStats.spellResist
 
-    unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed + self.bonusSecondaryStats.movementSpeed
+    unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed * self.bonusSecondaryStats.movementSpeed
     unit:ApplyStats()
 end
 
@@ -1573,22 +1574,27 @@ function  UHDItem:RemoveStats(unit)
     unit.bonusSecondaryStats.healthRegen = bonusSecondaryStats.healthRegen - self.bonusSecondaryStats.healthRegen
     unit.bonusSecondaryStats.manaRegen = bonusSecondaryStats.manaRegen - self.bonusSecondaryStats.manaRegen
 
-    unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage - self.bonusSecondaryStats.weaponDamage
-    unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed - self.bonusSecondaryStats.attackSpeed
-    unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage - self.bonusSecondaryStats.physicalDamage
-    unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage - self.bonusSecondaryStats.spellDamage
+
+    if UHDItem.type == "Weapon" then
+        unit.baseSecondaryStats.weaponDamage = 0
+    else
+        unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage / self.bonusSecondaryStats.weaponDamage
+    end
+
+    unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed / self.bonusSecondaryStats.attackSpeed
+    unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage / self.bonusSecondaryStats.physicalDamage
+    unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage / self.bonusSecondaryStats.spellDamage
 
     unit.bonusSecondaryStats.armor = bonusSecondaryStats.armor - self.bonusSecondaryStats.armor
-    unit.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion - self.bonusSecondaryStats.evasion
-    unit.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist - self.bonusSecondaryStats.ccResist
-    unit.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist - self.bonusSecondaryStats.spellResist
+    unit.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion / self.bonusSecondaryStats.evasion
+    unit.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist / self.bonusSecondaryStats.ccResist
+    unit.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist / self.bonusSecondaryStats.spellResist
 
-    unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed - self.bonusSecondaryStats.movementSpeed
+    unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed / self.bonusSecondaryStats.movementSpeed
     unit:ApplyStats()
 end
 
 return UHDItem
-
 end)
 -- End of file Core\UHDItem.lua
 -- Start of file Core\UHDUnit.lua
@@ -3006,7 +3012,6 @@ local function Get(handle)
     return Item(handle)
 end
 
-
 function Item.GetItemInSlot(unithandle, slot)
     return Get(UnitItemInSlot(unithandle, slot))
 end
@@ -3030,7 +3035,6 @@ function Item:ctor(...)
     self:Register()
     self.toDestroy = {}
 end
-
 
 function Item:Register()
     if items[self.handle] then
@@ -3088,7 +3092,6 @@ end
 function Item:GetPlayer()
     return GetItemPlayer(self.handle)
 end
-
 
 function Item.GetInSlot(handle, slot)
     return Get(UnitItemInSlot(handle, slot))

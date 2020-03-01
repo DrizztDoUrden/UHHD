@@ -95,6 +95,7 @@ function Hero:Destroy()
     for u in pairs(self.skillUpgrades) do u:Destroy() end
 end
 
+
 function Hero:OnLevel()
     for _ = 1,Hero.StatsPerLevel do
         self:AddStatPoint()
