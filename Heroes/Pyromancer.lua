@@ -3,8 +3,9 @@ local HeroPreset = require("Core.HeroPreset")
 local WC3 = require("WC3.All")
 local Spell = require "Core.Spell"
 local Log = require "Log"
+local CreepStatsDebuf = require "Core.Effects.CreepStatsDebuff"
 
-local logPyromancer = Log.Category("Heroes\\Mutant")
+local logPyromancer = Log.Category("Heroes\\Pyromancer")
 
 local Pyromancer = Class(HeroPreset)
 
@@ -33,6 +34,9 @@ Pyromancer.abilities = {
         handler = FiresOfNaalXul,
         availableFromStart = true,
         params = {
+            damage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
+            radius = function(_) return 200 end,
+            spellResistanceDebuff = function(_) return 0.20 end,
         },
     },
     ragingFlames = {
@@ -128,6 +132,12 @@ function BoilingBlood:Destroy()
 end
 
 function FiresOfNaalXul:Cast()
+    WC3.Unit.EnumInRange(self.GetTargetX(), self.GetTargetY(), self.radius, function(unit)
+        if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+            self.caster:DealDamage(unit, { value = self.damage, })
+            CreepStatsDebuf({ spellResist = (1 - self.spellResistanceDebuff), }, unit, self.duration)
+        end
+    end)
 end
 
 function RagingFlames:Cast()
