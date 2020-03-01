@@ -25,7 +25,7 @@ Pyromancer.abilities = {
             duration = function(_) return 5 end,
             period = function(_) return 0.5 end,
             explosionDamage = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
-            explosionRagius = function(_) return 250 end,
+            explosionRadius = function(_) return 250 end,
         },
     },
     firesOfNaalXul = {
@@ -103,7 +103,7 @@ function BoilingBlood:Cast()
 end
 
 function BoilingBlood:Explode()
-    WC3.Unit.EnumInRange(self.target.GetX(), self.target.GetY(), self.explosionRagius, function(unit)
+    WC3.Unit.EnumInRange(self.target.GetX(), self.target.GetY(), self.explosionRadius, function(unit)
         if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DealDamage(self.target, { value = self.explosionDamage, })
             BoilingBlood(Pyromancer.abilities.boilingBlood, self.caster)
