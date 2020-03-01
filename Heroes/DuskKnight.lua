@@ -353,7 +353,6 @@ function DarkMend:Cast()
             timer:Destroy()
             return
         end
-        print(curHp * self.percentHeal + self.baseHeal, ((curHp * self.percentHeal + self.baseHeal) / ticks) * self.healOverTime)
         self.caster:Heal(self.caster, ((curHp * self.percentHeal + self.baseHeal) / ticks) * self.healOverTime)
         timeLeft = timeLeft - self.period
         if timeLeft <= 0 then
