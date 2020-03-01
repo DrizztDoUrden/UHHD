@@ -89,6 +89,10 @@ end
 function UHDUnit:DealDamage(target, damage)
     local dmg
     if damage.isAttack then
+        if target:IsA(UHDUnit) and math.random() < target.secondaryStats.evasion then
+            return 0
+        end
+
         dmg = damage.value * (1 - UHDUnit.armorValue)^target.secondaryStats.armor
     else
         dmg = damage.value * (1 - target.secondaryStats.spellResist)
@@ -120,6 +124,12 @@ unitDamaging:AddAction(function()
     end
     local source = WC3.Unit.GetEventDamageSource()
     local target = WC3.Unit.GetEventDamageTarget()
+
+    if target:IsA(UHDUnit) and math.random() < target.secondaryStats.evasion then
+        BlzSetEventDamage(0)
+        return
+    end
+
     local args = {
         source = source,
         target = target,
