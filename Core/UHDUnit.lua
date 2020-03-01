@@ -92,11 +92,6 @@ function UHDUnit:DealDamage(target, damage)
     else
         dmg = damage.value * (1 - target.secondaryStats.spellResist)
     end
-    local hpAfterDamage = target:GetHP() - dmg
-    if hpAfterDamage < 0 then
-        hpAfterDamage = 0
-        dmg = dmg + hpAfterDamage
-    end
     local args = {
         source = self,
         target = target,
