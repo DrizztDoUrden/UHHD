@@ -19,8 +19,9 @@ function Shop:AddTrigger()
     local trigger = WC3.Trigger()
     local x, y = self:GetX(), self:GetY() - 100
     self.toDestroy[trigger] = true
-    trigger:RegisterSoldItem(self)
+    trigger:RegisterPlayerSoldItem(self.owner, self)
     trigger:AddAction(function()
+        print(" you buy")
         local buying = WC3.Unit.GetBying()
         local sold = WC3.Item.GetSold()
         local id = sold:GetTypeId()

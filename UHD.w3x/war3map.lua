@@ -1343,8 +1343,9 @@ function Shop:AddTrigger()
     local trigger = WC3.Trigger()
     local x, y = self:GetX(), self:GetY() - 100
     self.toDestroy[trigger] = true
-    trigger:RegisterSoldItem(self)
+    trigger:RegisterPlayerSoldItem(self.owner, self)
     trigger:AddAction(function()
+        print(" you buy")
         local buying = WC3.Unit.GetBying()
         local sold = WC3.Item.GetSold()
         local id = sold:GetTypeId()
@@ -3432,11 +3433,15 @@ function Trigger:RegisterPlayerUnitEvent(player, event, filter)
 end
 
 function Trigger:RegisterUnitSold(unit)
-    TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SELL)
+    return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SELL)
 end
 
-function Trigger:RegisterSoldItem(unit)
-    TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SELL_ITEM)
+-- function Trigger:RegisterSoldItem(unit)
+--     return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SELL_ITEM)
+-- end
+
+function Trigger:RegisterPlayerSoldItem(player, unit)
+    return TriggerRegisterPlayerUnitEvent(self.handle, player.handle, EVENT_PLAYER_UNIT_SELL_ITEM, nil)
 end
 
 function Trigger:RegisterUnitDeath(unit)
