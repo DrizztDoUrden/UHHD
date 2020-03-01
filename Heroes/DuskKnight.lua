@@ -37,11 +37,11 @@ function DuskKnight:ctor()
                 armorRemoved = function(_) return 10 end,
                 gainLimit = function(_) return 30 end,
                 stealPercentage = function(_) return 0.25 end,
-                damage = function(_, caster)
-                    if caster:HasTalent("T001") then return 5 * caster.secondaryStats.spellDamage end
+                damage = function(self, caster)
+                    if caster:HasTalent("T001") then return 5 * caster.secondaryStats.spellDamage * self.params.duration(self, caster) end
                     return 0
                 end,
-                healLimit = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
+                healLimit = function(self, caster) return 10 * caster.secondaryStats.spellDamage * self.params.duration(self, caster) end,
                 damageReduction = function(_, caster)
                     if caster:HasTalent("T002") then return 0.15 end
                     return 0
@@ -168,12 +168,14 @@ function DrainLight:Cast()
                 unit = unit,
                 stolen = 0,
                 toSteal = self.armorRemoved,
-                toReturn = self.armorRemoved,
+                toReturn = 0,
                 toBonus = self.stealPercentage,
                 toStealDamage = self.damageReduction,
             })
         end
     end)
+
+    self.durationLeft = self.duration
 
     timer:Start(self.period, true, function()
         if self.caster:GetHP() <= 0 then
@@ -182,7 +184,7 @@ function DrainLight:Cast()
             return
         end
 
-        self.duration = self.duration - self.period
+        self.durationLeft = self.durationLeft - self.period
         self.healed = 0
 
         for _, target in pairs(self.affected) do
@@ -191,7 +193,7 @@ function DrainLight:Cast()
             end
         end
 
-        if self.duration <= 0 then
+        if self.durationLeft <= 0 then
             for _, target in pairs(self.affected) do
                 if target.unit:GetHP() > 0 then
                     target.unit.secondaryStats.physicalDamage = target.unit.secondaryStats.physicalDamage * (1 - target.toStealDamage)
@@ -237,13 +239,15 @@ function DrainLight:End()
         target.unit:ApplyStats()
     end
     self.caster.bonusSecondaryStats.armor = self.caster.bonusSecondaryStats.armor - self.bonus
-    self.unit.bonusSecondaryStats.physicalDamage = self.unit.bonusSecondaryStats.physicalDamage / (1 + self.damageBonus)
+    self.caster.bonusSecondaryStats.physicalDamage = self.caster.bonusSecondaryStats.physicalDamage / (1 + self.damageBonus)
     self.caster:ApplyStats()
 end
 
 function DrainLight:Drain(target)
-    local toStealNow = (target.toSteal - target.stolen) * self.period / self.duration
-    target.unit.secondaryStats.armor = target.unit.secondaryStats.armor + toStealNow
+    local ticks = (self.duration // self.period)
+    local toStealNow = (target.toSteal - target.stolen) / ticks
+    target.unit.secondaryStats.armor = target.unit.secondaryStats.armor - toStealNow
+    target.toReturn = target.toReturn + toStealNow
     target.unit:ApplyStats()
     if self.bonus < self.gainLimit then
         local toBonus = math.min(self.gainLimit - self.bonus, toStealNow * target.toBonus)
@@ -252,10 +256,10 @@ function DrainLight:Drain(target)
         self.bonus = self.bonus + toBonus
     end
     if self.damage > 0 then
-        local damagePerTick = self.period * self.damage
+        local damagePerTick = self.damage / ticks
         local damage = self.caster:DealDamage(target.unit, { value = damagePerTick, })
-        if self.healed < self.healLimit * self.period then
-            local toHeal = math.min(self.healLimit * self.period - self.healed, self.stealPercentage * damage)
+        if self.healed < self.healLimit / ticks then
+            local toHeal = math.min(self.healLimit / ticks - self.healed, self.stealPercentage * damage)
             self.healed = self.healed + toHeal
             self.caster:Heal(self.caster, toHeal)
         end
@@ -341,17 +345,16 @@ end
 function DarkMend:Cast()
     local timer = Timer()
     local timeLeft = self.duration
-    local curHp = self.caster:GetHP();
-    local part = 1 / math.floor(self.period / self.duration)
-    self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * self.instantHeal)
+    local ticks = self.duration // self.period
+    self.caster:Heal(self.caster, (self.caster:GetHP() * self.percentHeal + self.baseHeal) * self.instantHeal)
     timer:Start(self.period, true, function()
         local curHp = self.caster:GetHP();
         if curHp <= 0 then
             timer:Destroy()
             return
         end
+        self.caster:Heal(self.caster, ((curHp * self.percentHeal + self.baseHeal) / ticks) * self.healOverTime)
         timeLeft = timeLeft - self.period
-        self.caster:Heal(self.caster, (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime)
         if timeLeft <= 0 then
             timer:Destroy()
         end

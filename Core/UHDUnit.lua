@@ -87,16 +87,11 @@ function UHDUnit:DamageReceived(args)
 end
 
 function UHDUnit:DealDamage(target, damage)
-    local dmg = damage.value
+    local dmg
     if damage.isAttack then
-        dmg = damage.value * (1 - UHDUnit.armorValue^target.secondaryStats.armor)
+        dmg = damage.value * (1 - UHDUnit.armorValue)^target.secondaryStats.armor
     else
         dmg = damage.value * (1 - target.secondaryStats.spellResist)
-    end
-    local hpAfterDamage = target:GetHP() - dmg
-    if hpAfterDamage < 0 then
-        hpAfterDamage = 0
-        dmg = dmg + hpAfterDamage
     end
     local args = {
         source = self,
