@@ -1266,3 +1266,16 @@ STRING 255
 (Mutant)
 }
 
+STRING 256
+// Items: I001 (ChainArmor), Description (Description)
+{
+Heavy armor. It is fetters movement
++5 armor, -15 envasion, -15 Spell Power
+}
+
+STRING 257
+// Items: I001 (ChainArmor), Name (Name)
+{
+ChainArmor
+}
+

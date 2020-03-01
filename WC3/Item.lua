@@ -1,11 +1,12 @@
 local Class = require("Class")
 local Log = require("Log")
-local Item = Class()
-local Playr = require("WC3.Player")
+
 
 local items = {}
 
-local logUnit = Log.Category("WC3\\Unit")
+local logItem = Log.Category("WC3\\Item")
+
+local Item = Class()
 
 local function Get(handle)
     local existing = items[handle]
@@ -15,17 +16,21 @@ local function Get(handle)
     return Item(handle)
 end
 
+
 function Item.GetItemInSlot(unithandle, slot)
     Get(UnitItemInSlot(unithandle, slot))
 end
 
 function Item:ctor(...)
     local params = { ... }
+    logItem:Info("Start to creat Item in W3")
     if #params == 1 then
         self.handle = params[1]
     else
+        logItem:Info(" Creat Item in W3")
         local itemid, x, y = ...
         self.handle = CreateItem(itemid, x, y)
+        print(itemid)
     end
     self:Register()
     self.toDestroy = {}

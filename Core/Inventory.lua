@@ -1,7 +1,7 @@
 
-WC3 = require("WC3.All")
-Class = require("Class")
-UHDItem = require("Core.UHDItem")
+local WC3 = require("WC3.All")
+local Class = require("Class")
+local UHDItem = require("Core.UHDItem")
 
 
 local Inventory = Class()
@@ -72,17 +72,17 @@ local Inventory = Class()
     function Inventory:SetItem(item)
         local maxInventory = self.owner:GetInventorySize()
         if #self.invetory <= maxInventory then
-            self.invetory[item]  = true
             if self:CheckAvaileItemToAdd(item) then
                 self:DressItem(item)
             end
         else
-            self:LeaveItem(item)
+            self:DropItem(item)
         end
     end
 
     function Inventory:LeaveItem(item)
         local x, y = self.owner:GetX(), self.owner:GetY()
+        item.DropItem(item)
         item:SetPos(x, y)
     end
 
@@ -122,7 +122,7 @@ local Inventory = Class()
     end
 
     function Inventory:DressItem(item)
-        self.owner:AddItem(item)
+        self.invetory[item] = true
         item:AddStats(self.owner)
     end
 

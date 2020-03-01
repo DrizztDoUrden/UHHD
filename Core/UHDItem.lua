@@ -1,20 +1,20 @@
 
-Stats = require("Core.Stats")
-Class = require("Class")
-All = require("WC3.All")
+local Stats = require("Core.Stats")
+local Class = require("Class")
+local WC3 = require("WC3.All")
 
 
 local UHDItem = Class()
 
 
-function UHDItem:ctor(itemid)
-    All.Item.ctor(self, FourCC(itemid))
-    self.itemid = FourCC(itemid)
+function UHDItem:ctor(...)
+    WC3.Item.ctor(self, ...)
+    
     self.type = "general"
     self.modules = {}
 
 
-    self.bonusSecondaryStats = Stats()
+    self.bonusSecondaryStats = Stats.Secondary()
 
     self.bonusSecondaryStats.health = 0
     self.bonusSecondaryStats.mana = 0
