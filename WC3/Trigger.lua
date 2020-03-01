@@ -57,31 +57,11 @@ function Trigger:RegisterHeroLevel(unit)
 end
 
 function Trigger:RegisterPlayerUnitDamaging(player, filter)
-    if filter then
-        filter = function()
-            local result, errOrRet = pcall(filter, Unit.Get(GetFilterUnit()))
-            if not result then
-                logTrigger:Error("Error filtering player units for and event: " .. errOrRet)
-                return false
-            end
-            return errOrRet
-        end
-    end
-    return TriggerRegisterPlayerUnitEvent(self.handle, player.handle, EVENT_PLAYER_UNIT_DAMAGING, Filter(filter))
+    return self.RegisterPlayerUnitEvent(player.handle, EVENT_PLAYER_UNIT_DAMAGING, filter)
 end
 
 function Trigger:RegisterEnterRegion(region, filter)
-    if filter then
-        filter = function ()
-            local result, errOrRet
-            if not result then
-                logTrigger:Error("Error filtering Region for and event: "..errOrRet)
-                return false
-            end
-            return errOrRet
-        end
-    end
-    return TriggerRegisterEnterRegion(self.handle, region.handle, filter)
+    return self.RegisterEnterRegion(region.handle, filter)
 end
 
 function Trigger:AddAction(action)
