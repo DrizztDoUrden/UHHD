@@ -11,13 +11,21 @@ local ChainArmor = require("Items.Armor.ChainArmor")
 local LeatherArmor = require("Items.Armor.LeatherArmor")
 local PlateArmor = require("Items.Armor.PlateArmor")
 local Robe = require("Items.Armor.Robe")
+local Shop = require("Core.Shop")
 local logMain = Log.Category("Main")
+
 
 local heroPresets = {
     DuskKnight(),
     Mutant(),
 }
 
+local itemsPresets = {
+    [ChainArmor(-7000, -6000):GetTypeId()] = ChainArmor,
+    [LeatherArmor(-7000, -6100):GetTypeId()] = LeatherArmor,
+    [Robe(-7000, -5900):GetTypeId()] = Robe,
+    [PlateArmor(-7000, -5800):GetTypeId()] = PlateArmor
+}
 -- preloading heroes to reduce lags
 -- before doing that it's needed to finish the cleanup in Hero:Destroy. e.g. stat/talent helpers should be deleted as well
 -- also it would be cool to add a mode of hero spawning which also spawns stat/talent helpers to make sure they get preloaded too
@@ -37,6 +45,7 @@ logMain:Info("Start Map")
 -- heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
 Core(WC3.Player.Get(8), -2300, -3800, 0)
 Tavern(WC3.Player.Get(0), 1600, -3800, 0, heroPresets)
+Shop(WC3.Player.Get(0), -2000, -2600, 0, itemsPresets)
 local item = ChainArmor(-2300, -3400)
 local item2 = LeatherArmor(-2200, -3400)
 local item3 = PlateArmor(-2400, -3400)

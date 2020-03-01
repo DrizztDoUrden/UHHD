@@ -35,6 +35,7 @@ EVENT_UNIT_HERO_LEVEL = {}
 EVENT_UNIT_SELL = {}
 EVENT_UNIT_DROP_ITEM = {}
 EVENT_UNIT_PICKUP_ITEM = {}
+EVENT_UNIT_SELL_ITEM = {}
 
 EVENT_PLAYER_UNIT_SELL_ITEM = {}
 EVENT_PLAYER_UNIT_DEATH = {}
@@ -443,6 +444,8 @@ function GetItemY(whichItem) end
 function GetItemY(whichItem) end
 
 function GetItemName(whichItem) end
+
+function GetSoldItem() end
 
 function GetItemTypeId(whichItem) end
 

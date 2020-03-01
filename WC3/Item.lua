@@ -20,9 +20,9 @@ function Item.GetItemInSlot(unithandle, slot)
     return Get(UnitItemInSlot(unithandle, slot))
 end
 
--- function Item.GetSold()
---     return Get(GetSoldUnit())
--- end
+function Item.GetSold()
+    return Get(GetSoldItem())
+end
 
 function Item.GetManipulatedItem()
     return Get(GetManipulatedItem())
@@ -54,7 +54,7 @@ end
 function Item:Destroy()
     items[self.handle] = nil
     RemoveItem(self.handle)
-    for item in pairs(self.toDestroy) do 
+    for item in pairs(self.toDestroy) do
         item:Destroy()
     end
 end

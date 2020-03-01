@@ -1258,8 +1258,8 @@ local Inventory = Class()
     end
 
     function Inventory:SetItem(item)
-        print("New item")
-        print(item)
+        -- print("New item")
+        -- print(item)
         local maxInventory = self.owner:GetInventorySize()
         if #self.invetory <= maxInventory then
             if self:CheckAvaileItemToAdd(item) then
@@ -1332,21 +1332,29 @@ local logShop = Log.Category("Core\\Shop")
 local Shop = Class(WC3.Unit)
 
 
-function Shop:ctor(owner, x, y, facing)
-    WC3.Unit.ctor(self, owner, FourCC("n001"), x, y, facing)
+function Shop:ctor(owner, x, y, facing, itemPresets)
+    WC3.Unit.ctor(self, owner, FourCC("n002"), x, y, facing)
     self.owner = owner
+    self.itemPresets = itemPresets
     self:AddTrigger()
 end
 
 function Shop:AddTrigger()
     local trigger = WC3.Trigger()
+    local x, y = self:GetX(), self:GetY() - 100
     self.toDestroy[trigger] = true
     trigger:RegisterSoldItem(self)
     trigger:AddAction(function()
         local buying = WC3.Unit.GetBying()
         local sold = WC3.Item.GetSold()
-        local whichOwner = buying:GetOwner()
         local id = sold:GetTypeId()
+        for key, item in pairs(self.itemPresets) do
+            if key == id then
+                local newItem = item(x, y)
+                buying:AddItem(newItem)
+            end
+        end
+        sold:Destroy()
         logShop:Trace("Item bought with id "..id)
     end)
 end
@@ -2975,13 +2983,21 @@ local ChainArmor = require("Items.Armor.ChainArmor")
 local LeatherArmor = require("Items.Armor.LeatherArmor")
 local PlateArmor = require("Items.Armor.PlateArmor")
 local Robe = require("Items.Armor.Robe")
+local Shop = require("Core.Shop")
 local logMain = Log.Category("Main")
+
 
 local heroPresets = {
     DuskKnight(),
     Mutant(),
 }
 
+local itemsPresets = {
+    [ChainArmor(-7000, -6000):GetTypeId()] = ChainArmor,
+    [LeatherArmor(-7000, -6100):GetTypeId()] = LeatherArmor,
+    [Robe(-7000, -5900):GetTypeId()] = Robe,
+    [PlateArmor(-7000, -5800):GetTypeId()] = PlateArmor
+}
 -- preloading heroes to reduce lags
 -- before doing that it's needed to finish the cleanup in Hero:Destroy. e.g. stat/talent helpers should be deleted as well
 -- also it would be cool to add a mode of hero spawning which also spawns stat/talent helpers to make sure they get preloaded too
@@ -3001,6 +3017,7 @@ logMain:Info("Start Map")
 -- heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
 Core(WC3.Player.Get(8), -2300, -3800, 0)
 Tavern(WC3.Player.Get(0), 1600, -3800, 0, heroPresets)
+Shop(WC3.Player.Get(0), -2000, -2600, 0, itemsPresets)
 local item = ChainArmor(-2300, -3400)
 local item2 = LeatherArmor(-2200, -3400)
 local item3 = PlateArmor(-2400, -3400)
@@ -3084,9 +3101,9 @@ function Item.GetItemInSlot(unithandle, slot)
     return Get(UnitItemInSlot(unithandle, slot))
 end
 
--- function Item.GetSold()
---     return Get(GetSoldUnit())
--- end
+function Item.GetSold()
+    return Get(GetSoldItem())
+end
 
 function Item.GetManipulatedItem()
     return Get(GetManipulatedItem())
@@ -3118,7 +3135,7 @@ end
 function Item:Destroy()
     items[self.handle] = nil
     RemoveItem(self.handle)
-    for item in pairs(self.toDestroy) do 
+    for item in pairs(self.toDestroy) do
         item:Destroy()
     end
 end
@@ -3419,7 +3436,7 @@ function Trigger:RegisterUnitSold(unit)
 end
 
 function Trigger:RegisterSoldItem(unit)
-    TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_PLAYER_UNIT_SELL_ITEM)
+    TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SELL_ITEM)
 end
 
 function Trigger:RegisterUnitDeath(unit)
