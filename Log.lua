@@ -56,12 +56,12 @@ function Category:ctor(name, options)
     options = options or {}
     self.name = name
     if TestBuild then
-        self.printVerbosity = options.printVerbosity or Verbosity.Info
+        self.printVerbosity = options.printVerbosity or Verbosity.Message
     else
         self.printVerbosity = options.printVerbosity or Verbosity.Warning
     end
     if TestBuild then
-        self.fileVerbosity = options.fileVerbosity or Verbosity.Trace
+        self.fileVerbosity = options.fileVerbosity or Verbosity.Info
     else
         self.fileVerbosity = options.fileVerbosity or Verbosity.Message
     end
