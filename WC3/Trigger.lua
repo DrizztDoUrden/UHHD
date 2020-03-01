@@ -56,6 +56,10 @@ function Trigger:RegisterHeroLevel(unit)
     return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_HERO_LEVEL)
 end
 
+function Trigger:RegisterPlayerUnitDeath(player, filter)
+    return self.RegisterPlayerUnitEvent(player.handle, EVENT_PLAYER_UNIT_DEATH, filter)
+end
+
 function Trigger:RegisterPlayerUnitDamaging(player, filter)
     return self.RegisterPlayerUnitEvent(player.handle, EVENT_PLAYER_UNIT_DAMAGING, filter)
 end
