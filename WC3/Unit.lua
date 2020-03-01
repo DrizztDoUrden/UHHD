@@ -193,7 +193,7 @@ end
 
 function Unit:EnumItems(handler)
     local invetorySize = self:GetInventorySize()
-    for key=0,invetorySize-1 do
+    for key=0,2 do
         local result, err = pcall(handler, self:GetItemInSlot(key), key)
         if not result then
             logUnit:Error("Error enumerating units in range: " .. err)
@@ -203,7 +203,7 @@ end
 
 function Unit:GetItemInSlot(slot)
     if math.type(slot) == "integer" then
-        Item.GetInSlot(self.handle, slot)
+        return Item.GetInSlot(self, slot)
     else
         error("Slot should be integer")
     end

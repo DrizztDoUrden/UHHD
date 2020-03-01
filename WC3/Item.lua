@@ -97,8 +97,12 @@ function Item:GetPlayer()
     return GetItemPlayer(self.handle)
 end
 
-function Item.GetInSlot(handle, slot)
-    return Get(UnitItemInSlot(handle, slot))
+function Item.GetInSlot(unit, slot)
+    local result = UnitItemInSlot(unit.handle, slot)
+    if result ~= nil then
+        return Get(result)
+    end
+    return nil
 end
 
 return Item
