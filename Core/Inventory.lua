@@ -19,10 +19,10 @@ local Inventory = Class()
             Misc = nil}
         self.invetory = {}
         local triggerUnitPickUPItem = WC3.Trigger()
-        triggerUnitPickUPItem:RegisterUnitPickUpItem(self)
-        triggerUnitPickUPItem:AddAction(function() self:GetItem(UHDItem.GetManipulatedItem()) end)
+        triggerUnitPickUPItem:RegisterUnitPickUpItem(self.owner)
+        triggerUnitPickUPItem:AddAction(function() self:SetItem(UHDItem.GetManipulatedItem()) end)
         local triggerUnitDropItem = WC3.Trigger()
-        triggerUnitDropItem:RegisterUnitDropItem()
+        triggerUnitDropItem:RegisterUnitDropItem(self.owner)
         triggerUnitDropItem:AddAction(function() UHDItem.GetManipulatedItem():RemoveStats(self.owner) end)
         self.owner.toDestroy[triggerUnitDropItem] = true
         self.owner.toDestroy[triggerUnitDropItem] = true
@@ -70,6 +70,7 @@ local Inventory = Class()
     end
 
     function Inventory:SetItem(item)
+        print(item)
         local maxInventory = self.owner:GetInventorySize()
         if #self.invetory <= maxInventory then
             if self:CheckAvaileItemToAdd(item) then

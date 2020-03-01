@@ -353,12 +353,12 @@ function Category:ctor(name, options)
     options = options or {}
     self.name = name
     if TestBuild then
-        self.printVerbosity = options.printVerbosity or Verbosity.Info
+        self.printVerbosity = options.printVerbosity or Verbosity.Message
     else
         self.printVerbosity = options.printVerbosity or Verbosity.Warning
     end
     if TestBuild then
-        self.fileVerbosity = options.fileVerbosity or Verbosity.Trace
+        self.fileVerbosity = options.fileVerbosity or Verbosity.Info
     else
         self.fileVerbosity = options.fileVerbosity or Verbosity.Message
     end
@@ -805,7 +805,7 @@ function CreepPreset:ctor()
     self.secondaryStats = Stats.Secondary()
 
     self.secondaryStats.health = 50
-    self.secondaryStats.mana = 2
+    self.secondaryStats.mana = 10
     self.secondaryStats.healthRegen = 1
     self.secondaryStats.manaRegen = 1
 
@@ -814,7 +814,7 @@ function CreepPreset:ctor()
     self.secondaryStats.physicalDamage = 1
     self.secondaryStats.spellDamage = 1
 
-    self.secondaryStats.armor = 5
+    self.secondaryStats.armor = 0
     self.secondaryStats.evasion = 0
     self.secondaryStats.block = 0
     self.secondaryStats.ccResist = 0
@@ -849,7 +849,7 @@ local WC3 = require("WC3.All")
 local Log = require("Log")
 
 local logHero = Log.Category("Core\\Hero")
--- local Invetory = require("Core.Inventory")
+local Invetory = require("Core.Inventory")
 local talentsHelperId = FourCC("__TU")
 local statsHelperId = FourCC("__SU")
 local statUpgrades = {
@@ -883,13 +883,13 @@ function Hero:ctor(...)
     self.abilities:RegisterUnitSpellEffect(self)
     self.toDestroy[self.abilities] = true
 
-    -- self.invetory = Invetory(self)
-    -- self.invetory.customItemAvailability["BodyArmor"] = 1
-    -- self.invetory.customItemAvailability["Helmet"] = 1
-    -- self.invetory.customItemAvailability["Arms"] = 1
-    -- self.invetory.customItemAvailability["Legs"] = 1
-    -- self.invetory.customItemAvailability["Weapon"] = 1
-    -- self.invetory.customItemAvailability["Misc"] = 2
+    self.invetory = Invetory(self)
+    self.invetory.customItemAvailability["BodyArmor"] = 1
+    self.invetory.customItemAvailability["Helmet"] = 1
+    self.invetory.customItemAvailability["Arms"] = 1
+    self.invetory.customItemAvailability["Legs"] = 1
+    self.invetory.customItemAvailability["Weapon"] = 1
+    self.invetory.customItemAvailability["Misc"] = 2
     
     self.statUpgrades = {}
     self.skillUpgrades = {}
@@ -1205,10 +1205,10 @@ local Inventory = Class()
             Misc = nil}
         self.invetory = {}
         local triggerUnitPickUPItem = WC3.Trigger()
-        triggerUnitPickUPItem:RegisterUnitPickUpItem(self)
-        triggerUnitPickUPItem:AddAction(function() self:GetItem(UHDItem.GetManipulatedItem()) end)
+        triggerUnitPickUPItem:RegisterUnitPickUpItem(self.owner)
+        triggerUnitPickUPItem:AddAction(function() self:SetItem(UHDItem.GetManipulatedItem()) end)
         local triggerUnitDropItem = WC3.Trigger()
-        triggerUnitDropItem:RegisterUnitDropItem()
+        triggerUnitDropItem:RegisterUnitDropItem(self.owner)
         triggerUnitDropItem:AddAction(function() UHDItem.GetManipulatedItem():RemoveStats(self.owner) end)
         self.owner.toDestroy[triggerUnitDropItem] = true
         self.owner.toDestroy[triggerUnitDropItem] = true
@@ -1256,6 +1256,7 @@ local Inventory = Class()
     end
 
     function Inventory:SetItem(item)
+        print(item)
         local maxInventory = self.owner:GetInventorySize()
         if #self.invetory <= maxInventory then
             if self:CheckAvaileItemToAdd(item) then
@@ -1511,7 +1512,8 @@ local Class = require("Class")
 local WC3 = require("WC3.All")
 
 
-local UHDItem = Class()
+
+local UHDItem = Class(WC3.Item)
 
 
 function UHDItem:ctor(...)
@@ -1678,16 +1680,11 @@ function UHDUnit:DamageReceived(args)
 end
 
 function UHDUnit:DealDamage(target, damage)
-    local dmg = damage.value
+    local dmg
     if damage.isAttack then
-        dmg = damage.value * (1 - UHDUnit.armorValue^target.secondaryStats.armor)
+        dmg = damage.value * (1 - UHDUnit.armorValue)^target.secondaryStats.armor
     else
         dmg = damage.value * (1 - target.secondaryStats.spellResist)
-    end
-    local hpAfterDamage = target:GetHP() - dmg
-    if hpAfterDamage < 0 then
-        hpAfterDamage = 0
-        dmg = dmg + hpAfterDamage
     end
     local args = {
         source = self,
@@ -2163,11 +2160,11 @@ function DuskKnight:ctor()
                 armorRemoved = function(_) return 10 end,
                 gainLimit = function(_) return 30 end,
                 stealPercentage = function(_) return 0.25 end,
-                damage = function(_, caster)
-                    if caster:HasTalent("T001") then return 5 * caster.secondaryStats.spellDamage end
+                damage = function(self, caster)
+                    if caster:HasTalent("T001") then return 5 * caster.secondaryStats.spellDamage * self.params.duration(self, caster) end
                     return 0
                 end,
-                healLimit = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
+                healLimit = function(self, caster) return 10 * caster.secondaryStats.spellDamage * self.params.duration(self, caster) end,
                 damageReduction = function(_, caster)
                     if caster:HasTalent("T002") then return 0.15 end
                     return 0
@@ -2294,12 +2291,14 @@ function DrainLight:Cast()
                 unit = unit,
                 stolen = 0,
                 toSteal = self.armorRemoved,
-                toReturn = self.armorRemoved,
+                toReturn = 0,
                 toBonus = self.stealPercentage,
                 toStealDamage = self.damageReduction,
             })
         end
     end)
+
+    self.durationLeft = self.duration
 
     timer:Start(self.period, true, function()
         if self.caster:GetHP() <= 0 then
@@ -2308,7 +2307,7 @@ function DrainLight:Cast()
             return
         end
 
-        self.duration = self.duration - self.period
+        self.durationLeft = self.durationLeft - self.period
         self.healed = 0
 
         for _, target in pairs(self.affected) do
@@ -2317,7 +2316,7 @@ function DrainLight:Cast()
             end
         end
 
-        if self.duration <= 0 then
+        if self.durationLeft <= 0 then
             for _, target in pairs(self.affected) do
                 if target.unit:GetHP() > 0 then
                     target.unit.secondaryStats.physicalDamage = target.unit.secondaryStats.physicalDamage * (1 - target.toStealDamage)
@@ -2363,13 +2362,15 @@ function DrainLight:End()
         target.unit:ApplyStats()
     end
     self.caster.bonusSecondaryStats.armor = self.caster.bonusSecondaryStats.armor - self.bonus
-    self.unit.bonusSecondaryStats.physicalDamage = self.unit.bonusSecondaryStats.physicalDamage / (1 + self.damageBonus)
+    self.caster.bonusSecondaryStats.physicalDamage = self.caster.bonusSecondaryStats.physicalDamage / (1 + self.damageBonus)
     self.caster:ApplyStats()
 end
 
 function DrainLight:Drain(target)
-    local toStealNow = (target.toSteal - target.stolen) * self.period / self.duration
-    target.unit.secondaryStats.armor = target.unit.secondaryStats.armor + toStealNow
+    local ticks = (self.duration // self.period)
+    local toStealNow = (target.toSteal - target.stolen) / ticks
+    target.unit.secondaryStats.armor = target.unit.secondaryStats.armor - toStealNow
+    target.toReturn = target.toReturn + toStealNow
     target.unit:ApplyStats()
     if self.bonus < self.gainLimit then
         local toBonus = math.min(self.gainLimit - self.bonus, toStealNow * target.toBonus)
@@ -2378,10 +2379,10 @@ function DrainLight:Drain(target)
         self.bonus = self.bonus + toBonus
     end
     if self.damage > 0 then
-        local damagePerTick = self.period * self.damage
+        local damagePerTick = self.damage / ticks
         local damage = self.caster:DealDamage(target.unit, { value = damagePerTick, })
-        if self.healed < self.healLimit * self.period then
-            local toHeal = math.min(self.healLimit * self.period - self.healed, self.stealPercentage * damage)
+        if self.healed < self.healLimit / ticks then
+            local toHeal = math.min(self.healLimit / ticks - self.healed, self.stealPercentage * damage)
             self.healed = self.healed + toHeal
             self.caster:Heal(self.caster, toHeal)
         end
@@ -2467,17 +2468,16 @@ end
 function DarkMend:Cast()
     local timer = Timer()
     local timeLeft = self.duration
-    local curHp = self.caster:GetHP();
-    local part = 1 / math.floor(self.period / self.duration)
-    self.caster:SetHP(curHp + (curHp * self.percentHeal + self.baseHeal) * self.instantHeal)
+    local ticks = self.duration // self.period
+    self.caster:Heal(self.caster, (self.caster:GetHP() * self.percentHeal + self.baseHeal) * self.instantHeal)
     timer:Start(self.period, true, function()
         local curHp = self.caster:GetHP();
         if curHp <= 0 then
             timer:Destroy()
             return
         end
+        self.caster:Heal(self.caster, ((curHp * self.percentHeal + self.baseHeal) / ticks) * self.healOverTime)
         timeLeft = timeLeft - self.period
-        self.caster:Heal(self.caster, (curHp * self.percentHeal + self.baseHeal) * part * self.healOverTime)
         if timeLeft <= 0 then
             timer:Destroy()
         end
@@ -2928,7 +2928,7 @@ logMain:Info("Start Map")
 -- heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
 Core(WC3.Player.Get(8), -2300, -3800, 0)
 Tavern(WC3.Player.Get(0), 1600, -3800, 0, heroPresets)
-ChainArmor(-2300, -3400)
+local item = ChainArmor(-2300, -3400)
 -- local Bos = DefiledTree():Spawn(WC3.Player.Get(0), -2300, -3500, 0, 1, 2)
 -- local timerwaveObserver = Timer()
 -- timerwaveObserver:Start(15, false,
@@ -2989,14 +2989,15 @@ Module("WC3.Item", function()
 local Class = require("Class")
 local Log = require("Log")
 
+local Item = Class()
 
 local items = {}
 
 local logItem = Log.Category("WC3\\Item")
 
-local Item = Class()
 
 local function Get(handle)
+    print(#items)
     local existing = items[handle]
     if existing then
         return existing
@@ -3009,33 +3010,46 @@ function Item.GetItemInSlot(unithandle, slot)
     Get(UnitItemInSlot(unithandle, slot))
 end
 
+function Item.GetSold()
+    Get(GetSoldUnit())
+end
+
+function Item.GetManipulatedItem()
+    local item = GetManipulatedItem()
+    print(" Choose item")
+    print(item)
+    Get(GetManipulatedItem())
+end
+
 function Item:ctor(...)
     local params = { ... }
-    logItem:Info("Start to creat Item in W3")
     if #params == 1 then
         self.handle = params[1]
     else
-        logItem:Info(" Creat Item in W3")
         local itemid, x, y = ...
         self.handle = CreateItem(itemid, x, y)
         print(itemid)
     end
+    print(self)
     self:Register()
     self.toDestroy = {}
 end
 
-function Item.GetSold()
-    Get(GetSoldUnit)
-end
-
-function Item.GetManipulatedItem()
-    Get(GetManipulatedItem())
-end
 
 function Item:Register()
+    print("Register Item")
+    print(self)
+    print(self.handle)
+    
     if items[self.handle] then
         error("Attempt to reregister a unit", 3)
     end
+    print("State of items")
+    print(items)
+    -- items[1] = {self, self.handle}
+    -- print("Amount of Items "..#items)
+    -- print(items[1][1])
+    -- print(items[1][2])
     items[self.handle] = self
 end
 
@@ -3787,6 +3801,141 @@ function Unit:IsHero() return IsHeroUnitId(self:GetTypeId()) end
 return Unit
 end)
 -- End of file WC3\Unit.lua
+-- Start of file Core\Inventory.lua
+Module("Core.Inventory", function()
+
+local WC3 = require("WC3.All")
+local Class = require("Class")
+local UHDItem = require("Core.UHDItem")
+
+
+local Inventory = Class()
+
+
+    function Inventory:ctor(owner)
+        self.owner = owner
+        self.customItemAvailability = {
+            General = nil,
+            Helmet = nil,
+            BodyArmor = nil,
+            Weapon = nil,
+            Arms = nil,
+            Legs = nil,
+            Misc = nil}
+        self.invetory = {}
+        local triggerUnitPickUPItem = WC3.Trigger()
+        triggerUnitPickUPItem:RegisterUnitPickUpItem(self.owner)
+        triggerUnitPickUPItem:AddAction(function() self:SetItem(UHDItem.GetManipulatedItem()) end)
+        local triggerUnitDropItem = WC3.Trigger()
+        triggerUnitDropItem:RegisterUnitDropItem(self.owner)
+        triggerUnitDropItem:AddAction(function() UHDItem.GetManipulatedItem():RemoveStats(self.owner) end)
+        self.owner.toDestroy[triggerUnitDropItem] = true
+        self.owner.toDestroy[triggerUnitDropItem] = true
+    end
+
+    function Inventory:SearchNewItem()
+        local resultList = {}
+        self.owner:EnumItems(function (item) resultList[item] = true end)
+        for item in pairs(resultList) do
+            if ~self:HasItem(item) then
+                self.invetory = resultList
+                return item
+            end
+        end
+    end
+
+    function Inventory:HasItem(item)
+        for litem in pairs(self.invetory) do
+            if item == litem then
+                return true
+            end
+        end
+        return false
+    end
+
+    function Inventory:CheckAvaileItemToAdd(item)
+        local amount = 0
+        local ltype = item.type
+        self:EnumItems(function (locItem)
+            if locItem.type == ltype then
+                amount = amount + 1
+            end
+        end)
+        if ~self.owner.customItemAvailability[type] then
+            return true
+        else
+            if self.owner.customItemAvailability[type] < amount then
+                return false
+            else
+                return true
+            end
+        end
+        error("Something going wrong when checking should be this item to add to the unit")
+        return false
+    end
+
+    function Inventory:SetItem(item)
+        local maxInventory = self.owner:GetInventorySize()
+        print(item)
+        if #self.invetory <= maxInventory then
+            if self:CheckAvaileItemToAdd(item) then
+                self:DressItem(item)
+            end
+        else
+            self:DropItem(item)
+        end
+    end
+
+    function Inventory:LeaveItem(item)
+        local x, y = self.owner:GetX(), self.owner:GetY()
+        item.DropItem(item)
+        item:SetPos(x, y)
+    end
+
+    function Inventory:EnumItems(handler)
+        local i = 0
+        for item in pairs(self.invetory) do
+            local res, err = pcall(handler, item, i)
+            i = i + 1
+        end
+    end
+
+    function Inventory:DropItem(item)
+        local itemSlot = self.owner:GetItemSlot(item)
+        if itemSlot == nil then
+            error("Error drop undressed Item")
+        else
+            self.owner:RemoveItemFromSlot(itemSlot)
+        end
+    end
+
+    function Inventory:UpdateItems()
+        local resultList = {}
+        self.owner:EnumItems(function (item) resultList[item] = true end)
+        self.invetory = resultList
+    end
+
+    function Inventory:GetItemSlot(item)
+        local resslot = nil
+        self.owner:EnumItems(
+        function (itemInSlot, slot)
+            if itemInSlot == item then
+                resslot = slot
+                return
+            end
+        end)
+        return resslot
+    end
+
+    function Inventory:DressItem(item)
+        self.invetory[item] = true
+        item:AddStats(self.owner)
+    end
+
+
+return Inventory
+end)
+-- End of file Core\Inventory.lua
 function CreateUnitsForPlayer0()
     local p = Player(0)
     local u

@@ -4,7 +4,8 @@ local Class = require("Class")
 local WC3 = require("WC3.All")
 
 
-local UHDItem = Class()
+
+local UHDItem = Class(WC3.Item)
 
 
 function UHDItem:ctor(...)
