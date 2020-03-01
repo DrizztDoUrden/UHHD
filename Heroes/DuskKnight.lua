@@ -258,7 +258,6 @@ function DrainLight:Drain(target)
     if self.damage > 0 then
         local damagePerTick = self.damage / ticks
         local damage = self.caster:DealDamage(target.unit, { value = damagePerTick, })
-        print(ticks, self.damage, damagePerTick, damage)
         if self.healed < self.healLimit / ticks then
             local toHeal = math.min(self.healLimit / ticks - self.healed, self.stealPercentage * damage)
             self.healed = self.healed + toHeal
