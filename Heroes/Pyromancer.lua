@@ -13,52 +13,53 @@ local FiresOfNaalXul = Class(Spell)
 local RagingFlames = Class(Spell)
 local FireAndIce = Class(Spell)
 
+Pyromancer.unitid = FourCC('H_PM')
+
+Pyromancer.abilities = {
+    boilingBlood = {
+        id = FourCC('PM_0'),
+        handler = BoilingBlood,
+        availableFromStart = true,
+        params = {
+            damage = function(self, caster) return 5 * caster.secondaryStats.spellDamage * self.params.duration(self, caster) end,
+            duration = function(_) return 5 end,
+            period = function(_) return 0.5 end,
+            explosionDamage = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
+            explosionRagius = function(_) return 250 end,
+        },
+    },
+    firesOfNaalXul = {
+        id = { FourCC('PM_1'), },
+        handler = FiresOfNaalXul,
+        availableFromStart = true,
+        params = {
+        },
+    },
+    ragingFlames = {
+        id = FourCC('PM_2'),
+        handler = RagingFlames,
+        availableFromStart = true,
+        params = {
+        },
+    },
+    fireAndIce = {
+        id = FourCC('PM_3'),
+        handler = FireAndIce,
+        availableFromStart = true,
+        params = {
+        },
+    },
+}
+
+Pyromancer.talentBooks = {
+    FourCC("PMT0"),
+    FourCC("PMT1"),
+    FourCC("PMT2"),
+    FourCC("PMT3"),
+}
+
 function Pyromancer:ctor()
     HeroPreset.ctor(self)
-
-    self.unitid = FourCC('H_PM')
-
-    self.abilities = {
-        boilingBlood = {
-            id = FourCC('PM_0'),
-            handler = BoilingBlood,
-            availableFromStart = true,
-            params = {
-                damagePerSecond = function(_, caster) return 5 * caster.secondaryStats.spellDamage end,
-                duration = function(_) return 5 end,
-                period = function(_) return 0.5 end,
-                explosionDamage = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
-            },
-        },
-        firesOfNaalXul = {
-            id = { FourCC('PM_1'), },
-            handler = FiresOfNaalXul,
-            availableFromStart = true,
-            params = {
-            },
-        },
-        ragingFlames = {
-            id = FourCC('PM_2'),
-            handler = RagingFlames,
-            availableFromStart = true,
-            params = {
-            },
-        },
-        fireAndIce = {
-            id = FourCC('PM_3'),
-            handler = FireAndIce,
-            availableFromStart = true,
-            params = {
-            },
-        },
-    }
-
-    self.talentBooks = {
-        FourCC("PMT0"),
-        FourCC("PMT1"),
-        FourCC("PMT2"),
-        FourCC("PMT3"),
-    }
 
     self:AddTalent("2", "00")
     self:AddTalent("2", "01")
@@ -90,7 +91,7 @@ function BoilingBlood:Cast()
     local existing = self.target.effects["Pyromancer.BoilingBlood"]
 
     if existing then
-        existing:End()
+        existing:Destroy()
     end
 
     self.target.effects["Pyromancer.BoilingBlood"] = self
@@ -102,16 +103,25 @@ function BoilingBlood:Cast()
 end
 
 function BoilingBlood:Explode()
+    WC3.Unit.EnumInRange(self.target.GetX(), self.target.GetY(), self.explosionRagius, function(unit)
+        if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+            self.caster:DealDamage(self.target, { value = self.explosionDamage, })
+            BoilingBlood(Pyromancer.abilities.boilingBlood, self.caster)
+        end
+    end)
 end
 
 function BoilingBlood:Tick()
+    local ticks = self.duration // self.period
+    local damage = self.damage / ticks
+    self.caster:DealDamage(self.target, { value = damage, })
     self.durationLeft = self.durationLeft - self.period
     if self.durationLeft <= 0 then
-        self:End()
+        self:Destroy()
     end
 end
 
-function BoilingBlood:End()
+function BoilingBlood:Destroy()
     self.timer:Destroy()
     self.target.effects["Pyromancer.BoilingBlood"] = nil
     self.target.onDeath[self.deathHandler] = nil

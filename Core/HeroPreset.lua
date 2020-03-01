@@ -13,8 +13,6 @@ function HeroPreset:ctor()
     self.basicStats = Stats.Basic()
     self.secondaryStats = Stats.Secondary()
 
-    self.abilities = {}
-
     self.secondaryStats.health = 100
     self.secondaryStats.mana = 100
     self.secondaryStats.healthRegen = .5
