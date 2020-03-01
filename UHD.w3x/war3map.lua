@@ -1242,10 +1242,10 @@ local Inventory = Class()
                 amount = amount + 1
             end
         end)
-        if ~self.owner.customItemAvailability[type] then
+        if not self.customItemAvailability[type] then
             return true
         else
-            if self.owner.customItemAvailability[type] < amount then
+            if self.customItemAvailability[type] < amount then
                 return false
             else
                 return true
@@ -1256,6 +1256,7 @@ local Inventory = Class()
     end
 
     function Inventory:SetItem(item)
+        print("New item")
         print(item)
         local maxInventory = self.owner:GetInventorySize()
         if #self.invetory <= maxInventory then
@@ -1544,23 +1545,24 @@ function UHDItem:ctor(...)
 end
 
 function  UHDItem:AddStats(unit)
+    print("Apply stats")
     local bonusSecondaryStats = unit.bonusSecondaryStats
     unit.bonusSecondaryStats.health = bonusSecondaryStats.health + self.bonusSecondaryStats.health
     unit.bonusSecondaryStats.mana = bonusSecondaryStats.mana + self.bonusSecondaryStats.mana
     unit.bonusSecondaryStats.healthRegen = bonusSecondaryStats.healthRegen + self.bonusSecondaryStats.healthRegen
     unit.bonusSecondaryStats.manaRegen = bonusSecondaryStats.manaRegen + self.bonusSecondaryStats.manaRegen
 
-    self.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage + self.bonusSecondaryStats.weaponDamage
-    self.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed + self.bonusSecondaryStats.attackSpeed
-    self.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage + self.bonusSecondaryStats.physicalDamage
-    self.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage + self.bonusSecondaryStats.spellDamage
+    unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage + self.bonusSecondaryStats.weaponDamage
+    unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed + self.bonusSecondaryStats.attackSpeed
+    unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage + self.bonusSecondaryStats.physicalDamage
+    unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage + self.bonusSecondaryStats.spellDamage
 
-    self.bonusSecondaryStats.armor = bonusSecondaryStats.armor + self.bonusSecondaryStats.armor
-    self.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion + self.bonusSecondaryStats.evasion
-    self.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist + self.bonusSecondaryStats.ccResist
-    self.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist + self.bonusSecondaryStats.spellResist
+    unit.bonusSecondaryStats.armor = bonusSecondaryStats.armor + self.bonusSecondaryStats.armor
+    unit.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion + self.bonusSecondaryStats.evasion
+    unit.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist + self.bonusSecondaryStats.ccResist
+    unit.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist + self.bonusSecondaryStats.spellResist
 
-    self.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed + self.bonusSecondaryStats.movementSpeed
+    unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed + self.bonusSecondaryStats.movementSpeed
     unit:ApplyStats()
 end
 
@@ -1571,17 +1573,17 @@ function  UHDItem:RemoveStats(unit)
     unit.bonusSecondaryStats.healthRegen = bonusSecondaryStats.healthRegen - self.bonusSecondaryStats.healthRegen
     unit.bonusSecondaryStats.manaRegen = bonusSecondaryStats.manaRegen - self.bonusSecondaryStats.manaRegen
 
-    self.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage - self.bonusSecondaryStats.weaponDamage
-    self.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed - self.bonusSecondaryStats.attackSpeed
-    self.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage - self.bonusSecondaryStats.physicalDamage
-    self.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage - self.bonusSecondaryStats.spellDamage
+    unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage - self.bonusSecondaryStats.weaponDamage
+    unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed - self.bonusSecondaryStats.attackSpeed
+    unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage - self.bonusSecondaryStats.physicalDamage
+    unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage - self.bonusSecondaryStats.spellDamage
 
-    self.bonusSecondaryStats.armor = bonusSecondaryStats.armor - self.bonusSecondaryStats.armor
-    self.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion - self.bonusSecondaryStats.evasion
-    self.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist - self.bonusSecondaryStats.ccResist
-    self.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist - self.bonusSecondaryStats.spellResist
+    unit.bonusSecondaryStats.armor = bonusSecondaryStats.armor - self.bonusSecondaryStats.armor
+    unit.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion - self.bonusSecondaryStats.evasion
+    unit.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist - self.bonusSecondaryStats.ccResist
+    unit.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist - self.bonusSecondaryStats.spellResist
 
-    self.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed - self.bonusSecondaryStats.movementSpeed
+    unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed - self.bonusSecondaryStats.movementSpeed
     unit:ApplyStats()
 end
 
@@ -2997,7 +2999,6 @@ local logItem = Log.Category("WC3\\Item")
 
 
 local function Get(handle)
-    print(#items)
     local existing = items[handle]
     if existing then
         return existing
@@ -3007,18 +3008,15 @@ end
 
 
 function Item.GetItemInSlot(unithandle, slot)
-    Get(UnitItemInSlot(unithandle, slot))
+    return Get(UnitItemInSlot(unithandle, slot))
 end
 
-function Item.GetSold()
-    Get(GetSoldUnit())
-end
+-- function Item.GetSold()
+--     return Get(GetSoldUnit())
+-- end
 
 function Item.GetManipulatedItem()
-    local item = GetManipulatedItem()
-    print(" Choose item")
-    print(item)
-    Get(GetManipulatedItem())
+    return Get(GetManipulatedItem())
 end
 
 function Item:ctor(...)
@@ -3028,28 +3026,16 @@ function Item:ctor(...)
     else
         local itemid, x, y = ...
         self.handle = CreateItem(itemid, x, y)
-        print(itemid)
     end
-    print(self)
     self:Register()
     self.toDestroy = {}
 end
 
 
 function Item:Register()
-    print("Register Item")
-    print(self)
-    print(self.handle)
-    
     if items[self.handle] then
         error("Attempt to reregister a unit", 3)
     end
-    print("State of items")
-    print(items)
-    -- items[1] = {self, self.handle}
-    -- print("Amount of Items "..#items)
-    -- print(items[1][1])
-    -- print(items[1][2])
     items[self.handle] = self
 end
 

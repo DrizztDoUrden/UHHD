@@ -3,8 +3,6 @@ local Stats = require("Core.Stats")
 local Class = require("Class")
 local WC3 = require("WC3.All")
 
-
-
 local UHDItem = Class(WC3.Item)
 
 
@@ -42,17 +40,17 @@ function  UHDItem:AddStats(unit)
     unit.bonusSecondaryStats.healthRegen = bonusSecondaryStats.healthRegen + self.bonusSecondaryStats.healthRegen
     unit.bonusSecondaryStats.manaRegen = bonusSecondaryStats.manaRegen + self.bonusSecondaryStats.manaRegen
 
-    self.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage + self.bonusSecondaryStats.weaponDamage
-    self.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed + self.bonusSecondaryStats.attackSpeed
-    self.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage + self.bonusSecondaryStats.physicalDamage
-    self.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage + self.bonusSecondaryStats.spellDamage
+    unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage + self.bonusSecondaryStats.weaponDamage
+    unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed + self.bonusSecondaryStats.attackSpeed
+    unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage + self.bonusSecondaryStats.physicalDamage
+    unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage + self.bonusSecondaryStats.spellDamage
 
-    self.bonusSecondaryStats.armor = bonusSecondaryStats.armor + self.bonusSecondaryStats.armor
-    self.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion + self.bonusSecondaryStats.evasion
-    self.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist + self.bonusSecondaryStats.ccResist
-    self.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist + self.bonusSecondaryStats.spellResist
+    unit.bonusSecondaryStats.armor = bonusSecondaryStats.armor + self.bonusSecondaryStats.armor
+    unit.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion + self.bonusSecondaryStats.evasion
+    unit.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist + self.bonusSecondaryStats.ccResist
+    unit.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist + self.bonusSecondaryStats.spellResist
 
-    self.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed + self.bonusSecondaryStats.movementSpeed
+    unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed + self.bonusSecondaryStats.movementSpeed
     unit:ApplyStats()
 end
 
@@ -63,17 +61,17 @@ function  UHDItem:RemoveStats(unit)
     unit.bonusSecondaryStats.healthRegen = bonusSecondaryStats.healthRegen - self.bonusSecondaryStats.healthRegen
     unit.bonusSecondaryStats.manaRegen = bonusSecondaryStats.manaRegen - self.bonusSecondaryStats.manaRegen
 
-    self.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage - self.bonusSecondaryStats.weaponDamage
-    self.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed - self.bonusSecondaryStats.attackSpeed
-    self.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage - self.bonusSecondaryStats.physicalDamage
-    self.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage - self.bonusSecondaryStats.spellDamage
+    unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage - self.bonusSecondaryStats.weaponDamage
+    unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed - self.bonusSecondaryStats.attackSpeed
+    unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage - self.bonusSecondaryStats.physicalDamage
+    unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage - self.bonusSecondaryStats.spellDamage
 
-    self.bonusSecondaryStats.armor = bonusSecondaryStats.armor - self.bonusSecondaryStats.armor
-    self.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion - self.bonusSecondaryStats.evasion
-    self.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist - self.bonusSecondaryStats.ccResist
-    self.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist - self.bonusSecondaryStats.spellResist
+    unit.bonusSecondaryStats.armor = bonusSecondaryStats.armor - self.bonusSecondaryStats.armor
+    unit.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion - self.bonusSecondaryStats.evasion
+    unit.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist - self.bonusSecondaryStats.ccResist
+    unit.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist - self.bonusSecondaryStats.spellResist
 
-    self.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed - self.bonusSecondaryStats.movementSpeed
+    unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed - self.bonusSecondaryStats.movementSpeed
     unit:ApplyStats()
 end
 

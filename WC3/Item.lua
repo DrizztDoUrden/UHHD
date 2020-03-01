@@ -9,7 +9,6 @@ local logItem = Log.Category("WC3\\Item")
 
 
 local function Get(handle)
-    print(#items)
     local existing = items[handle]
     if existing then
         return existing
@@ -17,20 +16,16 @@ local function Get(handle)
     return Item(handle)
 end
 
-
 function Item.GetItemInSlot(unithandle, slot)
-    Get(UnitItemInSlot(unithandle, slot))
+    return Get(UnitItemInSlot(unithandle, slot))
 end
 
-function Item.GetSold()
-    Get(GetSoldUnit())
-end
+-- function Item.GetSold()
+--     return Get(GetSoldUnit())
+-- end
 
 function Item.GetManipulatedItem()
-    local item = GetManipulatedItem()
-    print(" Choose item")
-    print(item)
-    Get(GetManipulatedItem())
+    return Get(GetManipulatedItem())
 end
 
 function Item:ctor(...)
@@ -40,30 +35,16 @@ function Item:ctor(...)
     else
         local itemid, x, y = ...
         self.handle = CreateItem(itemid, x, y)
-        print(itemid)
     end
-    print(self)
     self:Register()
     self.toDestroy = {}
 end
 
-
 function Item:Register()
-    print("Register Item")
-    print(self)
-    print(self.handle)
-    
     if items[self.handle] then
         error("Attempt to reregister a unit", 3)
     end
-    print("State of items")
-    print(items)
-    -- items[1] = {self, self.handle}
-    -- print("Amount of Items "..#items)
-    -- print(items[1][1])
-    -- print(items[1][2])
     items[self.handle] = self
-    print("Amount of Items "..#items)
 end
 
 function Item:GetTypeId()
@@ -115,7 +96,6 @@ end
 function Item:GetPlayer()
     return GetItemPlayer(self.handle)
 end
-
 
 function Item.GetInSlot(handle, slot)
     return Get(UnitItemInSlot(handle, slot))
