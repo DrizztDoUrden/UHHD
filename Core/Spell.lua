@@ -1,5 +1,6 @@
 local Class = require "Class"
 local Log = require "Log"
+local WC3 = require "WC3.All"
 
 local Spell = Class()
 
@@ -9,6 +10,10 @@ function Spell:ctor(definition, caster)
         self[k] = v(definition, caster)
     end
     self:Cast()
+end
+
+function Spell:GetTargetUnit()
+    return WC3.Unit.GetSpellTarget()
 end
 
 return Spell
