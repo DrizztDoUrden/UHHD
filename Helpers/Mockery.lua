@@ -36,6 +36,7 @@ EVENT_UNIT_SELL = {}
 EVENT_UNIT_DROP_ITEM = {}
 EVENT_UNIT_PICKUP_ITEM = {}
 
+EVENT_PLAYER_UNIT_SELL_ITEM = {}
 EVENT_PLAYER_UNIT_DEATH = {}
 EVENT_PLAYER_UNIT_DAMAGING = {}
 EVENT_PLAYER_UNIT_SPELL_FINISH = {}
@@ -442,6 +443,8 @@ function GetItemY(whichItem) end
 function GetItemY(whichItem) end
 
 function GetItemName(whichItem) end
+
+function GetItemTypeId(whichItem) end
 
 function SetItemPosition(whichItem, x, y) end
 

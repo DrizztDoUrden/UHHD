@@ -33,6 +33,7 @@ function UHDUnit:ctor(...)
 
     self.onDamageDealt = {}
     self.onDamageReceived = {}
+
 end
 
 function UHDUnit:CheckSecondaryStat0_1(name)

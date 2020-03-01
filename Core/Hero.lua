@@ -5,7 +5,7 @@ local WC3 = require("WC3.All")
 local Log = require("Log")
 
 local logHero = Log.Category("Core\\Hero")
-
+local Invetory = require("Core.Inventory")
 local talentsHelperId = FourCC("__TU")
 local statsHelperId = FourCC("__SU")
 local statUpgrades = {
@@ -39,11 +39,18 @@ function Hero:ctor(...)
     self.abilities:RegisterUnitSpellEffect(self)
     self.toDestroy[self.abilities] = true
 
+    self.invetory = Invetory(self)
+    self.invetory.customItemAvailability["BodyArmor"] = 1
+    self.invetory.customItemAvailability["Helmet"] = 1
+    self.invetory.customItemAvailability["Arms"] = 1
+    self.invetory.customItemAvailability["Legs"] = 1
+    self.invetory.customItemAvailability["Weapon"] = 1
+    self.invetory.customItemAvailability["Misc"] = 2
+    
     self.statUpgrades = {}
     self.skillUpgrades = {}
     self.talentBooks = {}
     self.talents = {}
-
 
 
     self.baseSecondaryStats.health = 100
@@ -96,6 +103,10 @@ function Hero:OnLevel()
     if math.floor(div) == div then
         self:AddTalentPoint()
     end
+end
+
+function Hero:SetItem(item)
+    self.invetory:SetItem(item)
 end
 
 function Hero:AddStatPoint()

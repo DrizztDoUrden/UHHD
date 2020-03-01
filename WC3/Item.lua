@@ -46,6 +46,10 @@ function Item:Register()
     items[self.handle] = self
 end
 
+function Item:GetTypeId()
+    return GetItemTypeId(self.handle)
+end
+
 function Item:Destroy()
     items[self.handle] = nil
     RemoveItem(self.handle)

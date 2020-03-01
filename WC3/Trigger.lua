@@ -32,6 +32,10 @@ function Trigger:RegisterUnitSold(unit)
     TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_SELL)
 end
 
+function Trigger:RegisterSoldItem(unit)
+    TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_PLAYER_UNIT_SELL_ITEM)
+end
+
 function Trigger:RegisterUnitDeath(unit)
     return TriggerRegisterUnitEvent(self.handle, unit.handle, EVENT_UNIT_DEATH)
 end
