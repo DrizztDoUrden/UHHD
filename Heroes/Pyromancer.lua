@@ -91,11 +91,11 @@ function Pyromancer:ctor()
     self:AddTalent("2", "32")
 
     self.basicStats.strength = 6
-    self.basicStats.agility = 8
-    self.basicStats.intellect = 15
-    self.basicStats.constitution = 9
-    self.basicStats.endurance = 13
-    self.basicStats.willpower = 9
+    self.basicStats.agility = 6
+    self.basicStats.intellect = 16
+    self.basicStats.constitution = 7
+    self.basicStats.endurance = 14
+    self.basicStats.willpower = 11
 end
 
 function BoilingBlood:Cast()
