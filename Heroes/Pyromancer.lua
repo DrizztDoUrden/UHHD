@@ -44,6 +44,9 @@ Pyromancer.abilities = {
         handler = RagingFlames,
         availableFromStart = true,
         params = {
+            radius = function(_) return 150 end,
+            damage = function(_, caster) return 15 * caster.secondaryStats.spellDamage end,
+            channelTime = function(_) return 2 end,
         },
     },
     fireAndIce = {
@@ -51,6 +54,12 @@ Pyromancer.abilities = {
         handler = FireAndIce,
         availableFromStart = true,
         params = {
+            duration = function(_) return 4 end,
+            period = function(_) return 0.25 end,
+            channelTime = function(_) return 2 end,
+            damage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
+            shieldRate = function(_) return 1 end,
+            shieldDuration = function(_) return 6 end,
         },
     },
 }
