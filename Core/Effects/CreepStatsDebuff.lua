@@ -6,7 +6,7 @@ local CreepStatsDebuff = Class(CCEffect)
 
 function CreepStatsDebuff:ctor(stats, target, duration)
     self.stats = stats
-    CreepStatsDebuff.ctor(self, target, duration)
+    CCEffect.ctor(self, target, duration)
 end
 
 function CreepStatsDebuff:OnStart()
