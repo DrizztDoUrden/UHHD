@@ -92,7 +92,7 @@ function Mutant:ctor()
             availableFromStart = true,
             params = {
                 ragePerAttack = function(_) return 1 end,
-                damagePerRage = function(_) return 1 end,
+                damagePerRage = function(_) return 0.075 end,
                 armorPerRage = function(_, caster)
                     local value = -1
                     if caster:HasTalent("T130") then value = value + 0.2 end
@@ -319,11 +319,11 @@ function Rage:SetStacks(value)
     value = math.min(self.maxStacks, value)
     if self.stacks == value then return end
     if self.stacks then
-        self.caster.bonusSecondaryStats.weaponDamage = self.caster.bonusSecondaryStats.weaponDamage - self.damagePerRage * self.stacks
+        self.caster.bonusSecondaryStats.weaponDamage = self.caster.bonusSecondaryStats.weaponDamage / (1 + self.damagePerRage * self.stacks)
         self.caster.bonusSecondaryStats.armor = self.caster.bonusSecondaryStats.armor - self.armorPerRage * self.stacks
     end
     self.stacks = value
-    self.caster.bonusSecondaryStats.weaponDamage = self.caster.bonusSecondaryStats.weaponDamage + self.damagePerRage * self.stacks
+    self.caster.bonusSecondaryStats.weaponDamage = self.caster.bonusSecondaryStats.weaponDamage * (1 + self.damagePerRage * self.stacks)
     self.caster.bonusSecondaryStats.armor = self.caster.bonusSecondaryStats.armor + self.armorPerRage * self.stacks
     self.caster:ApplyStats()
     if self.stacks <= 0 then

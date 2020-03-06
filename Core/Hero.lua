@@ -76,7 +76,7 @@ function Hero:ctor(...)
     self.bonusSecondaryStats.healthRegen = 0
     self.bonusSecondaryStats.manaRegen = 0
 
-    self.bonusSecondaryStats.weaponDamage = 0
+    self.bonusSecondaryStats.weaponDamage = 1
     self.bonusSecondaryStats.attackSpeed = 1
     self.bonusSecondaryStats.physicalDamage = 1
     self.bonusSecondaryStats.spellDamage = 1
@@ -195,7 +195,7 @@ function Hero:UpdateSecondaryStats()
     local ltoBase = 0.95
 
     self.secondaryStats.physicalDamage = BonusMul(self.baseSecondaryStats.physicalDamage, gtoBase, self.basicStats.strength, self.bonusSecondaryStats.physicalDamage)
-    self.secondaryStats.weaponDamage = (self.baseSecondaryStats.weaponDamage + self.bonusSecondaryStats.weaponDamage)
+    self.secondaryStats.weaponDamage = self.baseSecondaryStats.weaponDamage * self.bonusSecondaryStats.weaponDamage
 
     self.secondaryStats.evasion = ProbabilityBased(self.baseSecondaryStats.evasion, math.sqrt(ltoBase), self.basicStats.agility, self.bonusSecondaryStats.evasion)
     self.secondaryStats.attackSpeed = BonusMul(self.baseSecondaryStats.attackSpeed, math.sqrt(gtoBase), self.basicStats.agility, self.bonusSecondaryStats.attackSpeed)
