@@ -33,7 +33,7 @@ function UHDUnit:ctor(...)
 
     self.onDamageDealt = {}
     self.onDamageReceived = {}
-
+    self.onDeath = {}
 end
 
 function UHDUnit:CheckSecondaryStat0_1(name)
@@ -115,8 +115,14 @@ function UHDUnit:Heal(target, value)
     target:SetHP(math.min(self.secondaryStats.health, target:GetHP() + value))
 end
 
+function UHDUnit:Died()
+    for handler in pairs(self.onDeath) do
+        handler()
+    end
+end
+
 local unitDamaging = WC3.Trigger()
-for i=0,23 do unitDamaging:RegisterPlayerUnitDamaging(WC3.Player.Get(i)) end
+
 unitDamaging:AddAction(function()
     local damageType = BlzGetEventDamageType()
     if damageType == DAMAGE_TYPE_UNKNOWN then
@@ -141,5 +147,17 @@ unitDamaging:AddAction(function()
     if source:IsA(UHDUnit) then source:DamageDealt(args) end
     if target:IsA(UHDUnit) then target:DamageReceived(args) end
 end)
+
+local unitDeath = WC3.Trigger()
+
+unitDeath:AddAction(function()
+    local dyingUnit = WC3.Unit.GetDying()
+    if dyingUnit:IsA(UHDUnit) then dyingUnit:Died() end
+end)
+
+for _, player in pairs(WC3.Player.All()) do
+    unitDamaging:RegisterPlayerUnitDamaging(player)
+    unitDeath:RegisterPlayerUnitDeath(player)
+end
 
 return UHDUnit

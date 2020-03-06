@@ -37,43 +37,51 @@ local Stats = {}
 
 Stats.Basic = Class(StatsBase)
 
-function Stats.Basic:ctor()
-    self.names = {
-        "strength",
-        "agility",
-        "intellect",
-        "constitution",
-        "endurance",
-        "willpower",
-    }
+Stats.Basic.names = {
+    "strength",
+    "agility",
+    "intellect",
+    "constitution",
+    "endurance",
+    "willpower",
+}
 
+function Stats.Basic:ctor()
     for _, stat in self:EnumerateNames() do self[stat] = 0 end
 end
 
 Stats.Secondary = Class(StatsBase)
 
+Stats.Secondary.names = {
+    "health",
+    "mana",
+
+    "healthRegen",
+    "manaRegen",
+
+    "weaponDamage",
+    "attackSpeed",
+    "physicalDamage",
+    "spellDamage",
+
+    "armor",
+    "evasion",
+    "block",
+    "ccResist",
+    "spellResist",
+
+    "movementSpeed",
+}
+
+Stats.Secondary.adding = {
+    health = true,
+    mana = true,
+    healthRegen = true,
+    manaRegen = true,
+    armor = true,
+}
+
 function Stats.Secondary:ctor()
-    self.names = {
-        "health",
-        "mana",
-
-        "healthRegen",
-        "manaRegen",
-
-        "weaponDamage",
-        "attackSpeed",
-        "physicalDamage",
-        "spellDamage",
-
-        "armor",
-        "evasion",
-        "block",
-        "ccResist",
-        "spellResist",
-
-        "movementSpeed",
-    }
-
     for _, stat in self:EnumerateNames() do self[stat] = 0 end
 end
 

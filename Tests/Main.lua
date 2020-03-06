@@ -2,6 +2,7 @@ local Log = require("Log")
 local WC3 = require("WC3.All")
 local DuskKnight = require("Heroes.DuskKnight")
 local Mutant = require("Heroes.Mutant")
+local Pyromancer = require("Heroes.Pyromancer")
 local WaveObserver = require("Core.WaveObserver")
 local Core = require("Core.Core")
 local Tavern = require("Core.Tavern")
@@ -18,6 +19,7 @@ local logMain = Log.Category("Main")
 local heroPresets = {
     DuskKnight(),
     Mutant(),
+    Pyromancer(),
 }
 
 local itemsPresets = {
@@ -49,11 +51,11 @@ Shop(WC3.Player.Get(0), -2000, -2600, 0, itemsPresets)
 local item = ChainArmor(-2300, -3400)
 local item2 = LeatherArmor(-2200, -3400)
 local item3 = PlateArmor(-2400, -3400)
-local item4  = Robe(-2500, -3400)
+local item4 = Robe(-2500, -3400)
 -- local Bos = DefiledTree():Spawn(WC3.Player.Get(0), -2300, -3500, 0, 1, 2)
 -- local timerwaveObserver = Timer()
--- timerwaveObserver:Start(15, false,
---     function() WaveObserver(WC3.Player.Get(9))
+-- timerwaveObserver:Start(15, false, function()
+    WaveObserver(WC3.Player.Get(9))
 -- end)
 
 

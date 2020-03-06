@@ -13,6 +13,9 @@ local units = {}
 local logUnit = Log.Category("WC3\\Unit")
 
 local function Get(handle)
+    if handle == nil then
+        return nil
+    end
     local existing = units[handle]
     if existing then
         return existing
@@ -63,6 +66,7 @@ function Unit.EnumInRange(x, y, radius, handler)
         if not result then
             logUnit:Error("Error enumerating units in range: " .. err)
         end
+        return false
     end))
     DestroyGroup(group)
 end

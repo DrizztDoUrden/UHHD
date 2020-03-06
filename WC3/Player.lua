@@ -16,7 +16,6 @@ function WCPlayer.Get(player)
     return players[player]
 end
 
-
 function WCPlayer.PlayersRemoweWithResult(isAVictory)
     local result = nil
     if isAVictory then
@@ -83,5 +82,17 @@ function WCPlayer:SetTechLevel(tech, value)
 end
 
 WCPlayer.Local = WCPlayer.Get(GetLocalPlayer())
+
+local allPlayers = {}
+
+for i = 0,23 do
+    allPlayers[i] = WCPlayer.Get(i)
+end
+
+function WCPlayer.All()
+    local ret = {}
+    for k, v in pairs(players) do ret[k] = v end
+    return ret
+end
 
 return WCPlayer
