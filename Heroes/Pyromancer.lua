@@ -120,7 +120,7 @@ function BoilingBlood:Explode()
     WC3.Unit.EnumInRange(self.target:GetX(), self.target:GetY(), self.explosionRadius, function(unit)
         if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DealDamage(self.target, { value = self.explosionDamage, })
-            BoilingBlood(Pyromancer.abilities.boilingBlood, self.caster)
+            BoilingBlood(Pyromancer.abilities.boilingBlood, self.caster, { unit = unit, })
         end
     end)
     self:Destroy()
@@ -143,7 +143,7 @@ function BoilingBlood:Destroy()
 end
 
 function FiresOfNaalXul:Cast()
-    WC3.Unit.EnumInRange(self.GetTargetX(), self.GetTargetY(), self.radius, function(unit)
+    WC3.Unit.EnumInRange(self:GetTargetX(), self:GetTargetY(), self.radius, function(unit)
         if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DealDamage(unit, { value = self.damage, })
             CreepStatsDebuf({ spellResist = (1 - self.spellResistanceDebuff), }, unit, self.debuffDuration)
