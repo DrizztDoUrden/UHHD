@@ -20,7 +20,7 @@ function UHDItem:ctor(...)
     self.bonusSecondaryStats.healthRegen = 0
     self.bonusSecondaryStats.manaRegen = 0
 
-    self.bonusSecondaryStats.weaponDamage = 0
+    self.bonusSecondaryStats.weaponDamage = 1
     self.bonusSecondaryStats.attackSpeed = 1
     self.bonusSecondaryStats.physicalDamage = 1
     self.bonusSecondaryStats.spellDamage = 1
