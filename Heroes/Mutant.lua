@@ -13,110 +13,106 @@ local TakeCover = Class(Spell)
 local Meditate = Class(Spell)
 local Rage = Class(Spell)
 
+Mutant.abilities = {
+    bashingStrikes = {
+        id = FourCC('MT_0'),
+        handler = BashingStrikes,
+        availableFromStart = true,
+        params = {
+            attacks = function(_, caster)
+                local value = 3
+                if caster:HasTalent("T100") then value = value + 1 end
+                return value
+            end,
+            attackSpeedBonus = function(_, caster)
+                local value = 0.5
+                if caster:HasTalent("T101") then value = value + 0.2 end
+                return value
+            end,
+            healPerHit = function(_) return 0.05 end,
+            endlessRageLimit = function(_, caster)
+                if caster:HasTalent("T102") then return 7 end
+                return 0
+            end,
+            endlessRageHeal = function(_) return 0.02 end
+        },
+    },
+    takeCover = {
+        id = { FourCC('MT_1'), FourCC('MTD1'), },
+        handler = TakeCover,
+        availableFromStart = true,
+        params = {
+            radius = function(_) return 500 end,
+            baseRedirect = function(_) return 0.3 end,
+            redirectPerRage = function(_) return 0.02 end,
+            manaPerHealth = function(_, caster)
+                local value = 1
+                if caster:HasTalent("T110") then value = value * 0.75 end
+                return value
+            end,
+            damageReduction = function(_, caster)
+                local value = 0
+                if caster:HasTalent("T111") then value = 0.15 end
+                return value
+            end,
+            damageReflection = function(_, caster)
+                local value = 0
+                if caster:HasTalent("T112") then value = 0.15 end
+                return value
+            end,
+        },
+    },
+    meditate = {
+        id = FourCC('MT_2'),
+        handler = Meditate,
+        availableFromStart = true,
+        params = {
+            castTime = function(_) return 2 end,
+            castSlow = function(_, caster)
+                local value = -0.7
+                if caster:HasTalent("T121") then value = 0 end
+                return value
+            end,
+            healPerRage = function(_) return 0.05 end,
+            manaHealPerRage = function(_, caster)
+                local value = 0
+                if caster:HasTalent("T120") then value = value + 0.025 end
+                return value
+            end,
+        },
+    },
+    rage = {
+        id = FourCC('MT_3'),
+        handler = Rage,
+        availableFromStart = true,
+        params = {
+            ragePerAttack = function(_) return 1 end,
+            damagePerRage = function(_) return 0.075 end,
+            armorPerRage = function(_, caster)
+                local value = -1
+                if caster:HasTalent("T130") then value = value + 0.2 end
+                return value
+            end,
+            startingStacks = function(_) return 3 end,
+            maxStacks = function(_, caster)
+                local value = 10
+                if caster:HasTalent("T131") then value = value + 5 end
+                return value
+            end,
+            stackDecayTime = function(_, caster)
+                local value = 3
+                if caster:HasTalent("T132") then value = value + 1.5 end
+                return value
+            end,
+            meditationCooldown = function(_) return BlzGetAbilityCooldown(Mutant.abilities.meditate.id, 0) end,
+        },
+    },
+}
+
 function Mutant:ctor()
     HeroPreset.ctor(self)
 
     self.unitid = FourCC('H_MT')
-
-    self.abilities = {
-        bashingStrikes = {
-            id = FourCC('MT_0'),
-            handler = BashingStrikes,
-            availableFromStart = true,
-            params = {
-                attacks = function(_, caster)
-                    local value = 3
-                    if caster:HasTalent("T100") then value = value + 1 end
-                    return value
-                end,
-                attackSpeedBonus = function(_, caster)
-                    local value = 0.5
-                    if caster:HasTalent("T101") then value = value + 0.2 end
-                    return value
-                end,
-                healPerHit = function(_) return 0.05 end,
-                endlessRageLimit = function(_, caster)
-                    if caster:HasTalent("T102") then return 7 end
-                    return 0
-                end,
-                endlessRageHeal = function(_) return 0.02 end
-            },
-        },
-        takeCover = {
-            id = { FourCC('MT_1'), FourCC('MTD1'), },
-            handler = TakeCover,
-            availableFromStart = true,
-            params = {
-                radius = function(_) return 500 end,
-                baseRedirect = function(_) return 0.3 end,
-                redirectPerRage = function(_) return 0.02 end,
-                manaPerHealth = function(_, caster)
-                    local value = 1
-                    if caster:HasTalent("T110") then value = value * 0.75 end
-                    return value
-                end,
-                damageReduction = function(_, caster)
-                    local value = 0
-                    if caster:HasTalent("T111") then value = 0.15 end
-                    return value
-                end,
-                damageReflection = function(_, caster)
-                    local value = 0
-                    if caster:HasTalent("T112") then value = 0.15 end
-                    return value
-                end,
-            },
-        },
-        meditate = {
-            id = FourCC('MT_2'),
-            handler = Meditate,
-            availableFromStart = true,
-            params = {
-                castTime = function(_) return 2 end,
-                castSlow = function(_, caster)
-                    local value = -0.7
-                    if caster:HasTalent("T121") then value = 0 end
-                    return value
-                end,
-                healPerRage = function(_) return 0.05 end,
-                manaHealPerRage = function(_, caster)
-                    local value = 0
-                    if caster:HasTalent("T120") then value = value + 0.025 end
-                    return value
-                end,
-            },
-        },
-        rage = {
-            id = FourCC('MT_3'),
-            handler = Rage,
-            availableFromStart = true,
-            params = {
-                ragePerAttack = function(_) return 1 end,
-                damagePerRage = function(_) return 0.075 end,
-                armorPerRage = function(_, caster)
-                    local value = -1
-                    if caster:HasTalent("T130") then value = value + 0.2 end
-                    return value
-                end,
-                startingStacks = function(_) return 3 end,
-                maxStacks = function(_, caster)
-                    local value = 10
-                    if caster:HasTalent("T131") then value = value + 5 end
-                    return value
-                end,
-                stackDecayTime = function(_, caster)
-                    local value = 3
-                    if caster:HasTalent("T132") then value = value + 1.5 end
-                    return value
-                end,
-                meditationCooldown = function(_, caster)
-                    local value = 20
-                    if caster:HasTalent("T122") then value = value - 10 end
-                    return value
-                end,
-            },
-        },
-    }
 
     self.initialTechs = {
         [FourCC("MTU0")] = 0,
@@ -141,7 +137,9 @@ function Mutant:ctor()
 
     self:AddTalent("1", "20")
     self:AddTalent("1", "21")
-    self:AddTalent("1", "22")
+    self:AddTalent("1", "22").onTaken = function(_, hero)
+        hero:SetCooldown(Mutant.abilities.meditate.id, 0, hero:GetCooldown(Mutant.abilities.meditate.id, 0) - 10)
+    end
 
     self:AddTalent("1", "30")
     self:AddTalent("1", "31")
