@@ -144,7 +144,7 @@ end
 
 function FiresOfNaalXul:Cast()
     local x, y = self:GetTargetX(), self:GetTargetY()
-    WC3.SpecialEffect("Abilities\\Spells\\Human\\FlameStrike\\FlameStrike1.mdl", x, y)
+    WC3.SpecialEffect({ path = "Abilities\\Spells\\Human\\FlameStrike\\FlameStrike1.mdl", x = x, y = y, })
     WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
         if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DealDamage(unit, { value = self.damage, })
