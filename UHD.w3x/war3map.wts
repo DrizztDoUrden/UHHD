@@ -1050,14 +1050,8 @@ STRING 218
 In 2 seconds charging removes all rage stacks, healing 5% of missing health per stack removed.|n20 seconds cooldown from rage start.
 }
 
-STRING 221
-// Abilities: T102 (T102), Ubertip (Tooltip - Normal - Extended)
-{
-Dark mend also reduces spell resist, but both with 75% efficiency
-}
-
 STRING 222
-// Abilities: T102 (T102), EditorSuffix (Editor Suffix)
+// Abilities: T102 (Evolutional development), EditorSuffix (Editor Suffix)
 {
 (Mutant)
 }
@@ -1200,62 +1194,14 @@ STRING 245
 Not Implemented
 }
 
-STRING 246
-// Abilities: T102 (T102), Name (Name)
-{
-T102
-}
-
-STRING 247
-// Abilities: T102 (T102), Tip (Tooltip - Normal)
-{
-T102
-}
-
-STRING 248
-// Abilities: T131 (T131), Name (Name)
-{
-T131
-}
-
-STRING 249
-// Abilities: T131 (T131), Tip (Tooltip - Normal)
-{
-T131
-}
-
-STRING 250
-// Abilities: T131 (T131), Ubertip (Tooltip - Normal - Extended)
-{
-Dark mend also reduces spell resist, but both with 75% efficiency
-}
-
 STRING 251
-// Abilities: T131 (T131), EditorSuffix (Editor Suffix)
+// Abilities: T131 (Too much brutal force), EditorSuffix (Editor Suffix)
 {
 (Mutant)
 }
 
-STRING 252
-// Abilities: T132 (T132), Name (Name)
-{
-T132
-}
-
-STRING 253
-// Abilities: T132 (T132), Tip (Tooltip - Normal)
-{
-T132
-}
-
-STRING 254
-// Abilities: T132 (T132), Ubertip (Tooltip - Normal - Extended)
-{
-Dark mend also reduces spell resist, but both with 75% efficiency
-}
-
 STRING 255
-// Abilities: T132 (T132), EditorSuffix (Editor Suffix)
+// Abilities: T132 (Too few brutal force), EditorSuffix (Editor Suffix)
 {
 (Mutant)
 }
@@ -1508,5 +1454,275 @@ STRING 296
 // Abilities: MT_3 (Rage), Ubertip (Tooltip - Normal - Extended)
 {
 Each attack gives +7.5% weapon damage and -1 armor. Starts with 3 statks. Every 3 seconds 1 stack is removed. Ends when reaches 0 stacks.|nLimit: 10 stacks.|nCooldown: 20 seconds from end.
+}
+
+STRING 299
+// Abilities: T102 (Evolutional development), Ubertip (Tooltip - Normal - Extended)
+{
+Bashing strikes do not spend stacks while rage is active and has less than 8 stacks. Such attacks only heal for 2% of max HP.
+}
+
+STRING 300
+// Abilities: T131 (Too much brutal force), Name (Name)
+{
+Too much brutal force
+}
+
+STRING 301
+// Abilities: T131 (Too much brutal force), Tip (Tooltip - Normal)
+{
+Too much brutal force
+}
+
+STRING 303
+// Abilities: T131 (Too much brutal force), Ubertip (Tooltip - Normal - Extended)
+{
+The mutant can have up to 15 rage stacks.
+}
+
+STRING 304
+// Abilities: T132 (Too few brutal force), Name (Name)
+{
+Too few brutal force
+}
+
+STRING 305
+// Abilities: T132 (Too few brutal force), Tip (Tooltip - Normal)
+{
+Too few brutal force
+}
+
+STRING 306
+// Abilities: T132 (Too few brutal force), Ubertip (Tooltip - Normal - Extended)
+{
+Rage stacks last 1.5 seconds more.
+}
+
+STRING 307
+// Abilities: T102 (Evolutional development), Name (Name)
+{
+Evolutional development
+}
+
+STRING 308
+// Abilities: T102 (Evolutional development), Tip (Tooltip - Normal)
+{
+Evolutional development
+}
+
+STRING 309
+// Abilities: T130 (Just enough brutal force), Name (Name)
+{
+Just enough brutal force
+}
+
+STRING 310
+// Abilities: T130 (Just enough brutal force), Tip (Tooltip - Normal)
+{
+Just enough brutal force
+}
+
+STRING 311
+// Abilities: T130 (Just enough brutal force), Ubertip (Tooltip - Normal - Extended)
+{
+Rage reduces armor by 0.2 less per stack.
+}
+
+STRING 312
+// Abilities: T130 (Just enough brutal force), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 313
+// Abilities: T100 (Survival of the fittest), Name (Name)
+{
+Survival of the fittest
+}
+
+STRING 314
+// Abilities: T100 (Survival of the fittest), Tip (Tooltip - Normal)
+{
+Survival Instinct
+}
+
+STRING 315
+// Abilities: T100 (Survival of the fittest), Ubertip (Tooltip - Normal - Extended)
+{
+Bashing strikes last for 1 more attack.
+}
+
+STRING 316
+// Abilities: T100 (Survival of the fittest), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 317
+// Abilities: T101 (Fossil Record), Name (Name)
+{
+Fossil Record
+}
+
+STRING 318
+// Abilities: T101 (Fossil Record), Tip (Tooltip - Normal)
+{
+Fossil Record
+}
+
+STRING 320
+// Abilities: T101 (Fossil Record), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 321
+// Abilities: T101 (Fossil Record), Ubertip (Tooltip - Normal - Extended)
+{
+Bashing strikes increase attack speed by 20% more.
+}
+
+STRING 322
+// Abilities: T120 (Help from Above), Name (Name)
+{
+Help from Above
+}
+
+STRING 323
+// Abilities: T120 (Help from Above), Tip (Tooltip - Normal)
+{
+Help from Above
+}
+
+STRING 324
+// Abilities: T120 (Help from Above), Ubertip (Tooltip - Normal - Extended)
+{
+Meditation also replenishes mana by 2.5% per rage stack removed.
+}
+
+STRING 325
+// Abilities: T120 (Help from Above), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 326
+// Abilities: T121 (Help from Outside), Name (Name)
+{
+Help from Outside
+}
+
+STRING 327
+// Abilities: T121 (Help from Outside), Tip (Tooltip - Normal)
+{
+Help from Outside
+}
+
+STRING 328
+// Abilities: T121 (Help from Outside), Ubertip (Tooltip - Normal - Extended)
+{
+Meditation doesn't slow.
+}
+
+STRING 329
+// Abilities: T121 (Help from Outside), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 330
+// Abilities: T122 (Lightning Strikes), Name (Name)
+{
+Lightning Strikes
+}
+
+STRING 331
+// Abilities: T122 (Lightning Strikes), Tip (Tooltip - Normal)
+{
+Lightning Strikes
+}
+
+STRING 332
+// Abilities: T122 (Lightning Strikes), Ubertip (Tooltip - Normal - Extended)
+{
+Meditation has 10 seconds reduced cooldown.
+}
+
+STRING 333
+// Abilities: T122 (Lightning Strikes), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 334
+// Abilities: T110 (Disruptive Selection), Name (Name)
+{
+Disruptive Selection
+}
+
+STRING 335
+// Abilities: T110 (Disruptive Selection), Tip (Tooltip - Normal)
+{
+Disruptive Selection
+}
+
+STRING 336
+// Abilities: T110 (Disruptive Selection), Ubertip (Tooltip - Normal - Extended)
+{
+Take Cover costs 25% less mana per damage point redirected.
+}
+
+STRING 337
+// Abilities: T110 (Disruptive Selection), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 338
+// Abilities: T111 (Descent with Modification), Name (Name)
+{
+Descent with Modification
+}
+
+STRING 339
+// Abilities: T111 (Descent with Modification), Tip (Tooltip - Normal)
+{
+Descent with Modification
+}
+
+STRING 340
+// Abilities: T111 (Descent with Modification), Ubertip (Tooltip - Normal - Extended)
+{
+Take Cover reduces damage taken by 15% before redirecting.
+}
+
+STRING 341
+// Abilities: T111 (Descent with Modification), EditorSuffix (Editor Suffix)
+{
+(Mutant)
+}
+
+STRING 342
+// Abilities: T112 (Mass Extinction), Name (Name)
+{
+Mass Extinction
+}
+
+STRING 343
+// Abilities: T112 (Mass Extinction), Tip (Tooltip - Normal)
+{
+Mass Extinction
+}
+
+STRING 344
+// Abilities: T112 (Mass Extinction), Ubertip (Tooltip - Normal - Extended)
+{
+Take Cover reflects 15% of damage back to source.
+}
+
+STRING 345
+// Abilities: T112 (Mass Extinction), EditorSuffix (Editor Suffix)
+{
+(Mutant)
 }
 
