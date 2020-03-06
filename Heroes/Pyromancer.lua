@@ -117,12 +117,13 @@ function BoilingBlood:Cast()
 end
 
 function BoilingBlood:Explode()
-    WC3.Unit.EnumInRange(self.target.GetX(), self.target.GetY(), self.explosionRadius, function(unit)
-        if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+    WC3.Unit.EnumInRange(self.target:GetX(), self.target:GetY(), self.explosionRadius, function(unit)
+        if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DealDamage(self.target, { value = self.explosionDamage, })
             BoilingBlood(Pyromancer.abilities.boilingBlood, self.caster)
         end
     end)
+    self:Destroy()
 end
 
 function BoilingBlood:Tick()
