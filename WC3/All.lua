@@ -9,6 +9,7 @@ local WC3 = {
     Unit = require("WC3.Unit"),
     Item = require("WC3.Item"),
     SpecialEffect = require("WC3.SpecialEffect"),
+    Camera = require("WC3.Camera")
 }
 
 return WC3
