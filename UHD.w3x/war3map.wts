@@ -1044,12 +1044,6 @@ STRING 216
 (Mutant)
 }
 
-STRING 217
-// Abilities: MT_3 (Rage), Ubertip (Tooltip - Normal - Extended)
-{
-Each attack gives +1 weapon damage and -1 armor. Starts with 3 statks. Every 3 seconds 1 stack is removed. Ends when reaches 0 stacks.|nLimit: 10 stacks.|nCooldown: 20 seconds from end.
-}
-
 STRING 218
 // Abilities: MT_2 (Meditate), Ubertip (Tooltip - Normal - Extended)
 {
@@ -1508,5 +1502,11 @@ STRING 295
 // Abilities: PM_0 (Boiling Blood), Hotkey (Hotkey - Normal)
 {
 Q
+}
+
+STRING 296
+// Abilities: MT_3 (Rage), Ubertip (Tooltip - Normal - Extended)
+{
+Each attack gives +7.5% weapon damage and -1 armor. Starts with 3 statks. Every 3 seconds 1 stack is removed. Ends when reaches 0 stacks.|nLimit: 10 stacks.|nCooldown: 20 seconds from end.
 }
 
