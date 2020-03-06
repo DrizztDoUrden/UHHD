@@ -37,6 +37,7 @@ Pyromancer.abilities = {
             damage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
             radius = function(_) return 200 end,
             spellResistanceDebuff = function(_) return 0.20 end,
+            debuffDuration = function(_) return 3 end,
         },
     },
     ragingFlames = {
@@ -142,9 +143,9 @@ end
 
 function FiresOfNaalXul:Cast()
     WC3.Unit.EnumInRange(self.GetTargetX(), self.GetTargetY(), self.radius, function(unit)
-        if self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+        if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DealDamage(unit, { value = self.damage, })
-            CreepStatsDebuf({ spellResist = (1 - self.spellResistanceDebuff), }, unit, self.duration)
+            CreepStatsDebuf({ spellResist = (1 - self.spellResistanceDebuff), }, unit, self.debuffDuration)
         end
     end)
 end
