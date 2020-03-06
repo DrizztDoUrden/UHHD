@@ -65,10 +65,10 @@ Pyromancer.abilities = {
 }
 
 Pyromancer.talentBooks = {
-    FourCC("PMT0"),
+    --[[FourCC("PMT0"),
     FourCC("PMT1"),
     FourCC("PMT2"),
-    FourCC("PMT3"),
+    FourCC("PMT3"),]]
 }
 
 function Pyromancer:ctor()
