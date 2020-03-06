@@ -1279,3 +1279,90 @@ STRING 257
 ChainArmor
 }
 
+STRING 258
+// Items: I001 (ChainArmor), Ubertip (Tooltip - Extended)
+{
+Chain Armor +5 armor, -15 envasion, -15 Spell Power
+}
+
+STRING 259
+// Items: I001 (ChainArmor), Tip (Tooltip - Basic)
+{
+Buy Chain Armor
+}
+
+STRING 260
+// Items: I002 (LeatherArmor), Description (Description)
+{
+Light armor.
++ 10 envasion, -10 Spell Power
+}
+
+STRING 261
+// Items: I002 (LeatherArmor), Name (Name)
+{
+LeatherArmor
+}
+
+STRING 262
+// Items: I002 (LeatherArmor), Ubertip (Tooltip - Extended)
+{
+Leather Armor  +10 envasion, -10 Spell Power
+}
+
+STRING 263
+// Items: I002 (LeatherArmor), Tip (Tooltip - Basic)
+{
+Buy Leather Armor
+}
+
+STRING 264
+// Items: I003 (PlateArmor), Description (Description)
+{
+Light armor.
++ 10 envasion, -10 Spell Power
+}
+
+STRING 265
+// Items: I003 (PlateArmor), Name (Name)
+{
+PlateArmor
+}
+
+STRING 266
+// Items: I003 (PlateArmor), Ubertip (Tooltip - Extended)
+{
+Plate Armor +10 armor, -30 envasion, -20 Spell Power
+}
+
+STRING 267
+// Items: I003 (PlateArmor), Tip (Tooltip - Basic)
+{
+Buy Plate Armor
+}
+
+STRING 268
+// Items: I004 (Robe), Description (Description)
+{
+It could protect from winf and insects
+-2 armor, -10 envasion, +20 Spell Power
+}
+
+STRING 269
+// Items: I004 (Robe), Name (Name)
+{
+Robe
+}
+
+STRING 270
+// Items: I004 (Robe), Ubertip (Tooltip - Extended)
+{
+Robe -2 armor, -10 envasion, +20 Spell Power
+}
+
+STRING 271
+// Items: I004 (Robe), Tip (Tooltip - Basic)
+{
+Buy Robe
+}
+

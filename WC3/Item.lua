@@ -13,6 +13,9 @@ local function Get(handle)
     if existing then
         return existing
     end
+    if handle == nil then
+        print(" Where getter give nil expect class from table")
+    end
     return Item(handle)
 end
 
@@ -20,12 +23,17 @@ function Item.GetItemInSlot(unithandle, slot)
     return Get(UnitItemInSlot(unithandle, slot))
 end
 
--- function Item.GetSold()
---     return Get(GetSoldUnit())
--- end
+function Item.GetSold()
+
+    return Get(GetSoldItem())
+end
 
 function Item.GetManipulatedItem()
-    return Get(GetManipulatedItem())
+    local result = GetManipulatedItem()
+    if result ~= nil then
+        return Get(result)
+    end
+    return nil
 end
 
 function Item:ctor(...)
@@ -54,7 +62,7 @@ end
 function Item:Destroy()
     items[self.handle] = nil
     RemoveItem(self.handle)
-    for item in pairs(self.toDestroy) do 
+    for item in pairs(self.toDestroy) do
         item:Destroy()
     end
 end
@@ -97,8 +105,12 @@ function Item:GetPlayer()
     return GetItemPlayer(self.handle)
 end
 
-function Item.GetInSlot(handle, slot)
-    return Get(UnitItemInSlot(handle, slot))
+function Item.GetInSlot(unit, slot)
+    local result = UnitItemInSlot(unit.handle, slot)
+    if result ~= nil then
+        return Get(result)
+    end
+    return nil
 end
 
 return Item

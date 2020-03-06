@@ -40,17 +40,23 @@ function  UHDItem:AddStats(unit)
     unit.bonusSecondaryStats.healthRegen = bonusSecondaryStats.healthRegen + self.bonusSecondaryStats.healthRegen
     unit.bonusSecondaryStats.manaRegen = bonusSecondaryStats.manaRegen + self.bonusSecondaryStats.manaRegen
 
-    unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage + self.bonusSecondaryStats.weaponDamage
-    unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed + self.bonusSecondaryStats.attackSpeed
-    unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage + self.bonusSecondaryStats.physicalDamage
-    unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage + self.bonusSecondaryStats.spellDamage
+    if UHDItem.type == "Weapon" then
+        unit.baseSecondaryStats.weaponDamage = self.baseSecondaryStats.weaponDamage
+    else
+        unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage * self.bonusSecondaryStats.weaponDamage
+        -- print("WPD "..unit.bonusSecondaryStats.weaponDamage.." " ..bonusSecondaryStats.weaponDamage.." " ..self.bonusSecondaryStats.weaponDamage)
+    end
+
+    unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed * self.bonusSecondaryStats.attackSpeed
+    unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage * self.bonusSecondaryStats.physicalDamage
+    unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage * self.bonusSecondaryStats.spellDamage
 
     unit.bonusSecondaryStats.armor = bonusSecondaryStats.armor + self.bonusSecondaryStats.armor
-    unit.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion + self.bonusSecondaryStats.evasion
-    unit.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist + self.bonusSecondaryStats.ccResist
-    unit.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist + self.bonusSecondaryStats.spellResist
+    unit.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion * self.bonusSecondaryStats.evasion
+    unit.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist * self.bonusSecondaryStats.ccResist
+    unit.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist * self.bonusSecondaryStats.spellResist
 
-    unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed + self.bonusSecondaryStats.movementSpeed
+    unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed * self.bonusSecondaryStats.movementSpeed
     unit:ApplyStats()
 end
 
@@ -61,17 +67,22 @@ function  UHDItem:RemoveStats(unit)
     unit.bonusSecondaryStats.healthRegen = bonusSecondaryStats.healthRegen - self.bonusSecondaryStats.healthRegen
     unit.bonusSecondaryStats.manaRegen = bonusSecondaryStats.manaRegen - self.bonusSecondaryStats.manaRegen
 
-    unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage - self.bonusSecondaryStats.weaponDamage
-    unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed - self.bonusSecondaryStats.attackSpeed
-    unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage - self.bonusSecondaryStats.physicalDamage
-    unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage - self.bonusSecondaryStats.spellDamage
+    if UHDItem.type == "Weapon" then
+        unit.baseSecondaryStats.weaponDamage = 0
+    else
+        unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage / self.bonusSecondaryStats.weaponDamage
+    end
+
+    unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed / self.bonusSecondaryStats.attackSpeed
+    unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage / self.bonusSecondaryStats.physicalDamage
+    unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage / self.bonusSecondaryStats.spellDamage
 
     unit.bonusSecondaryStats.armor = bonusSecondaryStats.armor - self.bonusSecondaryStats.armor
-    unit.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion - self.bonusSecondaryStats.evasion
-    unit.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist - self.bonusSecondaryStats.ccResist
-    unit.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist - self.bonusSecondaryStats.spellResist
+    unit.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion / self.bonusSecondaryStats.evasion
+    unit.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist / self.bonusSecondaryStats.ccResist
+    unit.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist / self.bonusSecondaryStats.spellResist
 
-    unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed - self.bonusSecondaryStats.movementSpeed
+    unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed / self.bonusSecondaryStats.movementSpeed
     unit:ApplyStats()
 end
 

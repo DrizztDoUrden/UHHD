@@ -22,7 +22,7 @@ local Inventory = Class()
         triggerUnitPickUPItem:AddAction(function() self:SetItem(UHDItem.GetManipulatedItem()) end)
         local triggerUnitDropItem = WC3.Trigger()
         triggerUnitDropItem:RegisterUnitDropItem(self.owner)
-        triggerUnitDropItem:AddAction(function() UHDItem.GetManipulatedItem():RemoveStats(self.owner) end)
+        triggerUnitDropItem:AddAction(function() self:LeaveItem(UHDItem.GetManipulatedItem()) end)
         self.owner.toDestroy[triggerUnitDropItem] = true
         self.owner.toDestroy[triggerUnitDropItem] = true
     end
@@ -55,10 +55,11 @@ local Inventory = Class()
                 amount = amount + 1
             end
         end)
-        if not self.customItemAvailability[type] then
+        if not self.customItemAvailability[ltype] then
             return true
         else
-            if self.customItemAvailability[type] < amount then
+            
+            if self.customItemAvailability[ltype] < amount + 1 then
                 return false
             else
                 return true
@@ -69,22 +70,27 @@ local Inventory = Class()
     end
 
     function Inventory:SetItem(item)
-        print("New item")
-        print(item)
-        local maxInventory = self.owner:GetInventorySize()
-        if #self.invetory <= maxInventory then
-            if self:CheckAvaileItemToAdd(item) then
-                self:DressItem(item)
+        -- print("New item")
+        -- print(item)
+        if item ~= nil then
+            local maxInventory = self.owner:GetInventorySize()
+            if #self.invetory <= maxInventory then
+                if self:CheckAvaileItemToAdd(item) then
+                    self:DressItem(item)
+                else
+                    self:DropItem(item)
+                end
             end
-        else
-            self:DropItem(item)
         end
     end
 
     function Inventory:LeaveItem(item)
-        local x, y = self.owner:GetX(), self.owner:GetY()
-        item.DropItem(item)
-        item:SetPos(x, y)
+        if  item ~= nil then
+            if self:HasItem(item) then
+                item:RemoveStats(self.owner)
+                self.invetory[item] = nil
+            end
+        end
     end
 
     function Inventory:EnumItems(handler)
@@ -96,9 +102,8 @@ local Inventory = Class()
     end
 
     function Inventory:DropItem(item)
-        local itemSlot = self.owner:GetItemSlot(item)
+        local itemSlot = self:GetItemSlot(item)
         if itemSlot == nil then
-            error("Error drop undressed Item")
         else
             self.owner:RemoveItemFromSlot(itemSlot)
         end
@@ -116,7 +121,6 @@ local Inventory = Class()
         function (itemInSlot, slot)
             if itemInSlot == item then
                 resslot = slot
-                return
             end
         end)
         return resslot
