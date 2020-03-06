@@ -16,4 +16,12 @@ function Spell:GetTargetUnit()
     return WC3.Unit.GetSpellTarget()
 end
 
+function Spell:GetTargetX()
+    return GetSpellTargetX()
+end
+
+function Spell:GetTargetY()
+    return GetSpellTargetY()
+end
+
 return Spell
