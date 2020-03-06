@@ -95,6 +95,7 @@ function Hero:Destroy()
     for u in pairs(self.skillUpgrades) do u:Destroy() end
 end
 
+
 function Hero:OnLevel()
     for _ = 1,Hero.StatsPerLevel do
         self:AddStatPoint()
@@ -213,6 +214,7 @@ function Hero:UpdateSecondaryStats()
     self.secondaryStats.movementSpeed = self.baseSecondaryStats.movementSpeed + self.bonusSecondaryStats.movementSpeed
     self.secondaryStats.armor = self.baseSecondaryStats.armor + self.bonusSecondaryStats.armor
 end
+
 
 function Hero:ApplyStats()
     self:UpdateSecondaryStats()

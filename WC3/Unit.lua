@@ -203,7 +203,7 @@ end
 
 function Unit:GetItemInSlot(slot)
     if math.type(slot) == "integer" then
-        Item.GetInSlot(self.handle, slot)
+        return Item.GetInSlot(self, slot)
     else
         error("Slot should be integer")
     end

@@ -66,7 +66,7 @@ STRING 16
 }
 
 STRING 18
-// Abilities: DK_0 (Drain Light), Hotkey (Hotkey - Normal)
+// Units: H_PM (Pyromancer), Hotkey (Hotkey)
 {
 Q
 }
@@ -300,7 +300,7 @@ Dark Mend heals 50% instantly and 75% over time.
 }
 
 STRING 75
-// Upgrades: U030 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U030 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
@@ -571,157 +571,157 @@ STRING 123
 }
 
 STRING 124
-// Upgrades: U000 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U000 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 125
-// Upgrades: U001 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U001 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 126
-// Upgrades: U002 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U002 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 127
-// Upgrades: U010 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U010 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 128
-// Upgrades: U011 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U011 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 129
-// Upgrades: U012 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U012 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 130
-// Upgrades: U020 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U020 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 131
-// Upgrades: U021 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U021 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 132
-// Upgrades: U022 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U022 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 133
-// Upgrades: U023 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U023 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 134
-// Upgrades: U031 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U031 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 135
-// Upgrades: U032 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: U032 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already Learned
 }
 
 STRING 136
-// Upgrades: U030 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U030 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 030
 }
 
 STRING 137
-// Upgrades: U000 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U000 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 000
 }
 
 STRING 138
-// Upgrades: U001 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U001 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 001
 }
 
 STRING 139
-// Upgrades: U002 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U002 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 002
 }
 
 STRING 140
-// Upgrades: U010 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U010 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 010
 }
 
 STRING 141
-// Upgrades: U011 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U011 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 011
 }
 
 STRING 142
-// Upgrades: U012 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U012 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 012
 }
 
 STRING 143
-// Upgrades: U020 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U020 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 020
 }
 
 STRING 144
-// Upgrades: U021 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U021 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 021
 }
 
 STRING 145
-// Upgrades: U022 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U022 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 022
 }
 
 STRING 146
-// Upgrades: U023 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U023 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 023
 }
 
 STRING 147
-// Upgrades: U031 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U031 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 031
 }
 
 STRING 148
-// Upgrades: U032 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: U032 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 032
 }
 
 STRING 152
-// Abilities: MT_0 (Bashing Strikes), Hotkey (Hotkey - Normal)
+// Abilities: DK_0 (Drain Light), Hotkey (Hotkey - Normal)
 {
 Q
 }
@@ -883,13 +883,13 @@ Rage
 }
 
 STRING 185
-// Upgrades: MTU0 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: MTU0 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Rage active
 }
 
 STRING 186
-// Upgrades: R001 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: R001 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Rage inactive
 }
@@ -949,13 +949,13 @@ Next 3 attacks have +50% attack speed and heal 5% max HP each.
 }
 
 STRING 200
-// Upgrades: R002 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: R002 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Already in effect
 }
 
 STRING 201
-// Upgrades: R002 (Улучшенные топоры,Улучшенные пилы), EditorSuffix (Editor Suffix)
+// Upgrades: R002 (Improved Lumber Harvesting,Advanced Lumber Harvesting), EditorSuffix (Editor Suffix)
 {
 (Bashing strikes)
 }
@@ -1075,7 +1075,7 @@ Mana Drain
 }
 
 STRING 224
-// Abilities: BS00 (Mana Drain), Hotkey (Hotkey - Normal)
+// Abilities: MT_0 (Bashing Strikes), Hotkey (Hotkey - Normal)
 {
 Q
 }
@@ -1201,7 +1201,7 @@ STRING 244
 }
 
 STRING 245
-// Upgrades: R000 (Улучшенные топоры,Улучшенные пилы), Name (Name)
+// Upgrades: R000 (Improved Lumber Harvesting,Advanced Lumber Harvesting), Name (Name)
 {
 Not Implemented
 }
@@ -1277,5 +1277,236 @@ STRING 257
 // Items: I001 (ChainArmor), Name (Name)
 {
 ChainArmor
+}
+
+STRING 258
+// Items: I001 (ChainArmor), Ubertip (Tooltip - Extended)
+{
+Chain Armor +5 armor, -15 envasion, -15 Spell Power
+}
+
+STRING 259
+// Items: I001 (ChainArmor), Tip (Tooltip - Basic)
+{
+Buy Chain Armor
+}
+
+STRING 260
+// Items: I002 (LeatherArmor), Description (Description)
+{
+Light armor.
++ 10 envasion, -10 Spell Power
+}
+
+STRING 261
+// Items: I002 (LeatherArmor), Name (Name)
+{
+LeatherArmor
+}
+
+STRING 262
+// Items: I002 (LeatherArmor), Ubertip (Tooltip - Extended)
+{
+Leather Armor  +10 envasion, -10 Spell Power
+}
+
+STRING 263
+// Items: I002 (LeatherArmor), Tip (Tooltip - Basic)
+{
+Buy Leather Armor
+}
+
+STRING 264
+// Items: I003 (PlateArmor), Description (Description)
+{
+Light armor.
++ 10 envasion, -10 Spell Power
+}
+
+STRING 265
+// Items: I003 (PlateArmor), Name (Name)
+{
+PlateArmor
+}
+
+STRING 266
+// Items: I003 (PlateArmor), Ubertip (Tooltip - Extended)
+{
+Plate Armor +10 armor, -30 envasion, -20 Spell Power
+}
+
+STRING 267
+// Items: I003 (PlateArmor), Tip (Tooltip - Basic)
+{
+Buy Plate Armor
+}
+
+STRING 268
+// Items: I004 (Robe), Description (Description)
+{
+It could protect from winf and insects
+-2 armor, -10 envasion, +20 Spell Power
+}
+
+STRING 269
+// Items: I004 (Robe), Name (Name)
+{
+Robe
+}
+
+STRING 270
+// Items: I004 (Robe), Ubertip (Tooltip - Extended)
+{
+Robe -2 armor, -10 envasion, +20 Spell Power
+}
+
+STRING 271
+// Items: I004 (Robe), Tip (Tooltip - Basic)
+{
+Buy Robe
+}
+
+STRING 272
+// Abilities: PM_0 (Boiling Blood), Name (Name)
+{
+Boiling Blood
+}
+
+STRING 273
+// Abilities: BS00 (Mana Drain), Hotkey (Hotkey - Normal)
+{
+Q
+}
+
+STRING 274
+// Abilities: PM_0 (Boiling Blood), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 275
+// Abilities: PM_0 (Boiling Blood), Tip (Tooltip - Normal)
+{
+Boiling Blood
+}
+
+STRING 276
+// Abilities: PM_0 (Boiling Blood), Ubertip (Tooltip - Normal - Extended)
+{
+The target takes 5 damage per second for 5 seconds. If it dies under the effect, it explodes, dealing 10 damage in 300 AoE, spreading the effect. Subsequent applications refresh the effect.|n300 range, 5 sec cd
+}
+
+STRING 277
+// Abilities: PM_1 (Fires of Na'al Xul), Name (Name)
+{
+Fires of Na'al Xul
+}
+
+STRING 278
+// Abilities: PM_1 (Fires of Na'al Xul), Hotkey (Hotkey - Normal)
+{
+W
+}
+
+STRING 279
+// Abilities: PM_1 (Fires of Na'al Xul), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 280
+// Abilities: PM_1 (Fires of Na'al Xul), Tip (Tooltip - Normal)
+{
+Fires of Na'al Xul
+}
+
+STRING 281
+// Abilities: PM_1 (Fires of Na'al Xul), Ubertip (Tooltip - Normal - Extended)
+{
+Deals 20 damage to all enemies in a circle. Reduces spell resistance of targets by 20%.|n500 range, 150 radius AoE, 10 sec cd.
+}
+
+STRING 282
+// Abilities: PM_2 (Raging flames), Name (Name)
+{
+Raging flames
+}
+
+STRING 283
+// Abilities: PM_2 (Raging flames), Hotkey (Hotkey - Normal)
+{
+E
+}
+
+STRING 284
+// Abilities: PM_2 (Raging flames), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 285
+// Abilities: PM_2 (Raging flames), Tip (Tooltip - Normal)
+{
+Raging flames
+}
+
+STRING 286
+// Abilities: PM_2 (Raging flames), Ubertip (Tooltip - Normal - Extended)
+{
+Deals 15 damage to every enemy around the caster. After 2 seconds channel teleports the caster to center of the target area and deals damage there.|n500 range, 150 radius Aoe, 20 sec cd
+}
+
+STRING 287
+// Abilities: PM_3 (Fire and Ice), Name (Name)
+{
+Fire and Ice
+}
+
+STRING 288
+// Abilities: PM_3 (Fire and Ice), Hotkey (Hotkey - Normal)
+{
+R
+}
+
+STRING 289
+// Abilities: PM_3 (Fire and Ice), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 290
+// Abilities: PM_3 (Fire and Ice), Tip (Tooltip - Normal)
+{
+Fire and Ice
+}
+
+STRING 291
+// Abilities: PM_3 (Fire and Ice), Ubertip (Tooltip - Normal - Extended)
+{
+The caster steals the heat of life from a victim for up to 4 seconds, dealing 5 DPS. The caster receives 100% of damage dealt as a shield, lasting up to 6 seconds since end of cast.|n300 range, 10 sec cd
+}
+
+STRING 292
+// Units: H_PM (Pyromancer), Name (Name)
+{
+Pyromancer
+}
+
+STRING 293
+// Units: H_PM (Pyromancer), Tip (Tooltip - Basic)
+{
+Summon Pyromancer
+}
+
+STRING 294
+// Units: H_PM (Pyromancer), Ubertip (Tooltip - Extended)
+{
+Spellpower-base AoE damage specialist.
+}
+
+STRING 295
+// Abilities: PM_0 (Boiling Blood), Hotkey (Hotkey - Normal)
+{
+Q
 }
 
