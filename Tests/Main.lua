@@ -54,8 +54,8 @@ local item3 = PlateArmor(-2400, -3400)
 local item4 = Robe(-2500, -3400)
 -- local Bos = DefiledTree():Spawn(WC3.Player.Get(0), -2300, -3500, 0, 1, 2)
 -- local timerwaveObserver = Timer()
--- timerwaveObserver:Start(15, false,
---     function() WaveObserver(WC3.Player.Get(9))
+-- timerwaveObserver:Start(15, false, function()
+    WaveObserver(WC3.Player.Get(9))
 -- end)
 
 
