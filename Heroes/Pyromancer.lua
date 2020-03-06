@@ -143,7 +143,9 @@ function BoilingBlood:Destroy()
 end
 
 function FiresOfNaalXul:Cast()
-    WC3.Unit.EnumInRange(self:GetTargetX(), self:GetTargetY(), self.radius, function(unit)
+    local x, y = self:GetTargetX(), self:GetTargetY()
+    WC3.SpecialEffect("Abilities\\Spells\\Human\\FlameStrike\\FlameStrike1.mdl", x, y)
+    WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
         if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DealDamage(unit, { value = self.damage, })
             CreepStatsDebuf({ spellResist = (1 - self.spellResistanceDebuff), }, unit, self.debuffDuration)
