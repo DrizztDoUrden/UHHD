@@ -122,7 +122,7 @@ function BoilingBlood:Explode()
     WC3.SpecialEffect({ path = "Units\\Undead\\Abomination\\AbominationExplosion.mdl", x = x, y = y, })
     WC3.Unit.EnumInRange(x, y, self.explosionRadius, function(unit)
         if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
-            self.caster:DealDamage(self.target, { value = self.explosionDamage, })
+            self.caster:DealDamage(unit, { value = self.explosionDamage, })
             BoilingBlood(Pyromancer.abilities.boilingBlood, self.caster, { unit = unit, })
         end
     end)
