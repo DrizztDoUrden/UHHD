@@ -30,7 +30,7 @@ Pyromancer.abilities = {
         },
     },
     firesOfNaalXul = {
-        id = { FourCC('PM_1'), },
+        id = FourCC('PM_1'),
         handler = FiresOfNaalXul,
         availableFromStart = true,
         params = {
@@ -101,6 +101,7 @@ end
 
 function BoilingBlood:Cast()
     self.target = self:GetTargetUnit()
+    WC3.SpecialEffect({ path = "Abilities\\Spells\\Orc\\Disenchant\\DisenchantSpecialArt.mdl", target = self.target, attachPoint = "origin", lifeSpan = 15, })
 
     local existing = self.target.effects["Pyromancer.BoilingBlood"]
 
@@ -117,7 +118,9 @@ function BoilingBlood:Cast()
 end
 
 function BoilingBlood:Explode()
-    WC3.Unit.EnumInRange(self.target:GetX(), self.target:GetY(), self.explosionRadius, function(unit)
+    local x, y = self.target:GetX(), self.target:GetY()
+    WC3.SpecialEffect({ path = "Units\\Undead\\Abomination\\AbominationExplosion.mdl", x = x, y = y, })
+    WC3.Unit.EnumInRange(x, y, self.explosionRadius, function(unit)
         if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DealDamage(self.target, { value = self.explosionDamage, })
             BoilingBlood(Pyromancer.abilities.boilingBlood, self.caster, { unit = unit, })
