@@ -151,7 +151,7 @@ end)
 local unitDeath = WC3.Trigger()
 
 unitDeath:AddAction(function()
-    local dyingUnit = GetDyingUnit()
+    local dyingUnit = WC3.Unit.GetDying()
     if dyingUnit:IsA(UHDUnit) then dyingUnit:Died() end
 end)
 
