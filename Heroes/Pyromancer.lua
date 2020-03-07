@@ -102,6 +102,7 @@ end
 function BoilingBlood:Cast()
     self.target = self:GetTargetUnit()
     WC3.SpecialEffect({ path = "Abilities\\Spells\\Orc\\Disenchant\\DisenchantSpecialArt.mdl", target = self.target, attachPoint = "origin", lifeSpan = 15, })
+    self.smoke = WC3.SpecialEffect({ path = "Doodads\\LordaeronSummer\\Props\\SmokeSmudge\\SmokeSmudge", target = self.target, attachPoint = "origin", })
 
     local existing = self.target.effects["Pyromancer.BoilingBlood"]
 
@@ -122,7 +123,7 @@ function BoilingBlood:Explode()
     WC3.SpecialEffect({ path = "Units\\Undead\\Abomination\\AbominationExplosion.mdl", x = x, y = y, })
     WC3.Unit.EnumInRange(x, y, self.explosionRadius, function(unit)
         if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
-            self.caster:DealDamage(self.target, { value = self.explosionDamage, })
+            self.caster:DealDamage(unit, { value = self.explosionDamage, })
             BoilingBlood(Pyromancer.abilities.boilingBlood, self.caster, { unit = unit, })
         end
     end)
@@ -143,6 +144,7 @@ function BoilingBlood:Destroy()
     self.timer:Destroy()
     self.target.effects["Pyromancer.BoilingBlood"] = nil
     self.target.onDeath[self.deathHandler] = nil
+    self.smoke:Destroy()
 end
 
 function FiresOfNaalXul:Cast()
