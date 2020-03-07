@@ -57,7 +57,6 @@ Pyromancer.abilities = {
         params = {
             duration = function(_) return 4 end,
             period = function(_) return 0.25 end,
-            channelTime = function(_) return 2 end,
             damage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
             shieldRate = function(_) return 1 end,
             shieldDuration = function(_) return 6 end,
@@ -170,7 +169,7 @@ function RagingFlames:Cast()
 end
 
 function RagingFlames:Explode(x, y)
-    WC3.SpecialEffect({ path = "Abilities\\Weapons\\Rifle\\RifleImpact.mdl", x = x, y = y, })
+    WC3.SpecialEffect({ path = "Abilities\\Spells\\Human\\FlameStrike\\FlameStrike1.mdl", x = x, y = y, })
     WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
         if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DealDamage(unit, { value = self.damage, })
@@ -178,8 +177,71 @@ function RagingFlames:Explode(x, y)
     end)
 end
 
+local FireAndIceShield = Class()
+
+function FireAndIceShield:ctor(target)
+    self.target = target
+    self.amount = 0
+    self.handler = function(args) self:Handler(args) end
+end
+
+function FireAndIceShield:Handler(args)
+    local reduction = math.min(self.amount, args.GetDamage())
+    self.amount = self.amount - reduction
+    args:SetDamage(args:GetDamage() - reduction)
+    if self.amount <= 0 then
+        self.target.onDamageReceived[self.handler] = nil
+        if self.se then
+            self.se:Destroy()
+            self.se = nil
+        end
+    end
+end
+
 function FireAndIce:Cast()
-    print("Fire and Ice cast: WIP")
+    local x, y = self.caster:GetPos()
+    self.target = self:GetTargetUnit()
+    local xEnd, yEnd = self.target:GetPos()
+    self.lighting = WC3.LightningEffect("DRAM", false, x, y, xEnd, yEnd)
+    local ticks = self.duration // self.period
+    self.damagePerTick = self.damage / ticks
+    self.shield = FireAndIceShield(self.caster)
+
+    self.timer = WC3.Timer()
+    local timeLeft = self.duration
+    self.timer:Start(self.period, true, function()
+        timeLeft = timeLeft - self.period
+        if self.caster:GetHP() <= 0 or self.target:GetHP() <= 0 then
+            self:Destroy()
+        end
+        self:Tick()
+        if timeLeft <= 0 or self.target:GetHP() <= 0 then
+            self:Destroy()
+        end
+    end)
+end
+
+function FireAndIce:Tick()
+    local damage = self.caster:DealDamage(self.target, { value = self.damagePerTick, })
+    local toShield = damage * self.shieldRate
+    self.shield.amount = self.shield.amount + toShield
+    self.caster.onDamageReceived[self.shield.handler] = true
+    if not self.shield.se then
+        self.shield.se = WC3.SpecialEffect({ path = "Abilities\\Spells\\Human\\ManaShield\\ManaShieldCaster.mdl", target = self.caster, attachPoint = "origin", lifeSpan = 0, })
+    end
+end
+
+function FireAndIce:Destroy()
+    self.lighting:Destroy()
+    self.timer:Destroy()
+    local shieldEnd = WC3.Timer()
+    shieldEnd:Start(self.shieldDuration, false, function()
+        shieldEnd:Destroy()
+        self.caster.onDamageReceived[self.shield.handler] = nil
+        if self.shield.se then
+            self.shield.se:Destroy()
+        end
+    end)
 end
 
 return Pyromancer

@@ -76,12 +76,18 @@ end
 
 function UHDUnit:DamageDealt(args)
     for handler in pairs(self.onDamageDealt) do
+        if args.GetDamage() <= 0 then
+            break
+        end
         handler(args)
     end
 end
 
 function UHDUnit:DamageReceived(args)
     for handler in pairs(self.onDamageReceived) do
+        if args.GetDamage() <= 0 then
+            break
+        end
         handler(args)
     end
 end
@@ -107,7 +113,9 @@ function UHDUnit:DealDamage(target, damage)
     }
     self:DamageDealt(args)
     if target:IsA(UHDUnit) then target:DamageDealt(args) end
-    self:DamageTarget(target, dmg, false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_UNKNOWN, WEAPON_TYPE_WHOKNOWS)
+    if dmg > 0 then
+        self:DamageTarget(target, dmg, false, false, ATTACK_TYPE_NORMAL, DAMAGE_TYPE_UNKNOWN, WEAPON_TYPE_WHOKNOWS)
+    end
     return dmg
 end
 
