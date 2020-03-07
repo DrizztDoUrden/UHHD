@@ -299,6 +299,7 @@ function Rage:Cast()
     self.caster:SetCooldownRemaining(FourCC('MT_2'), self.meditationCooldown)
     self.caster.effects["Mutant.Rage"] = self
     self:SetStacks(self.startingStacks)
+    self.leftSE = WC3.SpecialEffect({path = "Abilities\\Spells\\Orc\\Bloodlust\\BloodlustTarget.mdl", target = self.caster, attachPoint = "hands,left", lifeSpan = 0})
 
     self.handler = function()
         self:SetStacks(self.stacks + self.ragePerAttack)
@@ -336,6 +337,7 @@ function Rage:Destroy()
     self.caster:GetOwner():SetTechLevel(FourCC("MTU0"), 0)
     self.caster:SetCooldownRemaining(FourCC('MT_3'), 20)
     self.caster.effects["Mutant.Rage"] = nil
+    self.leftSE:Destroy()
 end
 
 return Mutant
