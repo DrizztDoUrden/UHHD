@@ -102,6 +102,7 @@ end
 function BoilingBlood:Cast()
     self.target = self:GetTargetUnit()
     WC3.SpecialEffect({ path = "Abilities\\Spells\\Orc\\Disenchant\\DisenchantSpecialArt.mdl", target = self.target, attachPoint = "origin", lifeSpan = 15, })
+    self.smoke = WC3.SpecialEffect({ path = "Doodads\\LordaeronSummer\\Props\\SmokeSmudge\\SmokeSmudge", target = self.target, attachPoint = "origin", })
 
     local existing = self.target.effects["Pyromancer.BoilingBlood"]
 
@@ -143,6 +144,7 @@ function BoilingBlood:Destroy()
     self.timer:Destroy()
     self.target.effects["Pyromancer.BoilingBlood"] = nil
     self.target.onDeath[self.deathHandler] = nil
+    self.smoke:Destroy()
 end
 
 function FiresOfNaalXul:Cast()
