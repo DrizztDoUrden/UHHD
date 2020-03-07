@@ -337,6 +337,10 @@ function Unit:SetY(value)
     SetUnitY(self.handle, value)
 end
 
+function Unit:SetVertexColor(r, g, b, a)
+    SetUnitVertexColor(self.handle, math.floor(r * 255), math.floor(g * 255), math.floor(b * 255), math.floor(a * 255))
+end
+
 function Unit:GetManaCost(abilityId, level)
     return BlzGetUnitAbilityManaCost(self.handle, abilityId, level)
 end
