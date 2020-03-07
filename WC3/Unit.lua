@@ -366,6 +366,10 @@ function Unit:SetCooldownRemaining(abilityId, value)
     return BlzStartUnitAbilityCooldown(self.handle, abilityId, value)
 end
 
+function Unit:GetCooldownRemaining(abilityId)
+    return BlzGetUnitAbilityCooldownRemaining(self.handle, abilityId)
+end
+
 function Unit:GetInventorySize() return UnitInventorySize(self.handle) end
 function Unit:GetName() return GetUnitName(self.handle) end
 function Unit:IsInRange(other, range) return IsUnitInRange(self.handle, other.handle, range) end

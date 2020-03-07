@@ -17,6 +17,7 @@ function CreepStatsDebuff:OnStart()
             self.target.secondaryStats[k] = self.target.secondaryStats[k] * v
         end
     end
+    self.target:ApplyStats()
 end
 
 function CreepStatsDebuff:OnEnd()
@@ -27,6 +28,7 @@ function CreepStatsDebuff:OnEnd()
             self.target.secondaryStats[k] = self.target.secondaryStats[k] / v
         end
     end
+    self.target:ApplyStats()
 end
 
 return CreepStatsDebuff

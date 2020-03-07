@@ -12,11 +12,11 @@ function TimedEffect:ctor(target, duration)
 end
 
 function TimedEffect:OnStart()
-    error("TimedEffect:OnStart not implemented. target: " .. self.target:GetName())
+    error("TimedEffect:OnStart not implemented. target: " .. self.target:GetName(), 2)
 end
 
 function TimedEffect:OnEnd()
-    error("TimedEffect:OnEnd not implemented: " .. self.target:GetName())
+    error("TimedEffect:OnEnd not implemented: " .. self.target:GetName(), 2)
 end
 
 function TimedEffect:Destroy()
