@@ -1390,12 +1390,6 @@ STRING 285
 Raging flames
 }
 
-STRING 286
-// Abilities: PM_2 (Raging flames), Ubertip (Tooltip - Normal - Extended)
-{
-Deals 15 damage to every enemy around the caster. After 2 seconds channel teleports the caster to center of the target area and deals damage there.|n500 range, 150 radius Aoe, 20 sec cd
-}
-
 STRING 287
 // Abilities: PM_3 (Fire and Ice), Name (Name)
 {
@@ -1724,5 +1718,11 @@ STRING 345
 // Abilities: T112 (Mass Extinction), EditorSuffix (Editor Suffix)
 {
 (Mutant)
+}
+
+STRING 346
+// Abilities: PM_2 (Raging flames), Ubertip (Tooltip - Normal - Extended)
+{
+Deals 10 damage to every enemy around the caster. After 2 seconds channel teleports the caster to center of the target area and deals damage there.|n500 range, 250 radius Aoe, 20 sec cd
 }
 
