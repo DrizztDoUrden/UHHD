@@ -45,8 +45,8 @@ Pyromancer.abilities = {
         handler = RagingFlames,
         availableFromStart = true,
         params = {
-            radius = function(_) return 150 end,
-            damage = function(_, caster) return 15 * caster.secondaryStats.spellDamage end,
+            radius = function(_) return 250 end,
+            damage = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
             channelTime = function(_) return 2 end,
         },
     },
@@ -159,9 +159,27 @@ function FiresOfNaalXul:Cast()
 end
 
 function RagingFlames:Cast()
+    self:Explode(self.caster:GetPos())
+    local timer = WC3.Timer()
+    local x, y = self:GetTargetX(), self:GetTargetY()
+    timer:Start(self.channelTime, false, function()
+        self.caster:SetPos(x, y)
+        timer:Destroy()
+        self:Explode(x, y)
+    end)
+end
+
+function RagingFlames:Explode(x, y)
+    WC3.SpecialEffect({ path = "Abilities\\Weapons\\Rifle\\RifleImpact.mdl", x = x, y = y, })
+    WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
+        if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+            self.caster:DealDamage(unit, { value = self.damage, })
+        end
+    end)
 end
 
 function FireAndIce:Cast()
+    print("Fire and Ice cast: WIP")
 end
 
 return Pyromancer
