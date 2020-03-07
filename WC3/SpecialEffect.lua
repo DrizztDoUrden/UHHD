@@ -14,11 +14,15 @@ function SpecialEffect:ctor(options)
         error("Invalid parameters configuration for WC3.SpecialEffect()", 2)
     end
     self.timer = Timer()
-    self.timer:Start(options.lifeSpan or 60, false, function() self:Destroy() end)
+    if options.lifeSpan and options.lifeSpan > 0 then
+        self.timer:Start(options.lifeSpan or 60, false, function() self:Destroy() end)
+    end
 end
 
 function SpecialEffect:Destroy()
-    self.timer:Destroy()
+    if self.timer then
+        self.timer:Destroy()
+    end
     DestroyEffect(self.handle)
 end
 
