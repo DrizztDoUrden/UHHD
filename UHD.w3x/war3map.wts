@@ -1318,12 +1318,6 @@ STRING 275
 Boiling Blood
 }
 
-STRING 276
-// Abilities: PM_0 (Boiling Blood), Ubertip (Tooltip - Normal - Extended)
-{
-The target takes 5 damage per second for 5 seconds. If it dies under the effect, it explodes, dealing 10 damage in 300 AoE, spreading the effect. Subsequent applications refresh the effect.|n300 range, 5 sec cd
-}
-
 STRING 277
 // Abilities: PM_1 (Fires of Na'al Xul), Name (Name)
 {
@@ -1796,5 +1790,299 @@ STRING 362
 // Abilities: PMT3 (Fire and Ice Talents), EditorSuffix (Editor Suffix)
 {
 (Pyromancer)
+}
+
+STRING 363
+// Abilities: T200 (Taste for Blood), Name (Name)
+{
+Taste for Blood
+}
+
+STRING 364
+// Abilities: T200 (Taste for Blood), Tip (Tooltip - Normal)
+{
+Taste for Blood
+}
+
+STRING 365
+// Abilities: T200 (Taste for Blood), Ubertip (Tooltip - Normal - Extended)
+{
+Boiling Blood heals the caster by 2% of max HP for each explosion.
+}
+
+STRING 366
+// Abilities: T200 (Taste for Blood), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 367
+// Abilities: T201 (Bad Blood), Name (Name)
+{
+Bad Blood
+}
+
+STRING 368
+// Abilities: T201 (Bad Blood), Tip (Tooltip - Normal)
+{
+Bad Blood
+}
+
+STRING 369
+// Abilities: T201 (Bad Blood), Ubertip (Tooltip - Normal - Extended)
+{
+Boiling Blood gives caster 5% spellpower for each target with DoT, accumulating additively, i. e. 10% for 2 targets instead of 1.05^2
+}
+
+STRING 370
+// Abilities: T201 (Bad Blood), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 371
+// Abilities: T202 (Meat Pieces), Name (Name)
+{
+Meat Pieces
+}
+
+STRING 372
+// Abilities: T202 (Meat Pieces), Tip (Tooltip - Normal)
+{
+Meat Pieces
+}
+
+STRING 373
+// Abilities: T202 (Meat Pieces), Ubertip (Tooltip - Normal - Extended)
+{
+Refreshing Boiling Blood deals the remaining damage all at once.
+}
+
+STRING 374
+// Abilities: T202 (Meat Pieces), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 375
+// Abilities: T210 (Hellfire), Name (Name)
+{
+Hellfire
+}
+
+STRING 376
+// Abilities: T210 (Hellfire), Tip (Tooltip - Normal)
+{
+Hellfire
+}
+
+STRING 377
+// Abilities: T210 (Hellfire), Ubertip (Tooltip - Normal - Extended)
+{
+Fires of Na`al Xul also deals 9 damage over 3 seconds.
+}
+
+STRING 378
+// Abilities: T210 (Hellfire), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 379
+// Abilities: T211 (Grand Explosion), Name (Name)
+{
+Grand Explosion
+}
+
+STRING 380
+// Abilities: T211 (Grand Explosion), Tip (Tooltip - Normal)
+{
+Grand Explosion
+}
+
+STRING 381
+// Abilities: T211 (Grand Explosion), Ubertip (Tooltip - Normal - Extended)
+{
+Enemies hit by Fires of Na`al Xul reduce its cooldown by 1 second.
+}
+
+STRING 382
+// Abilities: T211 (Grand Explosion), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 383
+// Abilities: T212 (Ancient Flames), Name (Name)
+{
+Ancient Flames
+}
+
+STRING 384
+// Abilities: T212 (Ancient Flames), Tip (Tooltip - Normal)
+{
+Ancient Flames
+}
+
+STRING 385
+// Abilities: T212 (Ancient Flames), Ubertip (Tooltip - Normal - Extended)
+{
+Fires of Na`al Xul reduces damage dealt by targets by 15% for 3 sec.
+}
+
+STRING 386
+// Abilities: T212 (Ancient Flames), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 387
+// Abilities: T220 (Blink), Name (Name)
+{
+Blink
+}
+
+STRING 388
+// Abilities: T220 (Blink), Tip (Tooltip - Normal)
+{
+Blink
+}
+
+STRING 389
+// Abilities: T220 (Blink), Ubertip (Tooltip - Normal - Extended)
+{
+Casting speed of Raging Flames is increased by 100%.
+}
+
+STRING 390
+// Abilities: T220 (Blink), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 391
+// Abilities: T221 (Implosion), Name (Name)
+{
+Implosion
+}
+
+STRING 392
+// Abilities: T221 (Implosion), Tip (Tooltip - Normal)
+{
+Implosion
+}
+
+STRING 393
+// Abilities: T221 (Implosion), Ubertip (Tooltip - Normal - Extended)
+{
+Raging Flames starting damage also slows targets by 15%
+}
+
+STRING 394
+// Abilities: T221 (Implosion), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 395
+// Abilities: T222 (Explosion), Name (Name)
+{
+Explosion
+}
+
+STRING 396
+// Abilities: T222 (Explosion), Tip (Tooltip - Normal)
+{
+Explosion
+}
+
+STRING 397
+// Abilities: T222 (Explosion), Ubertip (Tooltip - Normal - Extended)
+{
+Raging Flames starting wave applies Boiling Blood to two highest health targets instead of the direct damage.
+}
+
+STRING 398
+// Abilities: T222 (Explosion), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 399
+// Abilities: T230 (Vacuum Arcanuum), Name (Name)
+{
+Vacuum Arcanuum
+}
+
+STRING 400
+// Abilities: T230 (Vacuum Arcanuum), Tip (Tooltip - Normal)
+{
+Vacuum Arcanuum
+}
+
+STRING 401
+// Abilities: T230 (Vacuum Arcanuum), Ubertip (Tooltip - Normal - Extended)
+{
+Fire and Ice is 33% faster to cast with the same total effect.
+}
+
+STRING 402
+// Abilities: T230 (Vacuum Arcanuum), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 403
+// Abilities: T231 (Fire Treatment), Name (Name)
+{
+Fire Treatment
+}
+
+STRING 404
+// Abilities: T231 (Fire Treatment), Tip (Tooltip - Normal)
+{
+Fire Treatment
+}
+
+STRING 405
+// Abilities: T231 (Fire Treatment), Ubertip (Tooltip - Normal - Extended)
+{
+Up to 30% of the shield is applied as heal instead.
+}
+
+STRING 406
+// Abilities: T231 (Fire Treatment), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 407
+// Abilities: T232 (Brittle Ice), Name (Name)
+{
+Brittle Ice
+}
+
+STRING 408
+// Abilities: T232 (Brittle Ice), Tip (Tooltip - Normal)
+{
+Brittle Ice
+}
+
+STRING 409
+// Abilities: T232 (Brittle Ice), Ubertip (Tooltip - Normal - Extended)
+{
+Fire and Ice reduces the targets armor by 10 for 4 seconds since the end of the cast.
+}
+
+STRING 410
+// Abilities: T232 (Brittle Ice), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 411
+// Abilities: PM_0 (Boiling Blood), Ubertip (Tooltip - Normal - Extended)
+{
+The target takes 3 damage per second for 5 seconds. If it dies under the effect, it explodes, dealing 10 damage in 300 AoE, spreading the effect to 2 hightest health targets. Subsequent applications refresh the effect.|n300 range, 5 sec cd.
 }
 
