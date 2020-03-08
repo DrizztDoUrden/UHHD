@@ -1354,28 +1354,16 @@ STRING 281
 Deals 20 damage to all enemies in a circle. Reduces spell resistance of targets by 20%.|n500 range, 150 radius AoE, 10 sec cd.
 }
 
-STRING 282
-// Abilities: PM_2 (Raging flames), Name (Name)
-{
-Raging flames
-}
-
 STRING 283
-// Abilities: PM_2 (Raging flames), Hotkey (Hotkey - Normal)
+// Abilities: PM_2 (Raging Flames), Hotkey (Hotkey - Normal)
 {
 E
 }
 
 STRING 284
-// Abilities: PM_2 (Raging flames), EditorSuffix (Editor Suffix)
+// Abilities: PM_2 (Raging Flames), EditorSuffix (Editor Suffix)
 {
 (Pyromancer)
-}
-
-STRING 285
-// Abilities: PM_2 (Raging flames), Tip (Tooltip - Normal)
-{
-Raging flames
 }
 
 STRING 287
@@ -1709,7 +1697,7 @@ STRING 345
 }
 
 STRING 346
-// Abilities: PM_2 (Raging flames), Ubertip (Tooltip - Normal - Extended)
+// Abilities: PM_2 (Raging Flames), Ubertip (Tooltip - Normal - Extended)
 {
 Deals 10 damage to every enemy around the caster. After 2 seconds channel teleports the caster to center of the target area and deals damage there.|n500 range, 250 radius Aoe, 20 sec cd
 }
@@ -1724,5 +1712,89 @@ STRING 348
 // Abilities: T000 (Ward Drain), Ubertip (Tooltip - Normal - Extended)
 {
 Dark mend also reduces spell resist by 15%.
+}
+
+STRING 349
+// Abilities: PMT0 (Boiling Blood Talents), Name (Name)
+{
+Boiling Blood Talents
+}
+
+STRING 350
+// Abilities: PMT0 (Boiling Blood Talents), Tip (Tooltip - Normal)
+{
+Boiling Blood Talents
+}
+
+STRING 351
+// Abilities: PMT0 (Boiling Blood Talents), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 352
+// Abilities: PMT1 (Fires of Na`al Xul Talents), Name (Name)
+{
+Fires of Na`al Xul Talents
+}
+
+STRING 353
+// Abilities: PMT1 (Fires of Na`al Xul Talents), Tip (Tooltip - Normal)
+{
+Fires of Na`al Xul Talents
+}
+
+STRING 354
+// Abilities: PMT1 (Fires of Na`al Xul Talents), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 355
+// Abilities: PM_2 (Raging Flames), Name (Name)
+{
+Raging Flames
+}
+
+STRING 356
+// Abilities: PM_2 (Raging Flames), Tip (Tooltip - Normal)
+{
+Raging Flames
+}
+
+STRING 357
+// Abilities: PMT2 (Raging Flames Talents), Name (Name)
+{
+Raging Flames Talents
+}
+
+STRING 358
+// Abilities: PMT2 (Raging Flames Talents), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
+}
+
+STRING 359
+// Abilities: PMT2 (Raging Flames Talents), Tip (Tooltip - Normal)
+{
+Raging Flames Talents
+}
+
+STRING 360
+// Abilities: PMT3 (Fire and Ice Talents), Name (Name)
+{
+Fire and Ice Talents
+}
+
+STRING 361
+// Abilities: PMT3 (Fire and Ice Talents), Tip (Tooltip - Normal)
+{
+Fire and Ice Talents
+}
+
+STRING 362
+// Abilities: PMT3 (Fire and Ice Talents), EditorSuffix (Editor Suffix)
+{
+(Pyromancer)
 }
 
