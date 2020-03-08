@@ -196,11 +196,35 @@ function Unit:AddAbility(id)
 end
 
 function Unit:EnumItems(handler)
-    local invetorySize = self:GetInventorySize()
-    for key=0,invetorySize-1 do
-        local result, err = pcall(handler, self:GetItemInSlot(key), key)
-        if not result then
-            logUnit:Error("Error enumerating units in range: " .. err)
+    local inventorySize = self:GetInventorySize()
+    for key=0, inventorySize-1 do
+        local resItem = self:GetItemInSlot(key)
+        if resItem ~= nil then
+            local result, err = pcall(handler, resItem, key)
+            if not result then
+                logUnit:Error("Error call lambda in items Enumeration cycle: " .. err)
+            end
+        else
+            logUnit:Trace(" There is not item in current slot "..key)
+            local result, err = pcall(handler, resItem,key)
+            if not result then
+                logUnit:Error(" Error call lambda in items Enumeration cycle: " .. err)
+                logUnit:Error(" There is not item in current slot "..key)
+                logUnit:Error(" It may be cause by that you get nil")
+            end
+        end
+    end
+end
+
+function Unit:EnumOnlyExistentItems(handler)
+    local inventorySize = self:GetInventorySize()
+    for key=0, inventorySize-1 do
+        local resItem = self:GetItemInSlot(key)
+        if resItem ~= nil then
+            local result, err = pcall(handler, resItem, key)
+            if not result then
+                logUnit:Error("Error call lambda in items Enumeration cycle: " .. err)
+            end
         end
     end
 end

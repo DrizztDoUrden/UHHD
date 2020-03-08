@@ -39,13 +39,13 @@ function Hero:ctor(...)
     self.abilities:RegisterUnitSpellEffect(self)
     self.toDestroy[self.abilities] = true
 
-    self.invetory = Invetory(self)
-    self.invetory.customItemAvailability["BodyArmor"] = 2
-    self.invetory.customItemAvailability["Helmet"] = 1
-    self.invetory.customItemAvailability["Arms"] = 1
-    self.invetory.customItemAvailability["Legs"] = 1
-    self.invetory.customItemAvailability["Weapon"] = 1
-    self.invetory.customItemAvailability["Misc"] = 2
+    self.inventory = Invetory(self)
+    self.inventory.customItemAvailability["BodyArmor"] = 2
+    self.inventory.customItemAvailability["Helmet"] = 1
+    self.inventory.customItemAvailability["Arms"] = 1
+    self.inventory.customItemAvailability["Legs"] = 1
+    self.inventory.customItemAvailability["Weapon"] = 1
+    self.inventory.customItemAvailability["Misc"] = 2
     
     self.statUpgrades = {}
     self.skillUpgrades = {}

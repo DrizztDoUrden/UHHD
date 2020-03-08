@@ -24,7 +24,6 @@ function Shop:AddTrigger()
         local buying = WC3.Unit.GetBying()
         local sold = WC3.Item.GetSold()
         local id = sold:GetTypeId()
-
         sold:Destroy()
         logShop:Info("buying item id"..id)
         for _, itemPreset in pairs(self.itemPresets) do

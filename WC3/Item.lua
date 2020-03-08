@@ -5,7 +5,9 @@ local Item = Class()
 
 local items = {}
 
-local logItem = Log.Category("WC3\\Item")
+local logItem = Log.Category("WC3\\Item",{
+    printVerbosity = Log.Verbosity.Trace,
+    fileVerbosity = Log.Verbosity.Trace})
 
 
 local function Get(handle)
@@ -14,17 +16,26 @@ local function Get(handle)
         return existing
     end
     if handle == nil then
-        print(" Where getter give nil expect class from table")
+        logItem:error(" Item.Get get nil, but expect item handle, It is error i will return nil")
+        return nil
     end
     return Item(handle)
 end
 
-function Item.GetInSlot(unithandle, slot)
-    return Get(UnitItemInSlot(unithandle, slot))
+function Item.GetInSlot(unit, slot)
+    if math.type(slot) == "integer" then
+        local result = UnitItemInSlot(unit.handle, slot)
+        if result ~= nil then
+            return Get(result)
+        end
+        logItem:Info(" There not item in slot"..slot)
+        return nil
+    else
+        error("Slot should be integer")
+    end
 end
 
 function Item.GetSold()
-
     return Get(GetSoldItem())
 end
 
@@ -33,6 +44,7 @@ function Item.GetManipulated()
     if result ~= nil then
         return Get(result)
     end
+    logItem:Info(" There not item for manipulating, it may cause some problem")
     return nil
 end
 
@@ -105,12 +117,6 @@ function Item:GetPlayer()
     return GetItemPlayer(self.handle)
 end
 
-function Item.GetInSlot(unit, slot)
-    local result = UnitItemInSlot(unit.handle, slot)
-    if result ~= nil then
-        return Get(result)
-    end
-    return nil
-end
+
 
 return Item

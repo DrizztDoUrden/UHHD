@@ -3,7 +3,7 @@ local WC3 = require("WC3.All")
 local Class = require("Class")
 local UHDItem = require("Core.UHDItem")
 local Log = require("Log")
-local InvetoryLog = Log.Category("Items\\Inventory", {
+local InvetoryLog = Log.Category("Core\\Items\\Inventory", {
     printVerbosity = Log.Verbosity.Trace,
     fileVerbosity = Log.Verbosity.Trace,
 })
@@ -20,7 +20,7 @@ local Inventory = Class()
             Arms = nil,
             Legs = nil,
             Misc = nil}
-        self.invetory = {}
+        self.inventory = {}
         local triggerUnitPickUPItem = WC3.Trigger()
         triggerUnitPickUPItem:RegisterUnitPickUpItem(self.owner)
         triggerUnitPickUPItem:AddAction(function() InvetoryLog:Info(" Inventory catch that unit pick up item") self:SetItem(UHDItem.GetManipulated()) end)
@@ -36,14 +36,14 @@ local Inventory = Class()
         self.owner:EnumItems(function (item) resultList[item] = true end)
         for item in pairs(resultList) do
             if ~self:HasItem(item) then
-                self.invetory = resultList
+                self.inventory = resultList
                 return item
             end
         end
     end
 
     function Inventory:HasItem(item)
-        for litem in pairs(self.invetory) do
+        for litem in pairs(self.inventory) do
             if item == litem then
                 return true
             end
@@ -74,14 +74,11 @@ local Inventory = Class()
     end
 
     function Inventory:SetItem(item)
-        -- print("New item")
-        -- print(item)
         if item ~= nil then
             if item:IsA(UHDItem) then
                 local maxInventory = self.owner:GetInventorySize()
-                if #self.invetory <= maxInventory then
+                if #self.inventory <= maxInventory then
                     if self:CheckAvaileItemToAdd(item) then
-                        
                         self:DressItem(item)
                     else
                         self:DropItem(item)
@@ -96,7 +93,7 @@ local Inventory = Class()
             if item:IsA(UHDItem) then
                 if self:HasItem(item) then
                     item:RemoveStats(self.owner)
-                    self.invetory[item] = nil
+                    self.inventory[item] = nil
                 end
             end
         end
@@ -104,7 +101,7 @@ local Inventory = Class()
 
     function Inventory:EnumItems(handler)
         local i = 0
-        for item in pairs(self.invetory) do
+        for item in pairs(self.inventory) do
             local res, err = pcall(handler, item, i)
             i = i + 1
         end
@@ -120,13 +117,16 @@ local Inventory = Class()
 
     function Inventory:UpdateItems()
         local resultList = {}
-        self.owner:EnumItems(function (item) resultList[item] = true end)
-        self.invetory = resultList
+        print("UpdateItems ")
+        self.owner:EnumOnlyExistentItems(function(item)
+            resultList[item] = true
+            end)
+        self.inventory = resultList
     end
 
     function Inventory:GetSlot(item)
         local resslot = nil
-        self.owner:EnumItems(
+        self.owner:EnumOnlyExistentItems(
         function (itemInSlot, slot)
             if itemInSlot == item then
                 resslot = slot
@@ -136,7 +136,7 @@ local Inventory = Class()
     end
 
     function Inventory:DressItem(item)
-        self.invetory[item] = true
+        self.inventory[item] = true
         item:AddStats(self.owner)
     end
 

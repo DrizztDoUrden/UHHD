@@ -884,13 +884,13 @@ function Hero:ctor(...)
     self.abilities:RegisterUnitSpellEffect(self)
     self.toDestroy[self.abilities] = true
 
-    self.invetory = Invetory(self)
-    self.invetory.customItemAvailability["BodyArmor"] = 2
-    self.invetory.customItemAvailability["Helmet"] = 1
-    self.invetory.customItemAvailability["Arms"] = 1
-    self.invetory.customItemAvailability["Legs"] = 1
-    self.invetory.customItemAvailability["Weapon"] = 1
-    self.invetory.customItemAvailability["Misc"] = 2
+    self.inventory = Invetory(self)
+    self.inventory.customItemAvailability["BodyArmor"] = 2
+    self.inventory.customItemAvailability["Helmet"] = 1
+    self.inventory.customItemAvailability["Arms"] = 1
+    self.inventory.customItemAvailability["Legs"] = 1
+    self.inventory.customItemAvailability["Weapon"] = 1
+    self.inventory.customItemAvailability["Misc"] = 2
     
     self.statUpgrades = {}
     self.skillUpgrades = {}
@@ -1190,7 +1190,7 @@ local WC3 = require("WC3.All")
 local Class = require("Class")
 local UHDItem = require("Core.UHDItem")
 local Log = require("Log")
-local InvetoryLog = Log.Category("Items\\Inventory", {
+local InvetoryLog = Log.Category("Core\\Items\\Inventory", {
     printVerbosity = Log.Verbosity.Trace,
     fileVerbosity = Log.Verbosity.Trace,
 })
@@ -1207,7 +1207,7 @@ local Inventory = Class()
             Arms = nil,
             Legs = nil,
             Misc = nil}
-        self.invetory = {}
+        self.inventory = {}
         local triggerUnitPickUPItem = WC3.Trigger()
         triggerUnitPickUPItem:RegisterUnitPickUpItem(self.owner)
         triggerUnitPickUPItem:AddAction(function() InvetoryLog:Info(" Inventory catch that unit pick up item") self:SetItem(UHDItem.GetManipulated()) end)
@@ -1223,14 +1223,14 @@ local Inventory = Class()
         self.owner:EnumItems(function (item) resultList[item] = true end)
         for item in pairs(resultList) do
             if ~self:HasItem(item) then
-                self.invetory = resultList
+                self.inventory = resultList
                 return item
             end
         end
     end
 
     function Inventory:HasItem(item)
-        for litem in pairs(self.invetory) do
+        for litem in pairs(self.inventory) do
             if item == litem then
                 return true
             end
@@ -1261,14 +1261,11 @@ local Inventory = Class()
     end
 
     function Inventory:SetItem(item)
-        -- print("New item")
-        -- print(item)
         if item ~= nil then
             if item:IsA(UHDItem) then
                 local maxInventory = self.owner:GetInventorySize()
-                if #self.invetory <= maxInventory then
+                if #self.inventory <= maxInventory then
                     if self:CheckAvaileItemToAdd(item) then
-                        
                         self:DressItem(item)
                     else
                         self:DropItem(item)
@@ -1283,7 +1280,7 @@ local Inventory = Class()
             if item:IsA(UHDItem) then
                 if self:HasItem(item) then
                     item:RemoveStats(self.owner)
-                    self.invetory[item] = nil
+                    self.inventory[item] = nil
                 end
             end
         end
@@ -1291,7 +1288,7 @@ local Inventory = Class()
 
     function Inventory:EnumItems(handler)
         local i = 0
-        for item in pairs(self.invetory) do
+        for item in pairs(self.inventory) do
             local res, err = pcall(handler, item, i)
             i = i + 1
         end
@@ -1307,13 +1304,16 @@ local Inventory = Class()
 
     function Inventory:UpdateItems()
         local resultList = {}
-        self.owner:EnumItems(function (item) resultList[item] = true end)
-        self.invetory = resultList
+        print("UpdateItems ")
+        self.owner:EnumOnlyExistentItems(function(item)
+            resultList[item] = true
+            end)
+        self.inventory = resultList
     end
 
     function Inventory:GetSlot(item)
         local resslot = nil
-        self.owner:EnumItems(
+        self.owner:EnumOnlyExistentItems(
         function (itemInSlot, slot)
             if itemInSlot == item then
                 resslot = slot
@@ -1323,7 +1323,7 @@ local Inventory = Class()
     end
 
     function Inventory:DressItem(item)
-        self.invetory[item] = true
+        self.inventory[item] = true
         item:AddStats(self.owner)
     end
 
@@ -1403,7 +1403,6 @@ function Shop:AddTrigger()
         local buying = WC3.Unit.GetBying()
         local sold = WC3.Item.GetSold()
         local id = sold:GetTypeId()
-
         sold:Destroy()
         logShop:Info("buying item id"..id)
         for _, itemPreset in pairs(self.itemPresets) do
@@ -1643,9 +1642,9 @@ function  UHDItem:AddStats(unit)
     unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage * self.bonusSecondaryStats.spellDamage
 
     unit.bonusSecondaryStats.armor = bonusSecondaryStats.armor + self.bonusSecondaryStats.armor
-    unit.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion * self.bonusSecondaryStats.evasion
-    unit.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist * ( 1 + self.bonusSecondaryStats.ccResist)
-    unit.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist * ( 1 + self.bonusSecondaryStats.spellResist)
+    unit.bonusSecondaryStats.evasion = 1 - (1 - bonusSecondaryStats.evasion) * (1 - self.bonusSecondaryStats.evasion)
+    unit.bonusSecondaryStats.ccResist = 1 - (1 - bonusSecondaryStats.ccResist) * (1 - self.bonusSecondaryStats.ccResist)
+    unit.bonusSecondaryStats.spellResist = 1 - (1 - bonusSecondaryStats.spellResist) * (1 - self.bonusSecondaryStats.spellResist)
 
     unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed * self.bonusSecondaryStats.movementSpeed
     unit:ApplyStats()
@@ -1669,9 +1668,9 @@ function  UHDItem:RemoveStats(unit)
     unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage / self.bonusSecondaryStats.spellDamage
 
     unit.bonusSecondaryStats.armor = bonusSecondaryStats.armor - self.bonusSecondaryStats.armor
-    unit.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion / self.bonusSecondaryStats.evasion
-    unit.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist / ( 1 + self.bonusSecondaryStats.ccResist)
-    unit.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist / ( 1 + self.bonusSecondaryStats.spellResist)
+    unit.bonusSecondaryStats.evasion = 1 - (1 - bonusSecondaryStats.evasion) / (1 - self.bonusSecondaryStats.evasion)
+    unit.bonusSecondaryStats.ccResist = 1 - (1 - bonusSecondaryStats.ccResist) / (1 - self.bonusSecondaryStats.ccResist)
+    unit.bonusSecondaryStats.spellResist = 1 - (1 - bonusSecondaryStats.spellResist) / (1 - self.bonusSecondaryStats.spellResist)
 
     unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed / self.bonusSecondaryStats.movementSpeed
     unit:ApplyStats()
@@ -1720,22 +1719,11 @@ function UHDUnit:ctor(...)
     self.onDeath = {}
 end
 
-function UHDUnit:CheckSecondaryStat0_1(name)
-    if self.secondaryStats[name] < 0 or self.secondaryStats[name] > 1 then
-        logUnit:Error("Value of " .. name .. " of " .. self:GetName() .. " can't be outside of [0;1]")
-        self.secondaryStats[name] = math.min(1, math.max(0, self.secondaryStats[name]))
-    end
-end
-
 function UHDUnit:ApplyStats()
     local oldMaxHp = self:GetMaxHP()
     local oldMaxMana = self:GetMaxMana()
     local oldHp = self:GetHP()
     local oldMana = self:GetMana()
-
-    self:CheckSecondaryStat0_1("evasion")
-    self:CheckSecondaryStat0_1("ccResist")
-    self:CheckSecondaryStat0_1("spellResist")
 
     self:SetMaxHealth(self.secondaryStats.health)
     self:SetMaxMana(self.secondaryStats.mana)
@@ -2085,7 +2073,7 @@ function HeroSStatsBuff:ctor(stats, target, duration)
     TimedEffect.ctor(self, target, duration)
 end
 
-function HeroSStatsBuff:OnStart()
+function HeroSStatsBuff:AddStats()
     for k, v in pairs(self.stats) do
         if Stats.Secondary.adding[k] then
             self.target.bonusSecondaryStats[k] = self.target.bonusSecondaryStats[k] + v
@@ -2093,10 +2081,9 @@ function HeroSStatsBuff:OnStart()
             self.target.bonusSecondaryStats[k] = self.target.bonusSecondaryStats[k] * v
         end
     end
-    self.target:ApplyStats()
 end
 
-function HeroSStatsBuff:OnEnd()
+function HeroSStatsBuff:RemoveStats()
     for k, v in pairs(self.stats) do
         if Stats.Secondary.adding[k] then
             self.target.bonusSecondaryStats[k] = self.target.bonusSecondaryStats[k] - v
@@ -2104,6 +2091,22 @@ function HeroSStatsBuff:OnEnd()
             self.target.bonusSecondaryStats[k] = self.target.bonusSecondaryStats[k] / v
         end
     end
+end
+
+function HeroSStatsBuff:OnStart()
+    self:AddStats()
+    self.target:ApplyStats()
+end
+
+function HeroSStatsBuff:OnEnd()
+    self:RemoveStats()
+    self.target:ApplyStats()
+end
+
+function HeroSStatsBuff:UpdateStats(value)
+    self:RemoveStats()
+    self.stats = value
+    self:AddStats()
     self.target:ApplyStats()
 end
 
@@ -2118,8 +2121,10 @@ local WC3 = require "WC3.All"
 local TimedEffect = Class()
 
 function TimedEffect:ctor(target, duration)
-    self.timer = WC3.Timer()
-    self.timer:Start(duration, false, function() self:Destroy() end)
+    if duration then
+        self.timer = WC3.Timer()
+        self.timer:Start(duration, false, function() self:Destroy() end)
+    end
     self.target = target
     target.effects[self] = true
     self:OnStart()
@@ -2135,7 +2140,9 @@ end
 
 function TimedEffect:Destroy()
     self:OnEnd()
-    self.timer:Destroy()
+    if self.timer then
+        self.timer:Destroy()
+    end
     self.target.effects[self] = nil
 end
 
@@ -3138,6 +3145,7 @@ local WC3 = require("WC3.All")
 local Spell = require "Core.Spell"
 local Log = require "Log"
 local CreepStatsDebuf = require "Core.Effects.CreepStatsDebuff"
+local HeroSStatsBuff = require "Core.Effects.HeroSStatsBuff"
 
 local logPyromancer = Log.Category("Heroes\\Pyromancer")
 
@@ -3156,11 +3164,24 @@ Pyromancer.abilities = {
         handler = BoilingBlood,
         availableFromStart = true,
         params = {
-            damage = function(self, caster) return 5 * caster.secondaryStats.spellDamage * self.params.duration(self, caster) end,
+            damage = function(self, caster) return 3 * caster.secondaryStats.spellDamage * self.params.duration(self, caster) end,
             duration = function(_) return 5 end,
             period = function(_) return 0.5 end,
             explosionDamage = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
             explosionRadius = function(_) return 250 end,
+            spreadLimit = function(_) return 2 end,
+            healPerExplosion = function(_, caster)
+                if caster:HasTalent("T200") then return 0.02 end
+                return 0
+            end,
+            spellpowerBonus = function(_, caster)
+                if caster:HasTalent("T201") then return 0.05 end
+                return 0
+            end,
+            damagePartOnRefresh = function(_, caster)
+                if caster:HasTalent("T202") then return 1 end
+                return 0
+            end,
         },
     },
     firesOfNaalXul = {
@@ -3199,10 +3220,10 @@ Pyromancer.abilities = {
 }
 
 Pyromancer.talentBooks = {
-    --[[FourCC("PMT0"),
+    FourCC("PMT0"),
     FourCC("PMT1"),
     FourCC("PMT2"),
-    FourCC("PMT3"),]]
+    FourCC("PMT3"),
 }
 
 function Pyromancer:ctor()
@@ -3234,14 +3255,28 @@ end
 
 function BoilingBlood:Cast()
     self.target = self:GetTargetUnit()
-    WC3.SpecialEffect({ path = "Abilities\\Spells\\Orc\\Disenchant\\DisenchantSpecialArt.mdl", target = self.target, attachPoint = "origin", lifeSpan = 15, })
-    self.smoke = WC3.SpecialEffect({ path = "Doodads\\LordaeronSummer\\Props\\SmokeSmudge\\SmokeSmudge", target = self.target, attachPoint = "origin", })
 
     local existing = self.target.effects["Pyromancer.BoilingBlood"]
-
     if existing then
+        if self.damagePartOnRefresh > 0 then
+            self.caster:DealDamage(self.target, { value = existing.damage * existing.durationLeft / existing.duration * self.damagePartOnRefresh, })
+        end
         existing:Destroy()
     end
+
+    if self.spellpowerBonus > 0 then
+        self.spellBuff = self.caster.effects["Pyromancer.BoilingBlood.SpellBuff"]
+
+        if not self.spellBuff then
+            self.spellBuff = HeroSStatsBuff({ spellDamage = 1 + self.spellpowerBonus, }, self.caster)
+            self.caster.effects["Pyromancer.BoilingBlood.SpellBuff"] = self.spellBuff
+        else
+            self.spellBuff:UpdateStats({ spellDamage = self.spellBuff.stats.spellDamage + self.spellpowerBonus, })
+        end
+    end
+
+    WC3.SpecialEffect({ path = "Abilities\\Spells\\Orc\\Disenchant\\DisenchantSpecialArt.mdl", target = self.target, attachPoint = "origin", lifeSpan = 15, })
+    self.smoke = WC3.SpecialEffect({ path = "Doodads\\LordaeronSummer\\Props\\SmokeSmudge\\SmokeSmudge", target = self.target, attachPoint = "origin", })
 
     self.target.effects["Pyromancer.BoilingBlood"] = self
     self.deathHandler = function() self:Explode() end
@@ -3251,15 +3286,37 @@ function BoilingBlood:Cast()
     self.timer:Start(self.period, true, function() self:Tick() end)
 end
 
+local function SortByHealthDescending(array, limit)
+    for i = 1,math.min(limit,#array) do
+        for j = i+1,#array do
+            if array[i]:GetHP() < array[j]:GetHP() then
+                local tmp = array[i]
+                array[i] = array[j]
+                array[j] = tmp
+            end
+        end
+    end
+end
+
 function BoilingBlood:Explode()
+    if self.healPerExplosion > 0 then
+        self.caster:Heal(self.caster, self.healPerExplosion * self.caster.secondaryStats.health)
+    end
     local x, y = self.target:GetX(), self.target:GetY()
     WC3.SpecialEffect({ path = "Units\\Undead\\Abomination\\AbominationExplosion.mdl", x = x, y = y, })
+    local targets = {}
     WC3.Unit.EnumInRange(x, y, self.explosionRadius, function(unit)
         if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DealDamage(unit, { value = self.explosionDamage, })
-            BoilingBlood(Pyromancer.abilities.boilingBlood, self.caster, { unit = unit, })
+            if unit:GetHP() > 0 then
+                table.insert(targets, unit)
+            end
         end
     end)
+    SortByHealthDescending(targets, self.spreadLimit)
+    for i = 1,math.min(self.spreadLimit,#targets) do
+        BoilingBlood(Pyromancer.abilities.boilingBlood, self.caster, { unit = targets[i], })
+    end
     self:Destroy()
 end
 
@@ -3278,16 +3335,27 @@ function BoilingBlood:Destroy()
     self.target.effects["Pyromancer.BoilingBlood"] = nil
     self.target.onDeath[self.deathHandler] = nil
     self.smoke:Destroy()
+    if self.spellBuff then
+        local newStats = { spellDamage = self.spellBuff.stats.spellDamage - self.spellpowerBonus, }
+        if newStats.spellDamage <= 1 then
+            self.spellBuff:Destroy()
+        else
+            self.spellBuff:UpdateStats(newStats)
+        end
+    end
 end
 
 function FiresOfNaalXul:Cast()
     local x, y = self:GetTargetX(), self:GetTargetY()
-    WC3.SpecialEffect({ path = "Abilities\\Spells\\Human\\FlameStrike\\FlameStrike1.mdl", x = x, y = y, })
-    WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
-        if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
-            self.caster:DealDamage(unit, { value = self.damage, })
-            CreepStatsDebuf({ spellResist = (1 - self.spellResistanceDebuff), }, unit, self.debuffDuration)
-        end
+    local timer = WC3.Timer()
+    timer:Start(0.2, false, function()
+        WC3.SpecialEffect({ path = "Abilities\\Spells\\Human\\FlameStrike\\FlameStrike1.mdl", x = x, y = y, })
+        WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
+            if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+                self.caster:DealDamage(unit, { value = self.damage, })
+                CreepStatsDebuf({ spellResist = (1 - self.spellResistanceDebuff), }, unit, self.debuffDuration)
+            end
+        end)
     end)
 end
 
@@ -3543,15 +3611,12 @@ end
 logMain = Log.Category("AddSpell")
 logMain:Info("Start Map")
 --local unit = WC3.Unit(WC3.Player.Get(0), FourCC("bs00"), -2100, -3800, 0)
--- heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
+heroPresets[1]:Spawn(WC3.Player.Get(0), -2300, -3400, 0)
 -- heroPresets[1]:Spawn(WC3.Player.Get(9), -2300, -3400, 0)
 Core(WC3.Player.Get(8), -2300, -3800, 0)
 Tavern(WC3.Player.Get(0), 1600, -3800, 0, heroPresets)
 Shop(WC3.Player.Get(0), -2000, -2600, 0, itemsPresets)
-local item = ChainArmor(-2300, -3400)
-local item2 = LeatherArmor(-2200, -3400)
-local item3 = PlateArmor(-2400, -3400)
-local item4 = Robe(-2500, -3400)
+
 -- local Bos = DefiledTree():Spawn(WC3.Player.Get(0), -2300, -3500, 0, 1, 2)
 -- local timerwaveObserver = Timer()
 -- timerwaveObserver:Start(15, false, function()
@@ -3635,7 +3700,9 @@ local Item = Class()
 
 local items = {}
 
-local logItem = Log.Category("WC3\\Item")
+local logItem = Log.Category("WC3\\Item",{
+    printVerbosity = Log.Verbosity.Trace,
+    fileVerbosity = Log.Verbosity.Trace})
 
 
 local function Get(handle)
@@ -3644,17 +3711,26 @@ local function Get(handle)
         return existing
     end
     if handle == nil then
-        print(" Where getter give nil expect class from table")
+        logItem:error(" Item.Get get nil, but expect item handle, It is error i will return nil")
+        return nil
     end
     return Item(handle)
 end
 
-function Item.GetInSlot(unithandle, slot)
-    return Get(UnitItemInSlot(unithandle, slot))
+function Item.GetInSlot(unit, slot)
+    if math.type(slot) == "integer" then
+        local result = UnitItemInSlot(unit.handle, slot)
+        if result ~= nil then
+            return Get(result)
+        end
+        logItem:Info(" There not item in slot"..slot)
+        return nil
+    else
+        error("Slot should be integer")
+    end
 end
 
 function Item.GetSold()
-
     return Get(GetSoldItem())
 end
 
@@ -3663,6 +3739,7 @@ function Item.GetManipulated()
     if result ~= nil then
         return Get(result)
     end
+    logItem:Info(" There not item for manipulating, it may cause some problem")
     return nil
 end
 
@@ -3735,13 +3812,7 @@ function Item:GetPlayer()
     return GetItemPlayer(self.handle)
 end
 
-function Item.GetInSlot(unit, slot)
-    local result = UnitItemInSlot(unit.handle, slot)
-    if result ~= nil then
-        return Get(result)
-    end
-    return nil
-end
+
 
 return Item
 end)
@@ -4315,11 +4386,35 @@ function Unit:AddAbility(id)
 end
 
 function Unit:EnumItems(handler)
-    local invetorySize = self:GetInventorySize()
-    for key=0,invetorySize-1 do
-        local result, err = pcall(handler, self:GetItemInSlot(key), key)
-        if not result then
-            logUnit:Error("Error enumerating units in range: " .. err)
+    local inventorySize = self:GetInventorySize()
+    for key=0, inventorySize-1 do
+        local resItem = self:GetItemInSlot(key)
+        if resItem ~= nil then
+            local result, err = pcall(handler, resItem, key)
+            if not result then
+                logUnit:Error("Error call lambda in items Enumeration cycle: " .. err)
+            end
+        else
+            logUnit:Trace(" There is not item in current slot "..key)
+            local result, err = pcall(handler, resItem,key)
+            if not result then
+                logUnit:Error(" Error call lambda in items Enumeration cycle: " .. err)
+                logUnit:Error(" There is not item in current slot "..key)
+                logUnit:Error(" It may be cause by that you get nil")
+            end
+        end
+    end
+end
+
+function Unit:EnumOnlyExistentItems(handler)
+    local inventorySize = self:GetInventorySize()
+    for key=0, inventorySize-1 do
+        local resItem = self:GetItemInSlot(key)
+        if resItem ~= nil then
+            local result, err = pcall(handler, resItem, key)
+            if not result then
+                logUnit:Error("Error call lambda in items Enumeration cycle: " .. err)
+            end
         end
     end
 end
