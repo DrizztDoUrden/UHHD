@@ -167,7 +167,9 @@ function BoilingBlood:Explode()
     WC3.Unit.EnumInRange(x, y, self.explosionRadius, function(unit)
         if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DealDamage(unit, { value = self.explosionDamage, })
-            table.insert(targets, unit)
+            if unit:GetHP() > 0 then
+                table.insert(targets, unit)
+            end
         end
     end)
     SortByHealthDescending(targets, self.spreadLimit)

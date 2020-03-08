@@ -52,9 +52,9 @@ function  UHDItem:AddStats(unit)
     unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage * self.bonusSecondaryStats.spellDamage
 
     unit.bonusSecondaryStats.armor = bonusSecondaryStats.armor + self.bonusSecondaryStats.armor
-    unit.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion * self.bonusSecondaryStats.evasion
-    unit.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist * self.bonusSecondaryStats.ccResist
-    unit.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist * self.bonusSecondaryStats.spellResist
+    unit.bonusSecondaryStats.evasion = 1 - (1 - bonusSecondaryStats.evasion) * (1 - self.bonusSecondaryStats.evasion)
+    unit.bonusSecondaryStats.ccResist = 1 - (1 - bonusSecondaryStats.ccResist) * (1 - self.bonusSecondaryStats.ccResist)
+    unit.bonusSecondaryStats.spellResist = 1 - (1 - bonusSecondaryStats.spellResist) * (1 - self.bonusSecondaryStats.spellResist)
 
     unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed * self.bonusSecondaryStats.movementSpeed
     unit:ApplyStats()
@@ -78,9 +78,9 @@ function  UHDItem:RemoveStats(unit)
     unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage / self.bonusSecondaryStats.spellDamage
 
     unit.bonusSecondaryStats.armor = bonusSecondaryStats.armor - self.bonusSecondaryStats.armor
-    unit.bonusSecondaryStats.evasion = bonusSecondaryStats.evasion / self.bonusSecondaryStats.evasion
-    unit.bonusSecondaryStats.ccResist = bonusSecondaryStats.ccResist / self.bonusSecondaryStats.ccResist
-    unit.bonusSecondaryStats.spellResist = bonusSecondaryStats.spellResist / self.bonusSecondaryStats.spellResist
+    unit.bonusSecondaryStats.evasion = 1 - (1 - bonusSecondaryStats.evasion) / (1 - self.bonusSecondaryStats.evasion)
+    unit.bonusSecondaryStats.ccResist = 1 - (1 - bonusSecondaryStats.ccResist) / (1 - self.bonusSecondaryStats.ccResist)
+    unit.bonusSecondaryStats.spellResist = 1 - (1 - bonusSecondaryStats.spellResist) / (1 - self.bonusSecondaryStats.spellResist)
 
     unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed / self.bonusSecondaryStats.movementSpeed
     unit:ApplyStats()
