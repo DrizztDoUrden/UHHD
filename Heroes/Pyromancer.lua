@@ -17,66 +17,7 @@ local FireAndIce = Class(Spell)
 
 Pyromancer.unitid = FourCC('H_PM')
 
-Pyromancer.abilities = {
-    boilingBlood = {
-        id = FourCC('PM_0'),
-        handler = BoilingBlood,
-        availableFromStart = true,
-        params = {
-            damage = function(self, caster) return 3 * caster.secondaryStats.spellDamage * self.params.duration(self, caster) end,
-            duration = function(_) return 5 end,
-            period = function(_) return 0.5 end,
-            explosionDamage = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
-            explosionRadius = function(_) return 250 end,
-            spreadLimit = function(_) return 2 end,
-            healPerExplosion = function(_, caster)
-                if caster:HasTalent("T200") then return 0.02 end
-                return 0
-            end,
-            spellpowerBonus = function(_, caster)
-                if caster:HasTalent("T201") then return 0.05 end
-                return 0
-            end,
-            damagePartOnRefresh = function(_, caster)
-                if caster:HasTalent("T202") then return 1 end
-                return 0
-            end,
-        },
-    },
-    firesOfNaalXul = {
-        id = FourCC('PM_1'),
-        handler = FiresOfNaalXul,
-        availableFromStart = true,
-        params = {
-            damage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
-            radius = function(_) return 200 end,
-            spellResistanceDebuff = function(_) return 0.20 end,
-            debuffDuration = function(_) return 3 end,
-        },
-    },
-    ragingFlames = {
-        id = FourCC('PM_2'),
-        handler = RagingFlames,
-        availableFromStart = true,
-        params = {
-            radius = function(_) return 250 end,
-            damage = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
-            channelTime = function(_) return 2 end,
-        },
-    },
-    fireAndIce = {
-        id = FourCC('PM_3'),
-        handler = FireAndIce,
-        availableFromStart = true,
-        params = {
-            duration = function(_) return 4 end,
-            period = function(_) return 0.25 end,
-            damage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
-            shieldRate = function(_) return 1 end,
-            shieldDuration = function(_) return 6 end,
-        },
-    },
-}
+Pyromancer.abilities = {}
 
 Pyromancer.talentBooks = {
     FourCC("PMT0"),
@@ -157,6 +98,32 @@ local function SortByHealthDescending(array, limit)
     end
 end
 
+Pyromancer.abilities.boilingBlood = {
+    id = FourCC('PM_0'),
+    handler = BoilingBlood,
+    availableFromStart = true,
+    params = {
+        damage = function(self, caster) return 3 * caster.secondaryStats.spellDamage * self.params.duration(self, caster) end,
+        duration = function(_) return 5 end,
+        period = function(_) return 0.5 end,
+        explosionDamage = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
+        explosionRadius = function(_) return 250 end,
+        spreadLimit = function(_) return 2 end,
+        healPerExplosion = function(_, caster)
+            if caster:HasTalent("T200") then return 0.02 end
+            return 0
+        end,
+        spellpowerBonus = function(_, caster)
+            if caster:HasTalent("T201") then return 0.05 end
+            return 0
+        end,
+        damagePartOnRefresh = function(_, caster)
+            if caster:HasTalent("T202") then return 1 end
+            return 0
+        end,
+    },
+}
+
 function BoilingBlood:Explode()
     if self.healPerExplosion > 0 then
         self.caster:Heal(self.caster, self.healPerExplosion * self.caster.secondaryStats.health)
@@ -204,6 +171,31 @@ function BoilingBlood:Destroy()
     end
 end
 
+Pyromancer.abilities.firesOfNaalXul = {
+    id = FourCC('PM_1'),
+    handler = FiresOfNaalXul,
+    availableFromStart = true,
+    params = {
+        damage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
+        radius = function(_) return 200 end,
+        spellResistanceDebuff = function(_) return 0.20 end,
+        debuffDuration = function(_) return 3 end,
+        dotDuration = function(_) return 3 end,
+        dotDamage = function(_, caster)
+            if caster:HasTalent("T210") then return 3 end
+            return 0
+        end,
+        cdrPerHit = function(_, caster)
+            if caster:HasTalent("T211") then return 1 end
+            return 0
+        end,
+        damageReduction = function(_, caster)
+            if caster:HasTalent("T212") then return 0.15 end
+            return 0
+        end,
+    },
+}
+
 function FiresOfNaalXul:Cast()
     local x, y = self:GetTargetX(), self:GetTargetY()
     local timer = WC3.Timer()
@@ -217,6 +209,17 @@ function FiresOfNaalXul:Cast()
         end)
     end)
 end
+
+Pyromancer.abilities.ragingFlames = {
+    id = FourCC('PM_2'),
+    handler = RagingFlames,
+    availableFromStart = true,
+    params = {
+        radius = function(_) return 250 end,
+        damage = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
+        channelTime = function(_) return 2 end,
+    },
+}
 
 function RagingFlames:Cast()
     self:Explode(self.caster:GetPos())
@@ -237,6 +240,19 @@ function RagingFlames:Explode(x, y)
         end
     end)
 end
+
+Pyromancer.abilities.fireAndIce = {
+    id = FourCC('PM_3'),
+    handler = FireAndIce,
+    availableFromStart = true,
+    params = {
+        duration = function(_) return 4 end,
+        period = function(_) return 0.25 end,
+        damage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
+        shieldRate = function(_) return 1 end,
+        shieldDuration = function(_) return 6 end,
+    },
+}
 
 local FireAndIceShield = Class()
 
