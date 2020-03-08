@@ -4,8 +4,10 @@ local WC3 = require "WC3.All"
 local TimedEffect = Class()
 
 function TimedEffect:ctor(target, duration)
-    self.timer = WC3.Timer()
-    self.timer:Start(duration, false, function() self:Destroy() end)
+    if duration then
+        self.timer = WC3.Timer()
+        self.timer:Start(duration, false, function() self:Destroy() end)
+    end
     self.target = target
     target.effects[self] = true
     self:OnStart()
@@ -21,7 +23,9 @@ end
 
 function TimedEffect:Destroy()
     self:OnEnd()
-    self.timer:Destroy()
+    if self.timer then
+        self.timer:Destroy()
+    end
     self.target.effects[self] = nil
 end
 
