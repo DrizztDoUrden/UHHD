@@ -4,6 +4,7 @@ local WC3 = require("WC3.All")
 local Spell = require "Core.Spell"
 local Log = require "Log"
 local CreepStatsDebuf = require "Core.Effects.CreepStatsDebuff"
+local HeroSStatsBuff = require "Core.Effects.HeroSStatsBuff"
 
 local logPyromancer = Log.Category("Heroes\\Pyromancer")
 
@@ -22,11 +23,24 @@ Pyromancer.abilities = {
         handler = BoilingBlood,
         availableFromStart = true,
         params = {
-            damage = function(self, caster) return 5 * caster.secondaryStats.spellDamage * self.params.duration(self, caster) end,
+            damage = function(self, caster) return 3 * caster.secondaryStats.spellDamage * self.params.duration(self, caster) end,
             duration = function(_) return 5 end,
             period = function(_) return 0.5 end,
             explosionDamage = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
             explosionRadius = function(_) return 250 end,
+            spreadLimit = function(_) return 2 end,
+            healPerExplosion = function(_, caster)
+                if caster:HasTalent("T200") then return 0.02 end
+                return 0
+            end,
+            spellpowerBonus = function(_, caster)
+                if caster:HasTalent("T201") then return 0.05 end
+                return 0
+            end,
+            damagePartOnRefresh = function(_, caster)
+                if caster:HasTalent("T202") then return 1 end
+                return 0
+            end,
         },
     },
     firesOfNaalXul = {
@@ -100,14 +114,28 @@ end
 
 function BoilingBlood:Cast()
     self.target = self:GetTargetUnit()
-    WC3.SpecialEffect({ path = "Abilities\\Spells\\Orc\\Disenchant\\DisenchantSpecialArt.mdl", target = self.target, attachPoint = "origin", lifeSpan = 15, })
-    self.smoke = WC3.SpecialEffect({ path = "Doodads\\LordaeronSummer\\Props\\SmokeSmudge\\SmokeSmudge", target = self.target, attachPoint = "origin", })
 
     local existing = self.target.effects["Pyromancer.BoilingBlood"]
-
     if existing then
+        if self.damagePartOnRefresh > 0 then
+            self.caster:DealDamage(self.target, { value = existing.damage * existing.durationLeft / existing.duration * self.damagePartOnRefresh, })
+        end
         existing:Destroy()
     end
+
+    if self.spellpowerBonus > 0 then
+        self.spellBuff = self.caster.effects["Pyromancer.BoilingBlood.SpellBuff"]
+
+        if not self.spellBuff then
+            self.spellBuff = HeroSStatsBuff({ spellDamage = 1 + self.spellpowerBonus, }, self.caster)
+            self.caster.effects["Pyromancer.BoilingBlood.SpellBuff"] = self.spellBuff
+        else
+            self.spellBuff:UpdateStats({ spellDamage = self.spellBuff.stats.spellDamage + self.spellpowerBonus, })
+        end
+    end
+
+    WC3.SpecialEffect({ path = "Abilities\\Spells\\Orc\\Disenchant\\DisenchantSpecialArt.mdl", target = self.target, attachPoint = "origin", lifeSpan = 15, })
+    self.smoke = WC3.SpecialEffect({ path = "Doodads\\LordaeronSummer\\Props\\SmokeSmudge\\SmokeSmudge", target = self.target, attachPoint = "origin", })
 
     self.target.effects["Pyromancer.BoilingBlood"] = self
     self.deathHandler = function() self:Explode() end
@@ -117,15 +145,35 @@ function BoilingBlood:Cast()
     self.timer:Start(self.period, true, function() self:Tick() end)
 end
 
+local function SortByHealthDescending(array, limit)
+    for i = 1,math.min(limit,#array) do
+        for j = i+1,#array do
+            if array[i]:GetHP() < array[j]:GetHP() then
+                local tmp = array[i]
+                array[i] = array[j]
+                array[j] = tmp
+            end
+        end
+    end
+end
+
 function BoilingBlood:Explode()
+    if self.healPerExplosion > 0 then
+        self.caster:Heal(self.caster, self.healPerExplosion * self.caster.secondaryStats.health)
+    end
     local x, y = self.target:GetX(), self.target:GetY()
     WC3.SpecialEffect({ path = "Units\\Undead\\Abomination\\AbominationExplosion.mdl", x = x, y = y, })
+    local targets = {}
     WC3.Unit.EnumInRange(x, y, self.explosionRadius, function(unit)
         if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
             self.caster:DealDamage(unit, { value = self.explosionDamage, })
-            BoilingBlood(Pyromancer.abilities.boilingBlood, self.caster, { unit = unit, })
+            table.insert(targets, unit)
         end
     end)
+    SortByHealthDescending(targets, self.spreadLimit)
+    for i = 1,math.min(self.spreadLimit,#targets) do
+        BoilingBlood(Pyromancer.abilities.boilingBlood, self.caster, { unit = targets[i], })
+    end
     self:Destroy()
 end
 
@@ -144,16 +192,27 @@ function BoilingBlood:Destroy()
     self.target.effects["Pyromancer.BoilingBlood"] = nil
     self.target.onDeath[self.deathHandler] = nil
     self.smoke:Destroy()
+    if self.spellBuff then
+        local newStats = { spellDamage = self.spellBuff.stats.spellDamage - self.spellpowerBonus, }
+        if newStats.spellDamage <= 1 then
+            self.spellBuff:Destroy()
+        else
+            self.spellBuff:UpdateStats(newStats)
+        end
+    end
 end
 
 function FiresOfNaalXul:Cast()
     local x, y = self:GetTargetX(), self:GetTargetY()
-    WC3.SpecialEffect({ path = "Abilities\\Spells\\Human\\FlameStrike\\FlameStrike1.mdl", x = x, y = y, })
-    WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
-        if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
-            self.caster:DealDamage(unit, { value = self.damage, })
-            CreepStatsDebuf({ spellResist = (1 - self.spellResistanceDebuff), }, unit, self.debuffDuration)
-        end
+    local timer = WC3.Timer()
+    timer:Start(0.2, false, function()
+        WC3.SpecialEffect({ path = "Abilities\\Spells\\Human\\FlameStrike\\FlameStrike1.mdl", x = x, y = y, })
+        WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
+            if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+                self.caster:DealDamage(unit, { value = self.damage, })
+                CreepStatsDebuf({ spellResist = (1 - self.spellResistanceDebuff), }, unit, self.debuffDuration)
+            end
+        end)
     end)
 end
 

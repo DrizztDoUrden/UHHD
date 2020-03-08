@@ -9,7 +9,7 @@ function HeroSStatsBuff:ctor(stats, target, duration)
     TimedEffect.ctor(self, target, duration)
 end
 
-function HeroSStatsBuff:OnStart()
+function HeroSStatsBuff:AddStats()
     for k, v in pairs(self.stats) do
         if Stats.Secondary.adding[k] then
             self.target.bonusSecondaryStats[k] = self.target.bonusSecondaryStats[k] + v
@@ -17,10 +17,9 @@ function HeroSStatsBuff:OnStart()
             self.target.bonusSecondaryStats[k] = self.target.bonusSecondaryStats[k] * v
         end
     end
-    self.target:ApplyStats()
 end
 
-function HeroSStatsBuff:OnEnd()
+function HeroSStatsBuff:RemoveStats()
     for k, v in pairs(self.stats) do
         if Stats.Secondary.adding[k] then
             self.target.bonusSecondaryStats[k] = self.target.bonusSecondaryStats[k] - v
@@ -28,6 +27,22 @@ function HeroSStatsBuff:OnEnd()
             self.target.bonusSecondaryStats[k] = self.target.bonusSecondaryStats[k] / v
         end
     end
+end
+
+function HeroSStatsBuff:OnStart()
+    self:AddStats()
+    self.target:ApplyStats()
+end
+
+function HeroSStatsBuff:OnEnd()
+    self:RemoveStats()
+    self.target:ApplyStats()
+end
+
+function HeroSStatsBuff:UpdateStats(value)
+    self:RemoveStats()
+    self.stats = value
+    self:AddStats()
     self.target:ApplyStats()
 end
 
