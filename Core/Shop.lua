@@ -24,10 +24,13 @@ function Shop:AddTrigger()
         local buying = WC3.Unit.GetBying()
         local sold = WC3.Item.GetSold()
         local id = sold:GetTypeId()
-        for key, item in pairs(self.itemPresets) do
-            if key == id then
-                local newItem = item(x, y)
-                sold:Destroy()
+
+        sold:Destroy()
+        logShop:Info("buying item id"..id)
+        for _, itemPreset in pairs(self.itemPresets) do
+            logShop:Info(" itemPreset itemid"..itemPreset.itemid)
+            if itemPreset.itemid == id then
+                local newItem = itemPreset:Create(x, y)
                 buying:AddItem(newItem)
                 break
             end

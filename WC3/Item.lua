@@ -19,7 +19,7 @@ local function Get(handle)
     return Item(handle)
 end
 
-function Item.GetItemInSlot(unithandle, slot)
+function Item.GetInSlot(unithandle, slot)
     return Get(UnitItemInSlot(unithandle, slot))
 end
 
@@ -28,7 +28,7 @@ function Item.GetSold()
     return Get(GetSoldItem())
 end
 
-function Item.GetManipulatedItem()
+function Item.GetManipulated()
     local result = GetManipulatedItem()
     if result ~= nil then
         return Get(result)

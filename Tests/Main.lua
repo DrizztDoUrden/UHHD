@@ -23,10 +23,10 @@ local heroPresets = {
 }
 
 local itemsPresets = {
-    [ChainArmor(-7000, -6000):GetTypeId()] = ChainArmor,
-    [LeatherArmor(-7000, -6100):GetTypeId()] = LeatherArmor,
-    [Robe(-7000, -5900):GetTypeId()] = Robe,
-    [PlateArmor(-7000, -5800):GetTypeId()] = PlateArmor
+    ChainArmor(),
+    LeatherArmor(),
+    Robe(),
+    PlateArmor()
 }
 -- preloading heroes to reduce lags
 -- before doing that it's needed to finish the cleanup in Hero:Destroy. e.g. stat/talent helpers should be deleted as well

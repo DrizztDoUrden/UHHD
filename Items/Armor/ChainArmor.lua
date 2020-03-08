@@ -1,11 +1,11 @@
 local Class = require("Class")
 
-local UHDItem = require("Core.UHDItem")
+local ItemPreset = require("Core.ItemPreset")
 
-local ChainArmor = Class(UHDItem)
+local ChainArmor = Class(ItemPreset)
 
-function ChainArmor:ctor(...)
-    UHDItem.ctor(self, FourCC("I001"), ...)
+function ChainArmor:ctor()
+    ItemPreset.ctor(self)
     self.itemid = FourCC("I001")
     self.type = "BodyArmor"
     self.bonusSecondaryStats.armor = 5

@@ -1,11 +1,11 @@
 local Class = require("Class")
 
-local UHDItem = require("Core.UHDItem")
+local ItemPreset = require("Core.ItemPreset")
 
-local LeatherArmor = Class(UHDItem)
+local LeatherArmor = Class(ItemPreset)
 
-function LeatherArmor:ctor(...)
-    UHDItem.ctor(self, FourCC("I002"), ...)
+function LeatherArmor:ctor()
+    ItemPreset.ctor(self)
     self.itemid = FourCC("I002")
     self.type = "BodyArmor"
     self.bonusSecondaryStats.evasion = 1.1

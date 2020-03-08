@@ -11,7 +11,7 @@ UHDUnit.armorValue = 0.06
 
 function UHDUnit:ctor(...)
     WC3.Unit.ctor(self, ...)
-    self.secondaryStats = Stats.Secondary()
+    self.secondaryStats = {}
     self.effects = {}
 
     self.secondaryStats.health = 100

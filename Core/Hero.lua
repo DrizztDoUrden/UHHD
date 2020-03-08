@@ -40,7 +40,7 @@ function Hero:ctor(...)
     self.toDestroy[self.abilities] = true
 
     self.invetory = Invetory(self)
-    self.invetory.customItemAvailability["BodyArmor"] = 1
+    self.invetory.customItemAvailability["BodyArmor"] = 2
     self.invetory.customItemAvailability["Helmet"] = 1
     self.invetory.customItemAvailability["Arms"] = 1
     self.invetory.customItemAvailability["Legs"] = 1
