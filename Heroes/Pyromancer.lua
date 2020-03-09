@@ -181,8 +181,9 @@ Pyromancer.abilities.firesOfNaalXul = {
         spellResistanceDebuff = function(_) return 0.20 end,
         debuffDuration = function(_) return 3 end,
         dotDuration = function(_) return 3 end,
+        dotPeriod = function(_) return 0.25 end,
         dotDamage = function(_, caster)
-            if caster:HasTalent("T210") then return 3 end
+            if caster:HasTalent("T210") then return 9 end
             return 0
         end,
         cdrPerHit = function(_, caster)
@@ -201,12 +202,40 @@ function FiresOfNaalXul:Cast()
     local timer = WC3.Timer()
     timer:Start(0.2, false, function()
         WC3.SpecialEffect({ path = "Abilities\\Spells\\Human\\FlameStrike\\FlameStrike1.mdl", x = x, y = y, })
+        local hits = 0
         WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
             if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
                 self.caster:DealDamage(unit, { value = self.damage, })
-                CreepStatsDebuff({ spellResist = (-self.spellResistanceDebuff), }, unit, self.debuffDuration)
+                if unit:GetHP() > 0 then
+                    local debuff = {
+                        spellResist = -self.spellResistanceDebuff,
+                        physicalDamage = -self.damageReduction,
+                        spellDamage = -self.damageReduction,
+                    }
+                    CreepStatsDebuf(debuff, unit, self.debuffDuration)
+                end
             end
         end)
+        if self.cdrPerHit > 0 and hits > 0 then
+            self.caster:SetCooldownRemaining(Pyromancer.abilities.firesOfNaalXul, math.max(0, self.caster:GetCooldownRemaining(Pyromancer.abilities.firesOfNaalXul) - self.cdrPerHit * hits))
+        end
+        if self.dotDamage > 0 then
+            local dot = WC3.Timer()
+            local timeLeft = self.dotDuration
+            local ticks = self.dotDuration // self.dotPeriod
+            local damagePerTick = self.dotDamage / ticks
+            dot:Start(self.dotPeriod, true, function()
+                timeLeft = timeLeft - self.dotPeriod
+                WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
+                    if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+                        self.caster:DealDamage(unit, { value = damagePerTick, })
+                    end
+                end)
+                if timeLeft <= 0 then
+                    dot:Destroy()
+                end
+            end)
+        end
     end)
 end
 
