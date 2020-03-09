@@ -17,66 +17,7 @@ local FireAndIce = Class(Spell)
 
 Pyromancer.unitid = FourCC('H_PM')
 
-Pyromancer.abilities = {
-    boilingBlood = {
-        id = FourCC('PM_0'),
-        handler = BoilingBlood,
-        availableFromStart = true,
-        params = {
-            damage = function(self, caster) return 3 * caster.secondaryStats.spellDamage * self.params.duration(self, caster) end,
-            duration = function(_) return 5 end,
-            period = function(_) return 0.5 end,
-            explosionDamage = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
-            explosionRadius = function(_) return 250 end,
-            spreadLimit = function(_) return 2 end,
-            healPerExplosion = function(_, caster)
-                if caster:HasTalent("T200") then return 0.02 end
-                return 0
-            end,
-            spellpowerBonus = function(_, caster)
-                if caster:HasTalent("T201") then return 0.05 end
-                return 0
-            end,
-            damagePartOnRefresh = function(_, caster)
-                if caster:HasTalent("T202") then return 1 end
-                return 0
-            end,
-        },
-    },
-    firesOfNaalXul = {
-        id = FourCC('PM_1'),
-        handler = FiresOfNaalXul,
-        availableFromStart = true,
-        params = {
-            damage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
-            radius = function(_) return 200 end,
-            spellResistanceDebuff = function(_) return 0.20 end,
-            debuffDuration = function(_) return 3 end,
-        },
-    },
-    ragingFlames = {
-        id = FourCC('PM_2'),
-        handler = RagingFlames,
-        availableFromStart = true,
-        params = {
-            radius = function(_) return 250 end,
-            damage = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
-            channelTime = function(_) return 2 end,
-        },
-    },
-    fireAndIce = {
-        id = FourCC('PM_3'),
-        handler = FireAndIce,
-        availableFromStart = true,
-        params = {
-            duration = function(_) return 4 end,
-            period = function(_) return 0.25 end,
-            damage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
-            shieldRate = function(_) return 1 end,
-            shieldDuration = function(_) return 6 end,
-        },
-    },
-}
+Pyromancer.abilities = {}
 
 Pyromancer.talentBooks = {
     FourCC("PMT0"),
@@ -112,6 +53,44 @@ function Pyromancer:ctor()
     self.basicStats.willpower = 11
 end
 
+local function SortByHealthDescending(array, limit)
+    for i = 1,math.min(limit,#array) do
+        for j = i+1,#array do
+            if array[i]:GetHP() < array[j]:GetHP() then
+                local tmp = array[i]
+                array[i] = array[j]
+                array[j] = tmp
+            end
+        end
+    end
+end
+
+Pyromancer.abilities.boilingBlood = {
+    id = FourCC('PM_0'),
+    handler = BoilingBlood,
+    availableFromStart = true,
+    params = {
+        damage = function(self, caster) return 3 * caster.secondaryStats.spellDamage * self.params.duration(self, caster) end,
+        duration = function(_) return 5 end,
+        period = function(_) return 0.5 end,
+        explosionDamage = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
+        explosionRadius = function(_) return 250 end,
+        spreadLimit = function(_) return 2 end,
+        healPerExplosion = function(_, caster)
+            if caster:HasTalent("T200") then return 0.02 end
+            return 0
+        end,
+        spellpowerBonus = function(_, caster)
+            if caster:HasTalent("T201") then return 0.05 end
+            return 0
+        end,
+        damagePartOnRefresh = function(_, caster)
+            if caster:HasTalent("T202") then return 1 end
+            return 0
+        end,
+    },
+}
+
 function BoilingBlood:Cast()
     self.target = self:GetTargetUnit()
 
@@ -127,9 +106,11 @@ function BoilingBlood:Cast()
         self.spellBuff = self.caster.effects["Pyromancer.BoilingBlood.SpellBuff"]
 
         if not self.spellBuff then
+            logPyromancer:Trace("Creating sd buff: " .. 0 .. " -> " .. self.spellpowerBonus)
             self.spellBuff = HeroSStatsBuff({ spellDamage = self.spellpowerBonus, }, self.caster)
             self.caster.effects["Pyromancer.BoilingBlood.SpellBuff"] = self.spellBuff
         else
+            logPyromancer:Trace("Increasing sd buff: " .. self.spellBuff.stats.spellDamage .. " -> " .. self.spellBuff.stats.spellDamage + self.spellpowerBonus)
             self.spellBuff:UpdateStats({ spellDamage = self.spellBuff.stats.spellDamage + self.spellpowerBonus, })
         end
     end
@@ -143,18 +124,6 @@ function BoilingBlood:Cast()
     self.durationLeft = self.duration
     self.timer = WC3.Timer()
     self.timer:Start(self.period, true, function() self:Tick() end)
-end
-
-local function SortByHealthDescending(array, limit)
-    for i = 1,math.min(limit,#array) do
-        for j = i+1,#array do
-            if array[i]:GetHP() < array[j]:GetHP() then
-                local tmp = array[i]
-                array[i] = array[j]
-                array[j] = tmp
-            end
-        end
-    end
 end
 
 function BoilingBlood:Explode()
@@ -196,47 +165,177 @@ function BoilingBlood:Destroy()
     self.smoke:Destroy()
     if self.spellBuff then
         local newStats = { spellDamage = self.spellBuff.stats.spellDamage - self.spellpowerBonus, }
-        if newStats.spellDamage <= 1 then
+        if newStats.spellDamage <= 0 then
+            logPyromancer:Trace("Destroying sd buff: " .. self.spellBuff.stats.spellDamage .. " -> " .. newStats.spellDamage)
             self.spellBuff:Destroy()
+            self.spellBuff = nil
+            self.caster.effects["Pyromancer.BoilingBlood.SpellBuff"] = nil
         else
+            logPyromancer:Trace("Reducing sd buff: " .. self.spellBuff.stats.spellDamage .. " -> " .. newStats.spellDamage)
             self.spellBuff:UpdateStats(newStats)
         end
     end
 end
+
+Pyromancer.abilities.firesOfNaalXul = {
+    id = FourCC('PM_1'),
+    handler = FiresOfNaalXul,
+    availableFromStart = true,
+    params = {
+        damage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
+        radius = function(_) return 200 end,
+        spellResistanceDebuff = function(_) return 0.20 end,
+        debuffDuration = function(_) return 3 end,
+        dotDuration = function(_) return 3 end,
+        dotPeriod = function(_) return 0.25 end,
+        dotDamage = function(_, caster)
+            if caster:HasTalent("T210") then return 9 end
+            return 0
+        end,
+        cdrPerHit = function(_, caster)
+            if caster:HasTalent("T211") then return 1 end
+            return 0
+        end,
+        damageReduction = function(_, caster)
+            if caster:HasTalent("T212") then return 0.15 end
+            return 0
+        end,
+    },
+}
 
 function FiresOfNaalXul:Cast()
     local x, y = self:GetTargetX(), self:GetTargetY()
     local timer = WC3.Timer()
     timer:Start(0.2, false, function()
         WC3.SpecialEffect({ path = "Abilities\\Spells\\Human\\FlameStrike\\FlameStrike1.mdl", x = x, y = y, })
+        local hits = 0
         WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
             if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
                 self.caster:DealDamage(unit, { value = self.damage, })
-                CreepStatsDebuff({ spellResist = (-self.spellResistanceDebuff), }, unit, self.debuffDuration)
+                if unit:GetHP() > 0 then
+                    local debuff = {
+                        spellResist = -self.spellResistanceDebuff,
+                        physicalDamage = -self.damageReduction,
+                        spellDamage = -self.damageReduction,
+                    }
+                    CreepStatsDebuff(debuff, unit, self.debuffDuration)
+                end
             end
         end)
+        if self.cdrPerHit > 0 and hits > 0 then
+            self.caster:SetCooldownRemaining(Pyromancer.abilities.firesOfNaalXul, math.max(0, self.caster:GetCooldownRemaining(Pyromancer.abilities.firesOfNaalXul) - self.cdrPerHit * hits))
+        end
+        if self.dotDamage > 0 then
+            local dot = WC3.Timer()
+            local timeLeft = self.dotDuration
+            local ticks = self.dotDuration // self.dotPeriod
+            local damagePerTick = self.dotDamage / ticks
+            dot:Start(self.dotPeriod, true, function()
+                timeLeft = timeLeft - self.dotPeriod
+                WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
+                    if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+                        self.caster:DealDamage(unit, { value = damagePerTick, })
+                    end
+                end)
+                if timeLeft <= 0 then
+                    dot:Destroy()
+                end
+            end)
+        end
     end)
 end
 
+Pyromancer.abilities.ragingFlames = {
+    id = FourCC('PM_2'),
+    handler = RagingFlames,
+    availableFromStart = true,
+    params = {
+        radius = function(_) return 250 end,
+        damage = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
+        implosionPeriod = function(_) return 0.05 end,
+        implosionPower = function(_) return 300 end,
+        channelTime = function(_, caster)
+            if caster:HasTalent("T220") then return 1 end
+            return 2
+        end,
+        implosionDuration = function(_, caster)
+            if caster:HasTalent("T221") then return 1 end
+            return 0
+        end,
+        bbSpreadLimit = function(_, caster)
+            if caster:HasTalent("T222") then return 2 end
+            return 0
+        end,
+    },
+}
+
 function RagingFlames:Cast()
+    self.explosionId = 0
     self:Explode(self.caster:GetPos())
     local timer = WC3.Timer()
     local x, y = self:GetTargetX(), self:GetTargetY()
     timer:Start(self.channelTime, false, function()
         self.caster:SetPos(x, y)
         timer:Destroy()
+        self.explosionId = 1
         self:Explode(x, y)
     end)
 end
 
 function RagingFlames:Explode(x, y)
     WC3.SpecialEffect({ path = "Abilities\\Spells\\Human\\FlameStrike\\FlameStrike1.mdl", x = x, y = y, })
+    local targets = {}
     WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
         if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
-            self.caster:DealDamage(unit, { value = self.damage, })
+            table.insert(targets, unit)
         end
     end)
+    if self.bbSpreadLimit > 0 then
+        SortByHealthDescending(targets, self.bbSpreadLimit)
+        for i = 1,math.min(self.bbSpreadLimit,#targets) do
+            BoilingBlood(Pyromancer.abilities.boilingBlood, self.caster, { unit = targets[i], })
+        end
+    end
+    for i = (math.min(self.bbSpreadLimit,#targets) + 1),#targets do
+        self.caster:DealDamage(targets[i], { value = self.damage, })
+    end
+    if self.implosionDuration > 0 then
+        local implosion = WC3.Timer()
+        local implosionTimeLeft = self.implosionDuration
+        local ticks = math.floor(self.implosionDuration / self.implosionPeriod)
+        local powerPerTick = self.implosionPower / ticks
+        implosion:Start(self.implosionPeriod, true, function()
+            WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
+                if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+                    local unitX, unitY = unit:GetPos()
+                    local deltaX, deltaY = x - unitX, y - unitY
+                    local length = math.sqrt(deltaX ^ 2 + deltaY ^ 2)
+                    if length > powerPerTick then
+                        deltaX, deltaY = deltaX * powerPerTick / length, deltaY * powerPerTick / length
+                    end
+                    unit:SetX(unitX + deltaX, unitY + deltaY)
+                end
+            end)
+            implosionTimeLeft = implosionTimeLeft - self.implosionPeriod
+            if implosionTimeLeft <= 0 then
+                implosion:Destroy()
+            end
+        end)
+    end
 end
+
+Pyromancer.abilities.fireAndIce = {
+    id = FourCC('PM_3'),
+    handler = FireAndIce,
+    availableFromStart = true,
+    params = {
+        duration = function(_) return 4 end,
+        period = function(_) return 0.25 end,
+        damage = function(_, caster) return 20 * caster.secondaryStats.spellDamage end,
+        shieldRate = function(_) return 1 end,
+        shieldDuration = function(_) return 6 end,
+    },
+}
 
 local FireAndIceShield = Class()
 

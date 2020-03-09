@@ -1,41 +1,66 @@
 local Class = require "Class"
 local TimedEffect = require "Core.Effects.TimedEffect"
 local Stats = require "Core.Stats"
+local Log = require "Log"
 
 local HeroSStatsBuff = Class(TimedEffect)
+
+local logHeroSStatsBuff = Log.Category("Core\\Effects\\HeroSStatsBuff")
 
 function HeroSStatsBuff:ctor(stats, target, duration)
     self.stats = stats
     TimedEffect.ctor(self, target, duration)
 end
 
-function HeroSStatsBuff:AddStats()
+--[[HeroSStatsBuff private]]
+local function AddStats(self)
     for k, v in pairs(self.stats) do
-        self.target.secondaryStats[k] = Stats.Secondary.AddBonus[k](self.target.secondaryStats[k], v)
+        logHeroSStatsBuff:Info(k .. " + " .. v .. ": " .. self.target.bonusSecondaryStats[k] .. " -> " .. Stats.Secondary.AddBonus[k](self.target.bonusSecondaryStats[k], v))
+        self.target.bonusSecondaryStats[k] = Stats.Secondary.AddBonus[k](self.target.bonusSecondaryStats[k], v)
     end
 end
 
-function HeroSStatsBuff:RemoveStats()
+--[[HeroSStatsBuff private]]
+local function RemoveStats(self)
     for k, v in pairs(self.stats) do
-        self.target.secondaryStats[k] = Stats.Secondary.SubBonus[k](self.target.secondaryStats[k], v)
+        logHeroSStatsBuff:Info(k .. " - " .. v .. ": " .. self.target.bonusSecondaryStats[k] .. " -> " .. Stats.Secondary.SubBonus[k](self.target.bonusSecondaryStats[k], v))
+        self.target.bonusSecondaryStats[k] = Stats.Secondary.SubBonus[k](self.target.bonusSecondaryStats[k], v)
     end
 end
 
 function HeroSStatsBuff:OnStart()
-    self:AddStats()
+    if self.stats == nil then
+        error("Attempt use a destroyed buff", 3)
+    end
+    AddStats(self)
     self.target:ApplyStats()
 end
 
 function HeroSStatsBuff:OnEnd()
-    self:RemoveStats()
+    if self.stats == nil then
+        error("Attempt use a destroyed buff", 3)
+    end
+    RemoveStats(self)
     self.target:ApplyStats()
 end
 
 function HeroSStatsBuff:UpdateStats(value)
-    self:RemoveStats()
+    if self.stats == nil then
+        error("Attempt use a destroyed buff", 2)
+    end
+    RemoveStats(self)
     self.stats = value
-    self:AddStats()
+    AddStats(self)
     self.target:ApplyStats()
+end
+
+function HeroSStatsBuff:Destroy()
+    logHeroSStatsBuff:Trace("Destroying buff")
+    if self.stats == nil then
+        error("Attempt to destroy buff twice", 2)
+    end
+    TimedEffect.Destroy(self)
+    self.stats = nil
 end
 
 return HeroSStatsBuff
