@@ -9,7 +9,7 @@ function ChainArmor:ctor(...)
     self.itemid = FourCC("I003")
     self.type = "BodyArmor"
     self.bonusSecondaryStats.armor = 10
-    self.bonusSecondaryStats.evasion = 0.7
+    self.bonusSecondaryStats.evasion = -0.3
     self.bonusSecondaryStats.spellDamage = 0.8
 end
 

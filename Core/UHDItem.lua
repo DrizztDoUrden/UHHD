@@ -42,10 +42,8 @@ function  UHDItem:AddStats(unit)
 
     if UHDItem.type == "Weapon" then
         unit.baseSecondaryStats.weaponDamage = self.baseSecondaryStats.weaponDamage
-    else
-        unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage * self.bonusSecondaryStats.weaponDamage
-        -- print("WPD "..unit.bonusSecondaryStats.weaponDamage.." " ..bonusSecondaryStats.weaponDamage.." " ..self.bonusSecondaryStats.weaponDamage)
     end
+    unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage * self.bonusSecondaryStats.weaponDamage
 
     unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed * self.bonusSecondaryStats.attackSpeed
     unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage * self.bonusSecondaryStats.physicalDamage
@@ -69,9 +67,8 @@ function  UHDItem:RemoveStats(unit)
 
     if UHDItem.type == "Weapon" then
         unit.baseSecondaryStats.weaponDamage = 0
-    else
-        unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage / self.bonusSecondaryStats.weaponDamage
     end
+    unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage / self.bonusSecondaryStats.weaponDamage
 
     unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed / self.bonusSecondaryStats.attackSpeed
     unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage / self.bonusSecondaryStats.physicalDamage
