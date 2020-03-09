@@ -11,22 +11,14 @@ end
 
 function CreepStatsDebuff:OnStart()
     for k, v in pairs(self.stats) do
-        if Stats.Secondary.adding[k] then
-            self.target.secondaryStats[k] = self.target.secondaryStats[k] + v
-        else
-            self.target.secondaryStats[k] = self.target.secondaryStats[k] * v
-        end
+        self.target.secondaryStats[k] = Stats.Secondary.AddBonus[k](self.target.secondaryStats[k], v)
     end
     self.target:ApplyStats()
 end
 
 function CreepStatsDebuff:OnEnd()
     for k, v in pairs(self.stats) do
-        if Stats.Secondary.adding[k] then
-            self.target.secondaryStats[k] = self.target.secondaryStats[k] - v
-        else
-            self.target.secondaryStats[k] = self.target.secondaryStats[k] / v
-        end
+        self.target.secondaryStats[k] = Stats.Secondary.SubBonus[k](self.target.secondaryStats[k], v)
     end
     self.target:ApplyStats()
 end

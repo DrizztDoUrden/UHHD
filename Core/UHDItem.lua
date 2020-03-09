@@ -20,10 +20,10 @@ function UHDItem:ctor(...)
     self.bonusSecondaryStats.healthRegen = 0
     self.bonusSecondaryStats.manaRegen = 0
 
-    self.bonusSecondaryStats.weaponDamage = 1
-    self.bonusSecondaryStats.attackSpeed = 1
-    self.bonusSecondaryStats.physicalDamage = 1
-    self.bonusSecondaryStats.spellDamage = 1
+    self.bonusSecondaryStats.weaponDamage = 0
+    self.bonusSecondaryStats.attackSpeed = 0
+    self.bonusSecondaryStats.physicalDamage = 0
+    self.bonusSecondaryStats.spellDamage = 0
 
     self.bonusSecondaryStats.armor = 0
     self.bonusSecondaryStats.evasion = 0
@@ -34,52 +34,22 @@ function UHDItem:ctor(...)
 end
 
 function  UHDItem:AddStats(unit)
-    local bonusSecondaryStats = unit.bonusSecondaryStats
-    unit.bonusSecondaryStats.health = bonusSecondaryStats.health + self.bonusSecondaryStats.health
-    unit.bonusSecondaryStats.mana = bonusSecondaryStats.mana + self.bonusSecondaryStats.mana
-    unit.bonusSecondaryStats.healthRegen = bonusSecondaryStats.healthRegen + self.bonusSecondaryStats.healthRegen
-    unit.bonusSecondaryStats.manaRegen = bonusSecondaryStats.manaRegen + self.bonusSecondaryStats.manaRegen
-
     if UHDItem.type == "Weapon" then
         unit.baseSecondaryStats.weaponDamage = self.baseSecondaryStats.weaponDamage
     end
-    unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage * self.bonusSecondaryStats.weaponDamage
-
-    unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed * self.bonusSecondaryStats.attackSpeed
-    unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage * self.bonusSecondaryStats.physicalDamage
-    unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage * self.bonusSecondaryStats.spellDamage
-
-    unit.bonusSecondaryStats.armor = bonusSecondaryStats.armor + self.bonusSecondaryStats.armor
-    unit.bonusSecondaryStats.evasion = 1 - (1 - bonusSecondaryStats.evasion) * (1 - self.bonusSecondaryStats.evasion)
-    unit.bonusSecondaryStats.ccResist = 1 - (1 - bonusSecondaryStats.ccResist) * (1 - self.bonusSecondaryStats.ccResist)
-    unit.bonusSecondaryStats.spellResist = 1 - (1 - bonusSecondaryStats.spellResist) * (1 - self.bonusSecondaryStats.spellResist)
-
-    unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed * self.bonusSecondaryStats.movementSpeed
+    for k, v in pairs(self.bonusSecondaryStats) do
+        unit.bonusSecondaryStats[k] = Stats.Secondary.AddBonus[k](unit.bonusSecondaryStats[k], v)
+    end
     unit:ApplyStats()
 end
 
 function  UHDItem:RemoveStats(unit)
-    local bonusSecondaryStats = unit.bonusSecondaryStats
-    unit.bonusSecondaryStats.health = bonusSecondaryStats.health - self.bonusSecondaryStats.health
-    unit.bonusSecondaryStats.mana = bonusSecondaryStats.mana - self.bonusSecondaryStats.mana
-    unit.bonusSecondaryStats.healthRegen = bonusSecondaryStats.healthRegen - self.bonusSecondaryStats.healthRegen
-    unit.bonusSecondaryStats.manaRegen = bonusSecondaryStats.manaRegen - self.bonusSecondaryStats.manaRegen
-
     if UHDItem.type == "Weapon" then
         unit.baseSecondaryStats.weaponDamage = 0
     end
-    unit.bonusSecondaryStats.weaponDamage = bonusSecondaryStats.weaponDamage / self.bonusSecondaryStats.weaponDamage
-
-    unit.bonusSecondaryStats.attackSpeed = bonusSecondaryStats.attackSpeed / self.bonusSecondaryStats.attackSpeed
-    unit.bonusSecondaryStats.physicalDamage = bonusSecondaryStats.physicalDamage / self.bonusSecondaryStats.physicalDamage
-    unit.bonusSecondaryStats.spellDamage = bonusSecondaryStats.spellDamage / self.bonusSecondaryStats.spellDamage
-
-    unit.bonusSecondaryStats.armor = bonusSecondaryStats.armor - self.bonusSecondaryStats.armor
-    unit.bonusSecondaryStats.evasion = 1 - (1 - bonusSecondaryStats.evasion) / (1 - self.bonusSecondaryStats.evasion)
-    unit.bonusSecondaryStats.ccResist = 1 - (1 - bonusSecondaryStats.ccResist) / (1 - self.bonusSecondaryStats.ccResist)
-    unit.bonusSecondaryStats.spellResist = 1 - (1 - bonusSecondaryStats.spellResist) / (1 - self.bonusSecondaryStats.spellResist)
-
-    unit.bonusSecondaryStats.movementSpeed = bonusSecondaryStats.movementSpeed / self.bonusSecondaryStats.movementSpeed
+    for k, v in pairs(self.bonusSecondaryStats) do
+        unit.bonusSecondaryStats[k] = Stats.Secondary.SubBonus[k](unit.bonusSecondaryStats[k], v)
+    end
     unit:ApplyStats()
 end
 

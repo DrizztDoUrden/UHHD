@@ -10,7 +10,7 @@ function ChainArmor:ctor(...)
     self.type = "BodyArmor"
     self.bonusSecondaryStats.armor = 10
     self.bonusSecondaryStats.evasion = -0.3
-    self.bonusSecondaryStats.spellDamage = 0.8
+    self.bonusSecondaryStats.spellDamage = -0.2
 end
 
 return ChainArmor

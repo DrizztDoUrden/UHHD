@@ -10,7 +10,7 @@ function Robe:ctor(...)
     self.type = "BodyArmor"
     self.bonusSecondaryStats.armor = -2
     self.bonusSecondaryStats.evasion = -0.1
-    self.bonusSecondaryStats.spellDamage = 1.2
+    self.bonusSecondaryStats.spellDamage = 0.2
 end
 
 return Robe
