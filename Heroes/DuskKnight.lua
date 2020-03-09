@@ -222,8 +222,8 @@ function DrainLight:Cast()
             for _, target in pairs(self.affected) do
                 if target.unit:GetHP() > 0 then
                     local debuff = {
-                        spellResist = 1 - self.spellResistDebuff,
-                        physicalDamage = 1 - target.toStealDamage,
+                        spellResist = -self.spellResistDebuff,
+                        physicalDamage = -target.toStealDamage,
                     }
                     CreepStatsDebuff(debuff, target.unit, self.effectDuration)
                     if self.damageBonus < self.damageBuffLimit then
@@ -233,9 +233,7 @@ function DrainLight:Cast()
             end
 
             if self.damageBonus > 0 then
-                local buff = {
-                    physicalDamage = 1 + self.damageBonus,
-                }
+                local buff = { physicalDamage = self.damageBonus, }
                 HeroSStatsBuff(buff, self.caster, self.effectDuration)
             end
             timer:Destroy()
@@ -371,7 +369,7 @@ function ShadowLeap:Cast()
                 end
             end)
         elseif timeLeft <= 0 and moveSpeed > 0 then
-            HeroSStatsBuff({movementSpeed = 1 + moveSpeed,}, self.caster, self.moveSpeedDuration)
+            HeroSStatsBuff({movementSpeed = moveSpeed,}, self.caster, self.moveSpeedDuration)
             moveSpeed = 0
         end
         timeLeft = timeLeft - self.period
@@ -392,7 +390,7 @@ function DarkMend:Cast()
     local ticks = self.duration // self.period
     self.caster:Heal(self.caster, (self.caster:GetHP() * self.percentHeal + self.baseHeal) * self.instantHeal)
     if self.attackSpeedBonus > 0 then
-        HeroSStatsBuff({attackSpeed = 1 + self.attackSpeedBonus,}, self.caster, self.duration)
+        HeroSStatsBuff({attackSpeed = self.attackSpeedBonus,}, self.caster, self.duration)
     end
     timer:Start(self.period, true, function()
         local curHp = self.caster:GetHP();

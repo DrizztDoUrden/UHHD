@@ -11,21 +11,13 @@ end
 
 function HeroSStatsBuff:AddStats()
     for k, v in pairs(self.stats) do
-        if Stats.Secondary.adding[k] then
-            self.target.bonusSecondaryStats[k] = self.target.bonusSecondaryStats[k] + v
-        else
-            self.target.bonusSecondaryStats[k] = self.target.bonusSecondaryStats[k] * v
-        end
+        self.target.secondaryStats[k] = Stats.Secondary.AddBonus[k](self.target.secondaryStats[k], v)
     end
 end
 
 function HeroSStatsBuff:RemoveStats()
     for k, v in pairs(self.stats) do
-        if Stats.Secondary.adding[k] then
-            self.target.bonusSecondaryStats[k] = self.target.bonusSecondaryStats[k] - v
-        else
-            self.target.bonusSecondaryStats[k] = self.target.bonusSecondaryStats[k] / v
-        end
+        self.target.secondaryStats[k] = Stats.Secondary.SubBonus[k](self.target.secondaryStats[k], v)
     end
 end
 

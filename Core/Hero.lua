@@ -86,7 +86,7 @@ function Hero:ctor(...)
     self.bonusSecondaryStats.ccResist = 0
     self.bonusSecondaryStats.spellResist = 0
 
-    self.bonusSecondaryStats.movementSpeed = 0
+    self.bonusSecondaryStats.movementSpeed = 1
 
     self.onApplyStats = {}
 end
@@ -213,7 +213,7 @@ function Hero:UpdateSecondaryStats()
     self.secondaryStats.ccResist = ProbabilityBased(self.baseSecondaryStats.ccResist, ltoBase, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
     self.secondaryStats.spellResist = ProbabilityBased(self.baseSecondaryStats.ccResist, ltoBase, self.basicStats.willpower, self.bonusSecondaryStats.ccResist)
 
-    self.secondaryStats.movementSpeed = self.baseSecondaryStats.movementSpeed + self.bonusSecondaryStats.movementSpeed
+    self.secondaryStats.movementSpeed = self.baseSecondaryStats.movementSpeed * self.bonusSecondaryStats.movementSpeed
     self.secondaryStats.armor = self.baseSecondaryStats.armor + self.bonusSecondaryStats.armor
 end
 

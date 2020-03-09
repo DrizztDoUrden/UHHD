@@ -13,6 +13,7 @@ function StatsBase:Enumerate()
     return pairs(ret);
 end
 
+--[[
 function StatsBase:__add(other)
     if not other or not other.IsA or not other:IsA(self) then
         error("Invalid stats operation (+): second operand is not same stats")
@@ -32,6 +33,7 @@ function StatsBase:__sub(other)
         ret[name] = value - other[name]
     end
 end
+]]
 
 local Stats = {}
 
@@ -66,7 +68,6 @@ Stats.Secondary.names = {
 
     "armor",
     "evasion",
-    "block",
     "ccResist",
     "spellResist",
 
@@ -143,12 +144,48 @@ Stats.Secondary.meta = {
     },
 }
 
-Stats.Secondary.adding = {
-    health = true,
-    mana = true,
-    healthRegen = true,
-    manaRegen = true,
-    armor = true,
+local function SimpleAdd(l, r) return l + r end
+local function SimpleMul(l, r) return l * (1 + r) end
+local function ReversedMul(l, r) return 1 - (1 - l) * (1 - r) end
+
+local function SimpleSub(l, r) return l - r end
+local function SimpleDiv(l, r) return l / (1 + r) end
+local function ReversedDiv(l, r) return 1 - (1 - l) / (1 - r) end
+
+Stats.Secondary.AddBonus = {
+    health = SimpleAdd,
+    mana = SimpleAdd,
+    healthRegen = SimpleAdd,
+    manaRegen = SimpleAdd,
+    armor = SimpleAdd,
+
+    weaponDamage = SimpleMul,
+    attackSpeed = SimpleMul,
+    physicalDamage = SimpleMul,
+    spellDamage = SimpleMul,
+    movementSpeed = SimpleMul,
+
+    evasion = ReversedMul,
+    ccResist = ReversedMul,
+    spellResist = ReversedMul,
+}
+
+Stats.Secondary.SubBonus = {
+    health = SimpleSub,
+    mana = SimpleSub,
+    healthRegen = SimpleSub,
+    manaRegen = SimpleSub,
+    armor = SimpleSub,
+
+    weaponDamage = SimpleDiv,
+    attackSpeed = SimpleDiv,
+    physicalDamage = SimpleDiv,
+    spellDamage = SimpleDiv,
+    movementSpeed = SimpleDiv,
+
+    evasion = ReversedDiv,
+    ccResist = ReversedDiv,
+    spellResist = ReversedDiv,
 }
 
 function Stats.Secondary:ctor()

@@ -3,7 +3,7 @@ local HeroPreset = require("Core.HeroPreset")
 local WC3 = require("WC3.All")
 local Spell = require "Core.Spell"
 local Log = require "Log"
-local CreepStatsDebuf = require "Core.Effects.CreepStatsDebuff"
+local CreepStatsDebuff = require "Core.Effects.CreepStatsDebuff"
 local HeroSStatsBuff = require "Core.Effects.HeroSStatsBuff"
 
 local logPyromancer = Log.Category("Heroes\\Pyromancer")
@@ -127,7 +127,7 @@ function BoilingBlood:Cast()
         self.spellBuff = self.caster.effects["Pyromancer.BoilingBlood.SpellBuff"]
 
         if not self.spellBuff then
-            self.spellBuff = HeroSStatsBuff({ spellDamage = 1 + self.spellpowerBonus, }, self.caster)
+            self.spellBuff = HeroSStatsBuff({ spellDamage = self.spellpowerBonus, }, self.caster)
             self.caster.effects["Pyromancer.BoilingBlood.SpellBuff"] = self.spellBuff
         else
             self.spellBuff:UpdateStats({ spellDamage = self.spellBuff.stats.spellDamage + self.spellpowerBonus, })
@@ -212,7 +212,7 @@ function FiresOfNaalXul:Cast()
         WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
             if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
                 self.caster:DealDamage(unit, { value = self.damage, })
-                CreepStatsDebuf({ spellResist = (1 - self.spellResistanceDebuff), }, unit, self.debuffDuration)
+                CreepStatsDebuff({ spellResist = (-self.spellResistanceDebuff), }, unit, self.debuffDuration)
             end
         end)
     end)

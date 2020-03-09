@@ -8,8 +8,8 @@ function LeatherArmor:ctor(...)
     UHDItem.ctor(self, FourCC("I002"), ...)
     self.itemid = FourCC("I002")
     self.type = "BodyArmor"
-    self.bonusSecondaryStats.evasion = 1.1
-    self.bonusSecondaryStats.spellDamage = 0.9
+    self.bonusSecondaryStats.evasion = 0.1
+    self.bonusSecondaryStats.spellDamage = -0.1
 end
 
 return LeatherArmor
