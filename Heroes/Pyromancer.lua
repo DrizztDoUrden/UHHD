@@ -53,39 +53,6 @@ function Pyromancer:ctor()
     self.basicStats.willpower = 11
 end
 
-function BoilingBlood:Cast()
-    self.target = self:GetTargetUnit()
-
-    local existing = self.target.effects["Pyromancer.BoilingBlood"]
-    if existing then
-        if self.damagePartOnRefresh > 0 then
-            self.caster:DealDamage(self.target, { value = existing.damage * existing.durationLeft / existing.duration * self.damagePartOnRefresh, })
-        end
-        existing:Destroy()
-    end
-
-    if self.spellpowerBonus > 0 then
-        self.spellBuff = self.caster.effects["Pyromancer.BoilingBlood.SpellBuff"]
-
-        if not self.spellBuff then
-            self.spellBuff = HeroSStatsBuff({ spellDamage = self.spellpowerBonus, }, self.caster)
-            self.caster.effects["Pyromancer.BoilingBlood.SpellBuff"] = self.spellBuff
-        else
-            self.spellBuff:UpdateStats({ spellDamage = self.spellBuff.stats.spellDamage + self.spellpowerBonus, })
-        end
-    end
-
-    WC3.SpecialEffect({ path = "Abilities\\Spells\\Orc\\Disenchant\\DisenchantSpecialArt.mdl", target = self.target, attachPoint = "origin", lifeSpan = 15, })
-    self.smoke = WC3.SpecialEffect({ path = "Doodads\\LordaeronSummer\\Props\\SmokeSmudge\\SmokeSmudge", target = self.target, attachPoint = "origin", })
-
-    self.target.effects["Pyromancer.BoilingBlood"] = self
-    self.deathHandler = function() self:Explode() end
-    self.target.onDeath[self.deathHandler] = true
-    self.durationLeft = self.duration
-    self.timer = WC3.Timer()
-    self.timer:Start(self.period, true, function() self:Tick() end)
-end
-
 local function SortByHealthDescending(array, limit)
     for i = 1,math.min(limit,#array) do
         for j = i+1,#array do
@@ -123,6 +90,41 @@ Pyromancer.abilities.boilingBlood = {
         end,
     },
 }
+
+function BoilingBlood:Cast()
+    self.target = self:GetTargetUnit()
+
+    local existing = self.target.effects["Pyromancer.BoilingBlood"]
+    if existing then
+        if self.damagePartOnRefresh > 0 then
+            self.caster:DealDamage(self.target, { value = existing.damage * existing.durationLeft / existing.duration * self.damagePartOnRefresh, })
+        end
+        existing:Destroy()
+    end
+
+    if self.spellpowerBonus > 0 then
+        self.spellBuff = self.caster.effects["Pyromancer.BoilingBlood.SpellBuff"]
+
+        if not self.spellBuff then
+            logPyromancer:Trace("Creating sd buff: " .. 0 .. " -> " .. self.spellpowerBonus)
+            self.spellBuff = HeroSStatsBuff({ spellDamage = self.spellpowerBonus, }, self.caster)
+            self.caster.effects["Pyromancer.BoilingBlood.SpellBuff"] = self.spellBuff
+        else
+            logPyromancer:Trace("Increasing sd buff: " .. self.spellBuff.stats.spellDamage .. " -> " .. self.spellBuff.stats.spellDamage + self.spellpowerBonus)
+            self.spellBuff:UpdateStats({ spellDamage = self.spellBuff.stats.spellDamage + self.spellpowerBonus, })
+        end
+    end
+
+    WC3.SpecialEffect({ path = "Abilities\\Spells\\Orc\\Disenchant\\DisenchantSpecialArt.mdl", target = self.target, attachPoint = "origin", lifeSpan = 15, })
+    self.smoke = WC3.SpecialEffect({ path = "Doodads\\LordaeronSummer\\Props\\SmokeSmudge\\SmokeSmudge", target = self.target, attachPoint = "origin", })
+
+    self.target.effects["Pyromancer.BoilingBlood"] = self
+    self.deathHandler = function() self:Explode() end
+    self.target.onDeath[self.deathHandler] = true
+    self.durationLeft = self.duration
+    self.timer = WC3.Timer()
+    self.timer:Start(self.period, true, function() self:Tick() end)
+end
 
 function BoilingBlood:Explode()
     if self.healPerExplosion > 0 then
@@ -163,9 +165,13 @@ function BoilingBlood:Destroy()
     self.smoke:Destroy()
     if self.spellBuff then
         local newStats = { spellDamage = self.spellBuff.stats.spellDamage - self.spellpowerBonus, }
-        if newStats.spellDamage <= 1 then
+        if newStats.spellDamage <= 0 then
+            logPyromancer:Trace("Destroying sd buff: " .. self.spellBuff.stats.spellDamage .. " -> " .. newStats.spellDamage)
             self.spellBuff:Destroy()
+            self.spellBuff = nil
+            self.caster.effects["Pyromancer.BoilingBlood.SpellBuff"] = nil
         else
+            logPyromancer:Trace("Reducing sd buff: " .. self.spellBuff.stats.spellDamage .. " -> " .. newStats.spellDamage)
             self.spellBuff:UpdateStats(newStats)
         end
     end
