@@ -290,7 +290,7 @@ function RagingFlames:Explode(x, y)
             BoilingBlood(Pyromancer.abilities.boilingBlood, self.caster, { unit = targets[i], })
         end
     end
-    for i = math.min(self.bbSpreadLimit,#targets),#targets do
+    for i = (math.min(self.bbSpreadLimit,#targets) + 1),#targets do
         self.caster:DealDamage(targets[i], { value = self.damage, })
     end
     if self.implosionDuration > 0 then
