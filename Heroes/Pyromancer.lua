@@ -212,7 +212,7 @@ function FiresOfNaalXul:Cast()
                         physicalDamage = -self.damageReduction,
                         spellDamage = -self.damageReduction,
                     }
-                    CreepStatsDebuf(debuff, unit, self.debuffDuration)
+                    CreepStatsDebuff(debuff, unit, self.debuffDuration)
                 end
             end
         end)
