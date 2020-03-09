@@ -30,7 +30,28 @@ local verbosityColors = {
     [Verbosity.Trace] = { start = "", end_ = "", },
 }
 
+local function SaveToFile(path, buffer)
+    PreloadGenClear()
+    PreloadStart()
+    for _, line in pairs(buffer) do
+        Preload(line)
+    end
+    PreloadGenEnd(path)
+end
+
+local combinedBuffer = {}
+local errorsBuffer = {}
+
+local function ProduceFileLine(verbosity, ...)
+    local line = "[" .. verbosityNames[verbosity] .. "]"
+    for _, part in pairs({...}) do
+        line = line .. "\t" .. tostring(part)
+    end
+    return line
+end
+
 local function LogInternal(category, verbosity, ...)
+    local line
     if verbosity <= math.max(category.printVerbosity, category.fileVerbosity) then
         if verbosity <= category.printVerbosity then
             local params = {...}
@@ -38,15 +59,16 @@ local function LogInternal(category, verbosity, ...)
             print(verbosityColors[verbosity].start .. "[" .. verbosityNames[verbosity] .. "] " .. category.name .. ": ", ...)
         end
         if verbosity <= category.fileVerbosity then
-            category.buffer = category.buffer .. "\n[" .. verbosityNames[verbosity] .. "]"
-            for _, line in pairs({...}) do
-                category.buffer = category.buffer .. "\t" .. tostring(line)
-            end
-            PreloadGenClear()
-            PreloadStart()
-            Preload("\")" .. category.buffer .. "\n")
-            PreloadGenEnd("Logs\\" .. category.name .. ".txt")
+            line = ProduceFileLine(verbosity, ...)
+            table.insert(category.buffer, line)
+            SaveToFile("Logs\\" .. category.name .. ".txt", category.buffer)
+            table.insert(combinedBuffer, category.name .. ": " .. line)
+            SaveToFile("Logs\\CombinedLog.txt", combinedBuffer)
         end
+    end
+    if verbosity <= Verbosity.Error then
+        table.insert(errorsBuffer, category.name .. ": " .. line)
+        SaveToFile("Logs\\Errors.txt", errorsBuffer)
     end
 end
 
@@ -65,7 +87,7 @@ function Category:ctor(name, options)
     else
         self.fileVerbosity = options.fileVerbosity or Verbosity.Message
     end
-    self.buffer = ""
+    self.buffer = {}
     PreloadGenClear()
     PreloadStart()
     Preload("")
