@@ -87,6 +87,8 @@ function Hero:ctor(...)
     self.bonusSecondaryStats.spellResist = 0
 
     self.bonusSecondaryStats.movementSpeed = 0
+
+    self.onApplyStats = {}
 end
 
 function Hero:Destroy()
@@ -222,6 +224,9 @@ function Hero:ApplyStats()
     self:SetAgi(self.basicStats.agility, true)
     self:SetInt(self.basicStats.intellect, true)
     UHDUnit.ApplyStats(self)
+    for delegate in pairs(self.onApplyStats) do
+        delegate(self)
+    end
 end
 
 function Hero:HasTalent(id)
