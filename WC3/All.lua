@@ -11,6 +11,7 @@ local WC3 = {
     SpecialEffect = require("WC3.SpecialEffect"),
     Camera = require("WC3.Camera"),
     LightningEffect = require("WC3.LightningEffect"),
+    Multiboard = require "WC3.Multiboard",
 }
 
 return WC3

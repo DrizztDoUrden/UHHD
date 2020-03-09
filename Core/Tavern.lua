@@ -1,6 +1,7 @@
 local Class = require("Class")
 local WC3 = require("WC3.All")
 local Log = require("Log")
+local Stats = require "Core.Stats"
 
 local logTavern = Log.Category("Core\\Tavern")
 
@@ -15,6 +16,8 @@ function Tavern:ctor(owner, x, y, facing, heroPresets)
     self.owner = owner
     self.heroPresets = heroPresets
     self:AddTrigger()
+    WC3.Camera.PanTo(x, y)
+    self:Select()
 end
 
 function Tavern:AddTrigger()
@@ -36,10 +39,42 @@ function Tavern:AddTrigger()
         end
         buying:Destroy()
         sold:Destroy()
-            WC3.Camera.PanTo(heroSpawnX, heroSpawnY, owner)
+        WC3.Camera.PanTo(heroSpawnX, heroSpawnY, owner)
         if owner == WC3.Player.Local then
             ClearSelection()
             hero:Select()
+
+            local statsMultiBoard = WC3.Multiboard()
+
+            statsMultiBoard:SetTitleText("Secondary Stats")
+            statsMultiBoard:SetSize(2, #Stats.Secondary.names)
+
+            for i, name in hero.secondaryStats:EnumerateNames() do
+                local meta = Stats.Secondary.meta[name]
+                local nameItem = statsMultiBoard:GetItem(i - 1, 0)
+                nameItem:SetValue(meta.display)
+                nameItem:SetStyle({displayText = true})
+                nameItem:SetWidth(0.12)
+                nameItem:Release()
+                local valueItem = statsMultiBoard:GetItem(i - 1, 1)
+                valueItem:SetValue(meta.formatter(hero.secondaryStats[name]))
+                valueItem:SetStyle({displayText = true})
+                valueItem:SetWidth(0.06)
+                valueItem:Release()
+            end
+
+            statsMultiBoard:SetVisibility(true)
+
+            local function ValueUpdater()
+                for i, name in hero.secondaryStats:EnumerateNames() do
+                    local meta = Stats.Secondary.meta[name]
+                    local valueItem = statsMultiBoard:GetItem(i - 1, 1)
+                    valueItem:SetValue(meta.formatter(hero.secondaryStats[name]))
+                    valueItem:Release()
+                end
+            end
+
+            hero.onApplyStats[ValueUpdater] = true
         end
     end)
 end

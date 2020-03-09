@@ -74,6 +74,76 @@ Stats.Secondary.names = {
     "movementSpeed",
 }
 
+local function Dot100(v)
+    return string.format("%.2f", v)
+end
+
+local function Percent(v)
+    return math.floor(100 * v) .. "%"
+end
+
+Stats.Secondary.meta = {
+    health = {
+        display = "health",
+        formatter = math.floor,
+    },
+    mana = {
+        display = "mana",
+        formatter = math.floor,
+    },
+    healthRegen = {
+        display = "health regen",
+        formatter = Dot100,
+    },
+    manaRegen = {
+        display = "mana regen",
+        formatter = Dot100,
+    },
+
+    weaponDamage = {
+        display = "weapon damage",
+        formatter = math.floor,
+    },
+    attackSpeed = {
+        display = "attack speed",
+        formatter = Dot100,
+    },
+    physicalDamage = {
+        display = "physical damage",
+        formatter = Percent,
+    },
+    spellDamage = {
+        display = "spell damage",
+        formatter = Percent,
+    },
+
+    armor = {
+        display = "armor",
+        formatter = math.floor,
+    },
+    evasion = {
+        display = "evasion",
+        formatter = Percent,
+    },
+    block = {
+        display = "block",
+        formatter = Percent,
+    },
+    ccResist = {
+        display = "CC resist",
+        formatter = Percent,
+    },
+    spellResist = {
+        display = "spell resist",
+        formatter = Percent,
+    },
+
+    movementSpeed = {
+        display = "movement speed",
+        formatter = Percent,
+    },
+}
+
 Stats.Secondary.adding = {
     health = true,
     mana = true,
