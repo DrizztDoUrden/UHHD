@@ -246,28 +246,76 @@ Pyromancer.abilities.ragingFlames = {
     params = {
         radius = function(_) return 250 end,
         damage = function(_, caster) return 10 * caster.secondaryStats.spellDamage end,
-        channelTime = function(_) return 2 end,
+        implosionPeriod = function(_) return 0.05 end,
+        implosionPower = function(_) return 300 end,
+        channelTime = function(_, caster)
+            if caster:HasTalent("T220") then return 1 end
+            return 2
+        end,
+        implosionDuration = function(_, caster)
+            if caster:HasTalent("T221") then return 1 end
+            return 0
+        end,
+        bbSpreadLimit = function(_, caster)
+            if caster:HasTalent("T222") then return 2 end
+            return 0
+        end,
     },
 }
 
 function RagingFlames:Cast()
+    self.explosionId = 0
     self:Explode(self.caster:GetPos())
     local timer = WC3.Timer()
     local x, y = self:GetTargetX(), self:GetTargetY()
     timer:Start(self.channelTime, false, function()
         self.caster:SetPos(x, y)
         timer:Destroy()
+        self.explosionId = 1
         self:Explode(x, y)
     end)
 end
 
 function RagingFlames:Explode(x, y)
     WC3.SpecialEffect({ path = "Abilities\\Spells\\Human\\FlameStrike\\FlameStrike1.mdl", x = x, y = y, })
+    local targets = {}
     WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
         if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
-            self.caster:DealDamage(unit, { value = self.damage, })
+            table.insert(targets, unit)
         end
     end)
+    if self.bbSpreadLimit > 0 then
+        SortByHealthDescending(targets, self.bbSpreadLimit)
+        for i = 1,math.min(self.bbSpreadLimit,#targets) do
+            BoilingBlood(Pyromancer.abilities.boilingBlood, self.caster, { unit = targets[i], })
+        end
+    end
+    for i = math.min(self.bbSpreadLimit,#targets),#targets do
+        self.caster:DealDamage(targets[i], { value = self.damage, })
+    end
+    if self.implosionDuration > 0 then
+        local implosion = WC3.Timer()
+        local implosionTimeLeft = self.implosionDuration
+        local ticks = math.floor(self.implosionDuration / self.implosionPeriod)
+        local powerPerTick = self.implosionPower / ticks
+        implosion:Start(self.implosionPeriod, true, function()
+            WC3.Unit.EnumInRange(x, y, self.radius, function(unit)
+                if unit:GetHP() > 0 and self.caster:GetOwner():IsEnemy(unit:GetOwner()) then
+                    local unitX, unitY = unit:GetPos()
+                    local deltaX, deltaY = x - unitX, y - unitY
+                    local length = math.sqrt(deltaX ^ 2 + deltaY ^ 2)
+                    if length > powerPerTick then
+                        deltaX, deltaY = deltaX * powerPerTick / length, deltaY * powerPerTick / length
+                    end
+                    unit:SetX(unitX + deltaX, unitY + deltaY)
+                end
+            end)
+            implosionTimeLeft = implosionTimeLeft - self.implosionPeriod
+            if implosionTimeLeft <= 0 then
+                implosion:Destroy()
+            end
+        end)
+    end
 end
 
 Pyromancer.abilities.fireAndIce = {
