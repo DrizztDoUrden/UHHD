@@ -144,14 +144,6 @@ Stats.Secondary.meta = {
     },
 }
 
-Stats.Secondary.adding = {
-    health = true,
-    mana = true,
-    healthRegen = true,
-    manaRegen = true,
-    armor = true,
-}
-
 local function SimpleAdd(l, r) return l + r end
 local function SimpleMul(l, r) return l * (1 + r) end
 local function ReversedMul(l, r) return 1 - (1 - l) * (1 - r) end
